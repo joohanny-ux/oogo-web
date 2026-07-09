@@ -1,3 +1,4 @@
+import React from "react";
 import type { Locale } from "@/lib/i18n";
 import { LOCALE_LABELS, LOCALES } from "@/lib/i18n";
 import { getProductImageSlots } from "@/lib/admin-content";
@@ -50,42 +51,60 @@ export function ProductForm({ product, action }: ProductFormProps) {
       {product?.id ? <input type="hidden" name="id" value={product.id} /> : null}
       <div className="admin-product-editor">
         <div className="admin-product-main">
+          <section className="admin-product-map" aria-label="Product detail page field map">
+            <div>
+              <span>Detail page order</span>
+              <strong>Code -&gt; Name -&gt; Specs -&gt; Buyer CTA</strong>
+            </div>
+            <p>
+              Fill the fields in the same order the public product detail page reads them. Images on the right follow
+              the gallery order: Front, Angle, Side, Wearing.
+            </p>
+          </section>
           <section className="admin-form-section">
             <div className="admin-section-heading">
-              <span>Identity & Specs</span>
-              <small>Required product basics</small>
+              <span>Detail header</span>
+              <small>Code, URL, title</small>
             </div>
             <div className="admin-form-grid">
               <label>
-                Model code
+                Model code <small>shown as the black code pill</small>
                 <input name="modelCode" defaultValue={product?.model_code ?? ""} required />
               </label>
               <label>
-                Slug
+                Slug <small>public URL: /products/[slug]</small>
                 <input name="slug" defaultValue={product?.slug ?? ""} required />
               </label>
+            </div>
+          </section>
+          <section className="admin-form-section">
+            <div className="admin-section-heading">
+              <span>Detail specs</span>
+              <small>Rows under product title</small>
+            </div>
+            <div className="admin-form-grid">
               <label>
-                Size
+                Size <small>shown in the Size row</small>
                 <input name="size" defaultValue={product?.size ?? ""} />
               </label>
               <label>
-                Frame material
+                Frame material <small>secondary text in Frame row</small>
                 <input name="frameMaterial" defaultValue={product?.frame_material ?? ""} />
               </label>
               <label>
-                Lens material
+                Lens material <small>secondary text in Lens row</small>
                 <input name="lensMaterial" defaultValue={product?.lens_material ?? ""} />
               </label>
               <label className="admin-wide-field">
-                Lens features
+                Lens features <small>one feature per line, joined in Lens detail</small>
                 <textarea name="lensFeaturesText" defaultValue={(product?.lens_features ?? []).join("\n")} />
               </label>
             </div>
           </section>
           <section className="admin-form-section">
             <div className="admin-section-heading">
-              <span>Public Website Content</span>
-              <small>KR / EN / CN</small>
+              <span>Detail copy</span>
+              <small>KR name is required</small>
             </div>
             <div className="translation-panels">
               {LOCALES.map((locale) => {
@@ -95,15 +114,15 @@ export function ProductForm({ product, action }: ProductFormProps) {
                   <fieldset key={locale}>
                     <legend>{LOCALE_LABELS[locale]}</legend>
                     <label>
-                      Name
+                      Name <small>{locale === "ko" ? "main product title" : "shown below KR title"}</small>
                       <input name={`${locale}.name`} defaultValue={translation.name ?? ""} required={locale === "ko"} />
                     </label>
                     <label>
-                      Colorway
+                      Colorway <small>optional color or tone note</small>
                       <input name={`${locale}.colorway`} defaultValue={translation.colorway ?? ""} />
                     </label>
                     <label>
-                      Description
+                      Description <small>optional detail copy for future sections</small>
                       <textarea name={`${locale}.description`} defaultValue={translation.description ?? ""} />
                     </label>
                   </fieldset>
@@ -114,8 +133,8 @@ export function ProductForm({ product, action }: ProductFormProps) {
         </div>
         <aside className="admin-asset-panel" aria-label="Visual Assets">
           <div className="admin-section-heading">
-            <span>Visual Assets</span>
-            <small>Product image roles</small>
+            <span>Detail gallery</span>
+            <small>Public display order</small>
           </div>
           <div className="admin-image-slots">
             {imageSlots.map((slot) => (

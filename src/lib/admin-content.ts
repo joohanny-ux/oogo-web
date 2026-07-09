@@ -50,28 +50,28 @@ export function getProductImageSlots(): Array<{
 }> {
   return [
     {
-      role: "angle",
-      label: "Angle / Main",
-      note: "Main product card and modal image",
-      guidance: "Recommended 1600 x 1200px, 4:3, JPG/PNG/WebP, max 5MB"
-    },
-    {
-      role: "wearing",
-      label: "Wearing",
-      note: "Face or lifestyle wearing impression",
-      guidance: "Recommended 1600 x 2000px, 4:5 portrait, JPG/PNG/WebP, max 5MB"
-    },
-    {
       role: "front",
       label: "Front balance",
-      note: "Straight front view",
+      note: "Detail gallery 1, collection card default",
       guidance: "Recommended 1400 x 900px, product centered, JPG/PNG/WebP, max 5MB"
+    },
+    {
+      role: "angle",
+      label: "Angle view",
+      note: "Detail gallery 2, collection hover image",
+      guidance: "Recommended 1600 x 1200px, 4:3, JPG/PNG/WebP, max 5MB"
     },
     {
       role: "side",
       label: "Side profile",
-      note: "Temple and side silhouette",
+      note: "Detail gallery 3, temple and side silhouette",
       guidance: "Recommended 1400 x 900px, product centered, JPG/PNG/WebP, max 5MB"
+    },
+    {
+      role: "wearing",
+      label: "Wearing / Lifestyle",
+      note: "Detail gallery 4, face or showroom lifestyle image",
+      guidance: "Recommended 1600 x 2000px portrait or 2400 x 1500px landscape, JPG/PNG/WebP, max 5MB"
     }
   ];
 }

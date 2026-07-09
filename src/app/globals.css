@@ -1918,6 +1918,40 @@ h2 {
   gap: 24px;
 }
 
+.admin-product-map {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.32fr) 1fr;
+  gap: 16px;
+  align-items: center;
+  border: 1px solid #34302b;
+  border-radius: 8px;
+  background: #13110f;
+  padding: 16px 20px;
+}
+
+.admin-product-map div {
+  display: grid;
+  gap: 6px;
+}
+
+.admin-product-map span {
+  color: #d8c0a0;
+  font-size: 0.74rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.admin-product-map strong {
+  color: #f4f0e8;
+  font-size: 1rem;
+}
+
+.admin-product-map p {
+  color: #9d9287;
+  line-height: 1.6;
+  margin: 0;
+}
+
 .admin-form-section,
 .admin-asset-panel {
   border: 1px solid #34302b;
@@ -1964,6 +1998,13 @@ h2 {
   display: grid;
   gap: 8px;
   color: #bdb2a7;
+}
+
+.admin-form label small,
+.translation-panels label small {
+  color: #756b61;
+  font-size: 0.75rem;
+  line-height: 1.4;
 }
 
 .admin-form input,
@@ -2698,6 +2739,7 @@ h2 {
 
   .admin-card-grid,
   .admin-shortcuts,
+  .admin-product-map,
   .admin-form-grid,
   .translation-panels,
   .landing-editor-grid,

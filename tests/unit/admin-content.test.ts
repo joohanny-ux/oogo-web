@@ -40,12 +40,12 @@ describe("admin content helpers", () => {
   });
 
   it("defines OOGO product image slots for admin upload", () => {
-    expect(getProductImageSlots().map((slot) => slot.role)).toEqual(["angle", "wearing", "front", "side"]);
+    expect(getProductImageSlots().map((slot) => slot.role)).toEqual(["front", "angle", "side", "wearing"]);
     expect(getProductImageSlots().map((slot) => slot.label)).toEqual([
-      "Angle / Main",
-      "Wearing",
       "Front balance",
-      "Side profile"
+      "Angle view",
+      "Side profile",
+      "Wearing / Lifestyle"
     ]);
   });
 
@@ -58,8 +58,8 @@ describe("admin content helpers", () => {
         side: "   "
       })
     ).toEqual([
-      { role: "angle", url: "https://cdn.example.com/angle.png" },
-      { role: "front", url: "https://cdn.example.com/front.png" }
+      { role: "front", url: "https://cdn.example.com/front.png" },
+      { role: "angle", url: "https://cdn.example.com/angle.png" }
     ]);
   });
 });
