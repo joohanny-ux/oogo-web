@@ -1,3 +1,5 @@
+import { getProductCatalogHref } from "@/lib/products";
+
 export type HeaderContent = {
   logoText?: string;
   logoHref?: string;
@@ -12,7 +14,7 @@ export type HeaderContent = {
 };
 
 const fallbackNav = [
-  { label: "Collection", href: "/collection" },
+  { label: "Collection", href: getProductCatalogHref() },
   { label: "Projects", href: "/projects" },
   { label: "Archive", href: "/archive" },
   { label: "Inquiry", href: "/inquiry" }

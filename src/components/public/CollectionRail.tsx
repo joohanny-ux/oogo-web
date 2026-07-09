@@ -2,6 +2,7 @@
 
 import type { CSSProperties } from "react";
 import { useRef, useState } from "react";
+import { getProductDetailHref } from "@/lib/products";
 
 type RailProduct = {
   slug: string;
@@ -108,7 +109,7 @@ export function CollectionRail({ products }: { products: RailProduct[] }) {
         <article className="product-tile" key={product.previewKey}>
           <a
             className={`product-visual product-visual-${(index % 2) + 1}`}
-            href={`/products/${product.slug}`}
+            href={getProductDetailHref(product.slug)}
             draggable={false}
             onDragStart={(event) => event.preventDefault()}
             onClick={preventClickAfterDrag}
@@ -118,7 +119,7 @@ export function CollectionRail({ products }: { products: RailProduct[] }) {
           <div className="product-tile-copy">
             <h3>
               <a
-                href={`/products/${product.slug}`}
+                href={getProductDetailHref(product.slug)}
                 draggable={false}
                 onDragStart={(event) => event.preventDefault()}
                 onClick={preventClickAfterDrag}

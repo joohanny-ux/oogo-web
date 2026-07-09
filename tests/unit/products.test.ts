@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { filterProductsByCategory, getProductBadges, getProductDetailSections, mapProductRow } from "@/lib/products";
+import {
+  filterProductsByCategory,
+  getProductBadges,
+  getProductCatalogHref,
+  getProductDetailHref,
+  getProductDetailSections,
+  mapProductRow
+} from "@/lib/products";
 
 describe("product mapping", () => {
   it("maps Supabase product rows to public product cards", () => {
@@ -137,5 +144,11 @@ describe("product mapping", () => {
       "new-only",
       "special"
     ]);
+  });
+
+  it("builds canonical public product routes", () => {
+    expect(getProductCatalogHref()).toBe("/collection");
+    expect(getProductCatalogHref("new")).toBe("/collection?category=new");
+    expect(getProductDetailHref("og26001c2-sunset-stroll")).toBe("/products/og26001c2-sunset-stroll");
   });
 });

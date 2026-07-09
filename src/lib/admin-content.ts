@@ -1,6 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { Locale } from "@/lib/i18n";
+import { getProductCatalogHref, getProductDetailHref } from "@/lib/products";
 
 export const landingPageOptions = [
   { key: "header", label: "Header" },
@@ -198,7 +199,8 @@ export async function saveProduct(input: AdminProductInput) {
   }
 
   revalidatePath("/admin/products");
-  revalidatePath("/products");
+  revalidatePath(getProductCatalogHref());
+  revalidatePath(getProductDetailHref(input.slug));
   return { ok: true, message: "Product saved." };
 }
 
@@ -276,7 +278,7 @@ export async function setProductPublished(id: string, published: boolean) {
   }
 
   revalidatePath("/admin/products");
-  revalidatePath("/products");
+  revalidatePath(getProductCatalogHref());
   return { ok: true, message: "Product visibility updated." };
 }
 
@@ -355,7 +357,7 @@ export async function publishLandingBlock(id: string) {
   }
 
   revalidatePath("/");
-  revalidatePath("/products");
+  revalidatePath(getProductCatalogHref());
   revalidatePath("/admin/landing");
   return { ok: true, message: "Block published." };
 }

@@ -44,7 +44,7 @@ SUPABASE_SERVICE_ROLE_KEY=Supabase service role key
 ## 4. First Admin Check
 
 1. `https://www.oogolabs.com`에서 공개 홈페이지를 확인합니다.
-2. `https://www.oogolabs.com/products`에서 상품 카탈로그를 확인합니다.
+2. `https://www.oogolabs.com/collection`에서 상품 카탈로그를 확인합니다.
 3. `https://www.oogolabs.com/admin/login`에서 로그인합니다.
 4. `/admin/products`에서 상품 추가/수정 후 공개 페이지 반영을 확인합니다.
 5. `/admin/landing`에서 홈 섹션 텍스트를 수정하고 저장합니다.

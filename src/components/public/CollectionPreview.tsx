@@ -1,4 +1,5 @@
 import { CollectionRail } from "@/components/public/CollectionRail";
+import { getProductCatalogHref } from "@/lib/products";
 
 type CollectionProduct = {
   slug: string;
@@ -28,7 +29,7 @@ export function CollectionPreview({ products }: { products: CollectionProduct[] 
     <section className="dark-section collection-wall" id="collection">
       <div className="collection-rail-heading">
         <p className="eyebrow">Collection</p>
-        <a href="/collection">View all</a>
+        <a href={getProductCatalogHref()}>View all</a>
       </div>
       <CollectionRail products={displayProducts} />
     </section>

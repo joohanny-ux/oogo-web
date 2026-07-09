@@ -32,6 +32,21 @@ export type ProductRow = {
 
 export type ProductImages = Partial<Record<"angle" | "wearing" | "front" | "side", string>>;
 
+export const PRODUCT_CATALOG_PATH = "/collection";
+export const PRODUCT_DETAIL_PATH = "/products";
+
+export function getProductCatalogHref(category?: CatalogCategory) {
+  if (!category || category === "all") {
+    return PRODUCT_CATALOG_PATH;
+  }
+
+  return `${PRODUCT_CATALOG_PATH}?category=${encodeURIComponent(category)}`;
+}
+
+export function getProductDetailHref(slug: string) {
+  return `${PRODUCT_DETAIL_PATH}/${encodeURIComponent(slug)}`;
+}
+
 function assetPublicUrl(asset: ProductImageRow["assets"]) {
   if (Array.isArray(asset)) {
     return asset[0]?.public_url ?? null;

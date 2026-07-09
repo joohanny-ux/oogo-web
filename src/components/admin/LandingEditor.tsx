@@ -1,5 +1,6 @@
 import { LOCALE_LABELS, LOCALES, type Locale } from "@/lib/i18n";
 import { landingPageOptions } from "@/lib/admin-content";
+import { getProductCatalogHref } from "@/lib/products";
 
 type LandingBlockRow = {
   id: string;
@@ -46,7 +47,7 @@ type BlockConfig = {
 const editorPages = [
   { key: "header", label: "Header", publicHref: "/" },
   { key: "home", label: "Home", publicHref: "/" },
-  { key: "collection", label: "Collection", publicHref: "/products" },
+  { key: "collection", label: "Collection", publicHref: getProductCatalogHref() },
   { key: "special-edition", label: "Special", publicHref: "/#special" },
   { key: "inquiry", label: "Inquiry", publicHref: "/#inquiry" },
   { key: "footer", label: "Footer", publicHref: "/" }
@@ -57,7 +58,7 @@ const commonCopyFields: FieldConfig[] = [
   { name: "heading", label: "메인 제목", placeholder: "섹션 제목" },
   { name: "body", label: "설명", type: "textarea", placeholder: "홈페이지에 노출될 문구", wide: true },
   { name: "primaryLabel", label: "버튼 문구", placeholder: "View more" },
-  { name: "primaryHref", label: "이동 링크", placeholder: "/products" }
+  { name: "primaryHref", label: "이동 링크", placeholder: getProductCatalogHref() }
 ];
 
 const homeBlocks: BlockConfig[] = [
@@ -74,7 +75,7 @@ const homeBlocks: BlockConfig[] = [
       { name: "line", label: "메인 문장", placeholder: "Quiet confidence, shaped for everyday light.", wide: true },
       { name: "body", label: "설명", type: "textarea", placeholder: "OOGO는 균형과 인상을 담은 한국 아이웨어입니다.", wide: true },
       { name: "primaryLabel", label: "1차 버튼 문구", placeholder: "Collection" },
-      { name: "primaryHref", label: "1차 버튼 링크", placeholder: "/products" },
+      { name: "primaryHref", label: "1차 버튼 링크", placeholder: getProductCatalogHref() },
       { name: "secondaryLabel", label: "2차 버튼 문구", placeholder: "Brand story" },
       { name: "secondaryHref", label: "2차 버튼 링크", placeholder: "#brand" }
     ]

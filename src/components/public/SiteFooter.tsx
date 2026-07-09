@@ -1,3 +1,5 @@
+import { getProductCatalogHref } from "@/lib/products";
+
 const socialLinks = [
   { label: "Instagram", icon: "instagram", href: "https://www.instagram.com/oogolabs" },
   { label: "Facebook", icon: "facebook", href: "https://www.facebook.com/oogolabs" },
@@ -60,7 +62,7 @@ export function SiteFooter() {
         <p>Frames for light, face, and quiet attitude.</p>
       </div>
       <nav aria-label="Footer navigation">
-        <a href="/collection">Collection</a>
+        <a href={getProductCatalogHref()}>Collection</a>
         <a href="/projects">Projects</a>
         <a href="/archive">Archive</a>
         <a href="/inquiry">Inquiry</a>

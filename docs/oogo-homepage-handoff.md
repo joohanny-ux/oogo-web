@@ -83,8 +83,8 @@ Admin dashboard는 다음 흐름을 목표로 한다.
 
 - `/`: public homepage. `src/app/page.tsx`
 - `/brand`: brand story subpage. `src/app/brand/page.tsx`
-- `/collection`: collection catalog route. `src/app/collection/page.tsx`
-- `/products`: product catalog route. `src/app/products/page.tsx`
+- `/collection`: canonical collection catalog route. `src/app/collection/page.tsx`
+- `/products`: legacy catalog alias that redirects to `/collection`. `src/app/products/page.tsx`
 - `/products/[slug]`: product detail route. `src/app/products/[slug]/page.tsx`
 - `/projects`: special projects list. `src/app/projects/page.tsx`
 - `/projects/youngbin-edition`: Youngbin Edition detail. `src/app/projects/youngbin-edition/page.tsx`
@@ -103,9 +103,14 @@ Admin dashboard는 다음 흐름을 목표로 한다.
 - `/admin/files`: file/asset management view.
 - `/admin/company`: company and brand settings.
 
+Route decisions:
+
+- `/collection` is the canonical public catalog route.
+- `/products/[slug]` remains the canonical product detail route.
+- `/products` redirects to `/collection` so old catalog links continue to work.
+
 Needs confirmation:
 
-- `/collection`과 `/products` 중 최종 canonical catalog route를 무엇으로 할지 결정해야 한다. 현재 둘 다 카탈로그 역할을 한다.
 - Header navigation은 현재 `/collection`, `/projects`, `/archive`, `/inquiry`를 사용한다. `Brand` link를 primary nav에 다시 넣을지 확인 필요.
 - Multilingual route 구조가 아직 확정되지 않았다. 예: `?locale=en`, `/en/...`, cookie/session 기반 중 선택 필요.
 
@@ -281,7 +286,7 @@ Confirmed or already reflected in code:
 Needs confirmation:
 
 - Final URL strategy for multilingual public pages.
-- Final canonical route between `/collection` and `/products`.
+- Whether `/products` should stay as a permanent redirect or be removed after launch.
 - Whether `/brand` should be restored to top navigation.
 - Whether landing page copy should be fully Supabase-driven before launch.
 - Whether product images must be uploaded through Supabase Storage in MVP or can remain URL-based temporarily.
@@ -292,7 +297,6 @@ Needs confirmation:
 
 High priority:
 
-- Decide canonical catalog route: `/collection` or `/products`.
 - Implement real locale switching for KR / EN / CN.
 - Wire public pages to locale-aware content instead of hard-coded `"ko"`.
 - Complete Supabase migrations and seed data against the production project.

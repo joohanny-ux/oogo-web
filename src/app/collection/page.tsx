@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import { SiteFooter } from "@/components/public/SiteFooter";
 import { SiteHeader } from "@/components/public/SiteHeader";
-import { filterProductsByCategory, normalizeCatalogCategory } from "@/lib/products";
+import { filterProductsByCategory, getProductDetailHref, normalizeCatalogCategory } from "@/lib/products";
 import { getPublishedProducts } from "@/lib/public-content";
 
 export default async function CollectionPage({
@@ -45,14 +45,14 @@ export default async function CollectionPage({
               <article className="collection-list-card" key={product.displayKey}>
                 <a
                   className="collection-list-image"
-                  href={`/products/${product.slug}`}
+                  href={getProductDetailHref(product.slug)}
                   style={{
                     backgroundImage: `url("${frontImage}")`,
                     "--hover-image": `url("${angleImage}")`
                   } as CSSProperties & Record<"--hover-image", string>}
                   aria-label={`${product.displayName} detail`}
                 />
-                <a className="collection-list-name" href={`/products/${product.slug}`}>
+                <a className="collection-list-name" href={getProductDetailHref(product.slug)}>
                   {product.displayName}
                 </a>
               </article>
