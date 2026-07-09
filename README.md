@@ -1,14 +1,70 @@
-# OOGO Website
+# OOGO Homepage
 
-This repository is for the OOGO website project.
+OOGO 선글래스 브랜드 홈페이지와 관리자 대시보드입니다. 공개 사이트는 브랜드 스토리, 컬렉션, 스페셜 에디션, 문의 흐름을 보여주고, `/admin`에서는 상품, 랜딩 페이지 문구, 문의, 회사 정보, 파일 자산을 관리합니다.
 
-## Collaboration Workflow Test
+## Stack
 
-This README was added from the `feature/test-collaboration` branch to test the GitHub collaboration workflow.
+- Next.js App Router
+- React
+- Supabase Auth, Postgres, RLS
+- Vercel deployment
+- Vitest and Playwright
 
-## Workflow
+## Local Setup
 
-- Work on feature branches.
-- Open a pull request before merging into main.
-- Review changes before merging.
-- Do not commit secrets or private credentials.
+```powershell
+npm install
+Copy-Item .env.example .env.local
+npm run dev
+```
+
+`http://127.0.0.1:3100`에서 공개 사이트를 확인합니다. Supabase 환경 변수가 비어 있으면 공개 사이트는 내장된 OOGO 초기 콘텐츠로 표시됩니다. 관리자 저장 기능은 Supabase 연결 후 사용할 수 있습니다.
+
+## Environment Variables
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+NEXT_PUBLIC_SITE_URL=https://www.oogolabs.com
+```
+
+현재 앱은 브라우저/서버 Supabase 세션에 `NEXT_PUBLIC_SUPABASE_URL`과 `NEXT_PUBLIC_SUPABASE_ANON_KEY`를 사용합니다. `SUPABASE_SERVICE_ROLE_KEY`는 운영 자동화나 향후 서버 전용 관리 기능을 위해 예약되어 있으며, 클라이언트에 노출하면 안 됩니다.
+
+## Supabase Setup
+
+1. Supabase 프로젝트를 생성합니다.
+2. SQL editor에서 `supabase/migrations/0001_initial_schema.sql`을 실행합니다.
+3. SQL editor에서 `supabase/seed/seed-oogo-content.sql`을 실행합니다.
+4. Authentication에서 관리자 계정을 생성합니다.
+5. 생성된 auth user id로 `profiles` 행을 추가합니다.
+
+```sql
+insert into public.profiles (id, email, role)
+values ('AUTH_USER_ID', 'admin@example.com', 'admin');
+```
+
+`admin`과 `editor`는 상품, 랜딩 콘텐츠, 회사 정보, 문의 상태를 관리할 수 있습니다. `viewer`는 추후 읽기 전용 운영 계정으로 확장할 수 있습니다.
+
+## Main Routes
+
+- `/` 공개 홈페이지
+- `/products` 공개 상품 카탈로그
+- `/products/[slug]` 공개 상품 상세
+- `/admin/login` 관리자 로그인
+- `/admin` 관리자 대시보드
+- `/admin/products` 상품 관리
+- `/admin/landing` 랜딩 페이지 텍스트 관리
+- `/admin/inquiries` 문의 관리
+- `/admin/files` 파일 자산 보기
+- `/admin/company` 회사/브랜드 정보 관리
+
+## Checks
+
+```powershell
+npm run test
+npm run build
+npm run test:e2e -- tests/e2e/public.spec.ts
+```
+
+빌드와 e2e는 같은 `.next` 캐시를 쓰므로 동시에 실행하지 말고 순서대로 실행합니다.
