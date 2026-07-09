@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { getProductImageSlots, landingPageOptions, parseLensFeatures, parseProductImageInputs } from "@/lib/admin-content";
+import {
+  getLandingEditorPages,
+  getProductImageSlots,
+  landingPageOptions,
+  parseLensFeatures,
+  parseProductImageInputs
+} from "@/lib/admin-content";
 
 describe("admin content helpers", () => {
   it("parses lens features from separate lines", () => {
@@ -21,6 +27,16 @@ describe("admin content helpers", () => {
       "inquiry",
       "footer"
     ]);
+  });
+
+  it("exposes landing editor pages for every public content surface", () => {
+    expect(getLandingEditorPages().map((page) => page.key)).toEqual(
+      landingPageOptions.map((option) => option.key)
+    );
+    expect(getLandingEditorPages().find((page) => page.key === "collection")?.publicHref).toBe("/collection");
+    expect(getLandingEditorPages().find((page) => page.key === "product-detail")?.publicHref).toBe(
+      "/products/og26001c2-sunset-stroll"
+    );
   });
 
   it("defines OOGO product image slots for admin upload", () => {

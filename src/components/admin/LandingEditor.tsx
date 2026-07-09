@@ -1,5 +1,5 @@
 import { LOCALE_LABELS, LOCALES, type Locale } from "@/lib/i18n";
-import { landingPageOptions } from "@/lib/admin-content";
+import { getLandingEditorPages, landingPageOptions } from "@/lib/admin-content";
 import { getProductCatalogHref } from "@/lib/products";
 
 type LandingBlockRow = {
@@ -43,15 +43,6 @@ type BlockConfig = {
   mediaGuidance?: string;
   fields: FieldConfig[];
 };
-
-const editorPages = [
-  { key: "header", label: "Header", publicHref: "/" },
-  { key: "home", label: "Home", publicHref: "/" },
-  { key: "collection", label: "Collection", publicHref: getProductCatalogHref() },
-  { key: "special-edition", label: "Special", publicHref: "/#special" },
-  { key: "inquiry", label: "Inquiry", publicHref: "/#inquiry" },
-  { key: "footer", label: "Footer", publicHref: "/" }
-] as const;
 
 const commonCopyFields: FieldConfig[] = [
   { name: "eyebrow", label: "작은 제목", placeholder: "예: 2026 Collection" },
@@ -261,10 +252,12 @@ function statusLabel(block: LandingBlockRow | null) {
 }
 
 function pageTitle(pageKey: string) {
+  const editorPages = getLandingEditorPages();
   return editorPages.find((page) => page.key === pageKey)?.label ?? landingPageOptions.find((option) => option.key === pageKey)?.label ?? pageKey;
 }
 
 function publicHref(pageKey: string) {
+  const editorPages = getLandingEditorPages();
   return editorPages.find((page) => page.key === pageKey)?.publicHref ?? "/";
 }
 
@@ -454,6 +447,7 @@ function BlockEditor({
 }
 
 export function LandingEditor({ pageKey, locale, blocks, assets = [], saveAction, publishAction }: LandingEditorProps) {
+  const editorPages = getLandingEditorPages();
   const pageBlocks = pageBlockMap[pageKey] ?? [
     {
       key: "main",

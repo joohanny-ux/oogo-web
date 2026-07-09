@@ -14,6 +14,25 @@ export const landingPageOptions = [
   { key: "footer", label: "Footer" }
 ] as const;
 
+const sampleProductSlug = "og26001c2-sunset-stroll";
+
+export function getLandingEditorPages(): Array<{
+  key: (typeof landingPageOptions)[number]["key"];
+  label: string;
+  publicHref: string;
+}> {
+  return [
+    { key: "header", label: "Header", publicHref: "/" },
+    { key: "home", label: "Home", publicHref: "/" },
+    { key: "brand-story", label: "Brand Story", publicHref: "/brand" },
+    { key: "collection", label: "Collection", publicHref: getProductCatalogHref() },
+    { key: "product-detail", label: "Product Detail", publicHref: getProductDetailHref(sampleProductSlug) },
+    { key: "special-edition", label: "Special", publicHref: "/projects/youngbin-edition" },
+    { key: "inquiry", label: "Inquiry", publicHref: "/inquiry" },
+    { key: "footer", label: "Footer", publicHref: "/" }
+  ];
+}
+
 export type ProductImageRole = "angle" | "wearing" | "front" | "side";
 
 export type ProductImageInput = {
