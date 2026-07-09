@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { LOCALES, type Locale } from "@/lib/i18n";
 import {
   getProductImageSlots,
+  hasSupabaseEnv,
   parseProductImageInputs,
   saveProduct,
   type AdminProductInput,
@@ -32,6 +33,13 @@ function safePathPart(value: string) {
 }
 
 async function uploadProductImageFile(file: File, role: ProductImageRole, slug: string, modelCode: string) {
+  if (!hasSupabaseEnv()) {
+    return {
+      ok: false as const,
+      message: "Supabase environment variables are not configured. Connect Supabase before uploading product images."
+    };
+  }
+
   if (file.size > 5 * 1024 * 1024) {
     return { ok: false as const, message: `${role} image is over 5MB.` };
   }

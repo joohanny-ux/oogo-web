@@ -15,4 +15,13 @@ describe("ProductForm", () => {
     expect(html.indexOf("Angle view")).toBeLessThan(html.indexOf("Side profile"));
     expect(html.indexOf("Side profile")).toBeLessThan(html.indexOf("Wearing / Lifestyle"));
   });
+
+  it("disables product saving when Supabase is not configured", () => {
+    const html = renderToStaticMarkup(<ProductForm action={() => undefined} supabaseConfigured={false} />);
+
+    expect(html).toContain("Supabase connection required");
+    expect(html).toContain("상품 저장과 이미지 업로드는 Supabase 연결 후 사용할 수 있습니다.");
+    expect(html).toContain("disabled=\"\"");
+    expect(html).toContain("Connect Supabase to save product");
+  });
 });

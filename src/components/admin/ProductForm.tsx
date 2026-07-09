@@ -27,6 +27,7 @@ type ProductFormProps = {
     }>;
   } | null;
   action: (formData: FormData) => void | Promise<void>;
+  supabaseConfigured?: boolean;
 };
 
 function translationFor(product: ProductFormProps["product"], locale: Locale): TranslationValue {
@@ -43,11 +44,18 @@ function imageUrlFor(product: ProductFormProps["product"], role: string) {
   return asset?.public_url ?? "";
 }
 
-export function ProductForm({ product, action }: ProductFormProps) {
+export function ProductForm({ product, action, supabaseConfigured = true }: ProductFormProps) {
   const imageSlots = getProductImageSlots();
+  const canPersist = supabaseConfigured;
 
   return (
     <form className="admin-form" action={action}>
+      {!canPersist ? (
+        <div className="admin-config-warning" role="status">
+          <strong>Supabase connection required</strong>
+          <p>상품 저장과 이미지 업로드는 Supabase 연결 후 사용할 수 있습니다.</p>
+        </div>
+      ) : null}
       {product?.id ? <input type="hidden" name="id" value={product.id} /> : null}
       <div className="admin-product-editor">
         <div className="admin-product-main">
@@ -155,7 +163,12 @@ export function ProductForm({ product, action }: ProductFormProps) {
                 )}
                 <label className="admin-upload-control">
                   <span>Upload image</span>
-                  <input name={`imageFile.${slot.role}`} type="file" accept="image/png,image/jpeg,image/webp" />
+                  <input
+                    name={`imageFile.${slot.role}`}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    disabled={!canPersist}
+                  />
                 </label>
                 <input type="hidden" name={`image.${slot.role}`} defaultValue={imageUrlFor(product, slot.role)} />
               </div>
@@ -173,7 +186,9 @@ export function ProductForm({ product, action }: ProductFormProps) {
           </div>
         </aside>
       </div>
-      <button type="submit">Save product</button>
+      <button type="submit" disabled={!canPersist}>
+        {canPersist ? "Save product" : "Connect Supabase to save product"}
+      </button>
     </form>
   );
 }

@@ -1990,6 +1990,25 @@ h2 {
   gap: 24px;
 }
 
+.admin-config-warning {
+  display: grid;
+  gap: 6px;
+  border: 1px solid #6c5138;
+  border-radius: 8px;
+  background: #211812;
+  padding: 16px 18px;
+}
+
+.admin-config-warning strong {
+  color: #f4f0e8;
+}
+
+.admin-config-warning p {
+  color: #b9a894;
+  line-height: 1.55;
+  margin: 0;
+}
+
 .admin-product-map {
   display: grid;
   grid-template-columns: minmax(220px, 0.32fr) 1fr;
@@ -2200,6 +2219,12 @@ h2 {
   background: #d8c0a0;
   color: #171411;
   cursor: pointer;
+}
+
+.admin-form button:disabled,
+.admin-form input:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 .admin-page-note {

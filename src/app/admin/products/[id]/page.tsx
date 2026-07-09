@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { ProductForm } from "@/components/admin/ProductForm";
 import { saveProductAction } from "@/app/admin/products/actions";
-import { getAdminProduct } from "@/lib/admin-content";
+import { getAdminProduct, hasSupabaseEnv } from "@/lib/admin-content";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +16,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
   return (
     <main className="admin-page">
       <h1>Edit product</h1>
-      <ProductForm product={product} action={saveProductAction} />
+      <ProductForm product={product} action={saveProductAction} supabaseConfigured={hasSupabaseEnv()} />
     </main>
   );
 }
