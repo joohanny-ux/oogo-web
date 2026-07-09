@@ -465,7 +465,9 @@ export function LandingEditor({ pageKey, locale, blocks, assets = [], saveAction
         <nav className="site-editor-tabs" aria-label="Landing page editor sections">
           {editorPages.map((page) => (
             <a key={page.key} className={page.key === pageKey ? "site-editor-tab active" : "site-editor-tab"} href={`/admin/landing?page=${page.key}&locale=${locale}`}>
-              {page.label}
+              <span>{page.surface}</span>
+              <strong>{page.label}</strong>
+              <small>{page.routeLabel}</small>
             </a>
           ))}
         </nav>
@@ -488,7 +490,10 @@ export function LandingEditor({ pageKey, locale, blocks, assets = [], saveAction
           <span>{currentPageTitle}</span>
           <strong>{pageBlocks.length}개 섹션 편집</strong>
         </div>
-        <p>카드를 열어 수정하고, 초안 저장 후 게시하면 홈페이지에 반영됩니다.</p>
+        <p>
+          {editorPages.find((page) => page.key === pageKey)?.description ??
+            "카드를 열어 수정하고, 초안 저장 후 게시하면 홈페이지에 반영됩니다."}
+        </p>
       </div>
 
       <div className="landing-block-list">

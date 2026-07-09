@@ -20,16 +20,75 @@ export function getLandingEditorPages(): Array<{
   key: (typeof landingPageOptions)[number]["key"];
   label: string;
   publicHref: string;
+  routeLabel: string;
+  surface: string;
+  description: string;
 }> {
   return [
-    { key: "header", label: "Header", publicHref: "/" },
-    { key: "home", label: "Home", publicHref: "/" },
-    { key: "brand-story", label: "Brand Story", publicHref: "/brand" },
-    { key: "collection", label: "Collection", publicHref: getProductCatalogHref() },
-    { key: "product-detail", label: "Product Detail", publicHref: getProductDetailHref(sampleProductSlug) },
-    { key: "special-edition", label: "Special", publicHref: "/projects/youngbin-edition" },
-    { key: "inquiry", label: "Inquiry", publicHref: "/inquiry" },
-    { key: "footer", label: "Footer", publicHref: "/" }
+    {
+      key: "header",
+      label: "Header",
+      publicHref: "/",
+      routeLabel: "Global",
+      surface: "Site chrome",
+      description: "Logo, main navigation, language selector, and utility links"
+    },
+    {
+      key: "home",
+      label: "Home",
+      publicHref: "/",
+      routeLabel: "/",
+      surface: "Homepage",
+      description: "Hero, collection preview, project preview, archive, and inquiry bridge"
+    },
+    {
+      key: "brand-story",
+      label: "Brand Story",
+      publicHref: "/brand",
+      routeLabel: "/brand",
+      surface: "Brand page",
+      description: "Brand hero, philosophy copy, visual grid, and collection CTA"
+    },
+    {
+      key: "collection",
+      label: "Collection",
+      publicHref: getProductCatalogHref(),
+      routeLabel: getProductCatalogHref(),
+      surface: "Collection page",
+      description: "Catalog intro, product grid helper copy, and collection CTA"
+    },
+    {
+      key: "product-detail",
+      label: "Product Detail",
+      publicHref: getProductDetailHref(sampleProductSlug),
+      routeLabel: "/products/[slug]",
+      surface: "Product detail",
+      description: "Reusable product detail labels, buyer CTA, and related product copy"
+    },
+    {
+      key: "special-edition",
+      label: "Special",
+      publicHref: "/projects/youngbin-edition",
+      routeLabel: "/projects/youngbin-edition",
+      surface: "Project detail",
+      description: "Special edition hero, campaign narrative, and collaboration guide"
+    },
+    {
+      key: "inquiry",
+      label: "Inquiry",
+      publicHref: "/inquiry",
+      routeLabel: "/inquiry",
+      surface: "Inquiry page",
+      description: "Contact intro, inquiry type guidance, and form helper copy"
+    },
+    {
+      key: "footer",
+      label: "Footer",
+      publicHref: "/",
+      routeLabel: "Global",
+      surface: "Site footer",
+      description: "Footer brand copy, contact information, social links, and legal links"
+    }
   ];
 }
 

@@ -37,6 +37,14 @@ describe("admin content helpers", () => {
     expect(getLandingEditorPages().find((page) => page.key === "product-detail")?.publicHref).toBe(
       "/products/og26001c2-sunset-stroll"
     );
+    expect(getLandingEditorPages().find((page) => page.key === "home")).toMatchObject({
+      surface: "Homepage",
+      routeLabel: "/"
+    });
+    expect(getLandingEditorPages().find((page) => page.key === "special-edition")).toMatchObject({
+      surface: "Project detail",
+      routeLabel: "/projects/youngbin-edition"
+    });
   });
 
   it("defines OOGO product image slots for admin upload", () => {

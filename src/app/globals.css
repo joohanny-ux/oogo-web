@@ -1806,6 +1806,78 @@ h2 {
   background: #141210;
 }
 
+.admin-landing-page-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.admin-landing-page-card {
+  display: grid;
+  min-height: 210px;
+  grid-template-rows: auto 1fr auto;
+  gap: 14px;
+  border: 1px solid #34302b;
+  border-radius: 8px;
+  background: #13110f;
+  padding: 16px;
+}
+
+.admin-landing-page-card div {
+  display: grid;
+  gap: 6px;
+}
+
+.admin-landing-page-card span,
+.site-editor-tab span {
+  color: #d8c0a0;
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.admin-landing-page-card strong,
+.site-editor-tab strong {
+  color: #f4f0e8;
+  font-size: 1rem;
+}
+
+.admin-landing-page-card small,
+.site-editor-tab small {
+  color: #8f857b;
+  font-size: 0.74rem;
+}
+
+.admin-landing-page-card p {
+  color: #9d9287;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.admin-landing-page-card nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.admin-landing-page-card nav a {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #34302b;
+  border-radius: 6px;
+  color: #f4f0e8;
+  font-size: 0.78rem;
+}
+
+.admin-landing-page-card nav a:first-child {
+  border-color: #d8c0a0;
+  background: #d8c0a0;
+  color: #171411;
+}
+
 .admin-page-heading {
   display: flex;
   align-items: flex-start;
@@ -2151,26 +2223,33 @@ h2 {
 
 .site-editor-tabs {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
 }
 
 .site-editor-tab {
-  min-height: 48px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  min-height: 92px;
+  display: grid;
+  align-content: center;
+  gap: 6px;
   border: 1px solid #34302b;
   border-radius: 8px;
   background: #0f0e0d;
   color: #bdb2a7;
   font-size: 0.85rem;
   font-weight: 620;
+  padding: 12px;
 }
 
 .site-editor-tab.active {
   border-color: #d8c0a0;
   background: #d8c0a0;
+  color: #171411;
+}
+
+.site-editor-tab.active span,
+.site-editor-tab.active strong,
+.site-editor-tab.active small {
   color: #171411;
 }
 
@@ -2739,6 +2818,7 @@ h2 {
 
   .admin-card-grid,
   .admin-shortcuts,
+  .admin-landing-page-grid,
   .admin-product-map,
   .admin-form-grid,
   .translation-panels,
@@ -2757,7 +2837,7 @@ h2 {
   }
 
   .site-editor-tabs {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: 1fr;
   }
 
   .site-editor-actions {

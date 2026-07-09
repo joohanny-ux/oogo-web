@@ -1,6 +1,10 @@
+import React from "react";
 import { AdminCard } from "@/components/admin/AdminCard";
+import { getLandingEditorPages } from "@/lib/admin-content";
 
 export default function AdminDashboardPage() {
+  const landingPages = getLandingEditorPages();
+
   return (
     <main className="admin-page">
       <h1>Dashboard</h1>
@@ -16,6 +20,30 @@ export default function AdminDashboardPage() {
           <a href="/admin/products/new">Add product</a>
           <a href="/admin/landing">Landing page</a>
           <a href="/admin/files">Files</a>
+        </div>
+      </section>
+      <section className="admin-panel">
+        <div className="admin-section-heading">
+          <span>Landing Pages</span>
+          <small>Matched to public routes</small>
+        </div>
+        <div className="admin-landing-page-grid">
+          {landingPages.map((page) => (
+            <article className="admin-landing-page-card" key={page.key}>
+              <div>
+                <span>{page.surface}</span>
+                <strong>{page.label}</strong>
+                <small>{page.routeLabel}</small>
+              </div>
+              <p>{page.description}</p>
+              <nav aria-label={`${page.label} actions`}>
+                <a href={`/admin/landing?page=${page.key}&locale=ko`}>Edit content</a>
+                <a href={page.publicHref} target="_blank" rel="noreferrer">
+                  View public
+                </a>
+              </nav>
+            </article>
+          ))}
         </div>
       </section>
     </main>
