@@ -1,7 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { Locale } from "@/lib/i18n";
-import { getProductCatalogHref, getProductDetailHref } from "@/lib/products";
+import { getProductCatalogHref, getProductDetailHref, parseProductLensText } from "@/lib/products";
 import { getProductImageSlots, type ProductImageInput } from "@/lib/product-images";
 
 export const landingPageOptions = [
@@ -98,6 +98,7 @@ export type AdminProductInput = {
   modelCode: string;
   slug: string;
   size: string;
+  referenceColorName: string;
   featured: boolean;
   published: boolean;
   images: ProductImageInput[];
@@ -105,22 +106,11 @@ export type AdminProductInput = {
     Locale,
     {
       name: string;
-      colorway: string;
-      description: string;
-      sizeNote: string;
-      frameMaterial: string;
-      lensMaterial: string;
-      lensFeaturesText: string;
+      frame: string;
+      lens: string;
     }
   >;
 };
-
-export function parseLensFeatures(value: string) {
-  return value
-    .split(/\r?\n/)
-    .map((item) => item.trim())
-    .filter(Boolean);
-}
 
 export function hasSupabaseEnv() {
   return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
@@ -183,7 +173,7 @@ export async function getAdminProduct(id: string) {
   const { data, error } = await supabase
     .from("products")
     .select(
-      "id, slug, model_code, size, frame_material, lens_material, lens_features, published, featured, product_translations(locale, name, colorway, description, size_note, frame_material, lens_material, lens_features), product_images(role, assets(id, public_url, path, alt))"
+      "id, slug, model_code, size, reference_color_name, frame_material, lens_material, lens_features, published, featured, product_translations(locale, name, colorway, description, size_note, frame_material, lens_material, lens_features), product_images(role, assets(id, public_url, path, alt))"
     )
     .eq("id", id)
     .single();
@@ -202,6 +192,7 @@ export async function saveProduct(input: AdminProductInput) {
 
   const supabase = await createSupabaseServerClient();
   let productId = input.id;
+  const koreanLens = parseProductLensText(input.translations.ko.lens);
 
   if (input.slug) {
     const { data: productWithSlug, error: slugReadError } = await supabase
@@ -228,9 +219,10 @@ export async function saveProduct(input: AdminProductInput) {
     slug: input.slug,
     model_code: input.modelCode,
     size: input.size || null,
-    frame_material: input.translations.ko.frameMaterial || null,
-    lens_material: input.translations.ko.lensMaterial || null,
-    lens_features: parseLensFeatures(input.translations.ko.lensFeaturesText),
+    reference_color_name: input.referenceColorName || null,
+    frame_material: input.translations.ko.frame || null,
+    lens_material: koreanLens.material || null,
+    lens_features: koreanLens.features,
     featured: input.featured,
     published: input.published
   };
@@ -245,17 +237,18 @@ export async function saveProduct(input: AdminProductInput) {
     return { ok: false, message: productError.message };
   }
 
-  const translationRows = (Object.keys(input.translations) as Locale[]).map((locale) => ({
-    product_id: product.id,
-    locale,
-    name: input.translations[locale].name,
-    colorway: input.translations[locale].colorway || null,
-    description: input.translations[locale].description || null,
-    size_note: input.translations[locale].sizeNote || null,
-    frame_material: input.translations[locale].frameMaterial || null,
-    lens_material: input.translations[locale].lensMaterial || null,
-    lens_features: parseLensFeatures(input.translations[locale].lensFeaturesText)
-  }));
+  const translationRows = (Object.keys(input.translations) as Locale[]).map((locale) => {
+    const lens = parseProductLensText(input.translations[locale].lens);
+
+    return {
+      product_id: product.id,
+      locale,
+      name: input.translations[locale].name,
+      frame_material: input.translations[locale].frame || null,
+      lens_material: lens.material || null,
+      lens_features: lens.features
+    };
+  });
 
   const { error: translationError } = await supabase.from("product_translations").upsert(translationRows);
   if (translationError) {

@@ -13,12 +13,8 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 function readTranslation(formData: FormData, locale: Locale) {
   return {
     name: String(formData.get(`${locale}.name`) ?? ""),
-    colorway: String(formData.get(`${locale}.colorway`) ?? ""),
-    description: String(formData.get(`${locale}.description`) ?? ""),
-    sizeNote: String(formData.get(`${locale}.sizeNote`) ?? ""),
-    frameMaterial: String(formData.get(`${locale}.frameMaterial`) ?? ""),
-    lensMaterial: String(formData.get(`${locale}.lensMaterial`) ?? ""),
-    lensFeaturesText: String(formData.get(`${locale}.lensFeaturesText`) ?? "")
+    frame: String(formData.get(`${locale}.frame`) ?? ""),
+    lens: String(formData.get(`${locale}.lens`) ?? "")
   };
 }
 
@@ -110,6 +106,7 @@ export async function saveProductAction(formData: FormData) {
     modelCode,
     slug,
     size: String(formData.get("size") ?? ""),
+    referenceColorName: String(formData.get("referenceColorName") ?? ""),
     featured: formData.get("featured") === "on",
     published: formData.get("published") === "on",
     images,

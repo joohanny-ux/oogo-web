@@ -32,7 +32,7 @@ function fallbackProducts(locale: Locale): PublicProduct[] {
 }
 
 const productSelect =
-  "id, slug, model_code, size, frame_material, lens_material, lens_features, published, featured, sort_order, product_translations(locale, name, colorway, description, size_note, frame_material, lens_material, lens_features), product_images(role, assets(public_url, alt))";
+  "id, slug, model_code, size, reference_color_name, frame_material, lens_material, lens_features, published, featured, sort_order, product_translations(locale, name, colorway, description, size_note, frame_material, lens_material, lens_features), product_images(role, assets(public_url, alt))";
 
 export async function getFeaturedProducts(locale: Locale) {
   if (!hasSupabaseEnv()) {

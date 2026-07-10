@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import type { Locale } from "@/lib/i18n";
 import { LOCALE_LABELS, LOCALES } from "@/lib/i18n";
 import { getProductImageSlots } from "@/lib/product-images";
+import { formatProductLensText } from "@/lib/products";
 
 type TranslationValue = {
   name?: string;
@@ -21,6 +22,7 @@ type ProductFormProps = {
     slug?: string | null;
     model_code?: string | null;
     size?: string | null;
+    reference_color_name?: string | null;
     frame_material?: string | null;
     lens_material?: string | null;
     lens_features?: string[] | null;
@@ -82,7 +84,7 @@ export function ProductForm({ product, action, supabaseConfigured = true }: Prod
             </div>
             <div className="admin-form-grid">
               <label>
-                Model code <small>상품 상세 상단의 코드 라벨에 표시됩니다.</small>
+                OOGO No. <small>상품 상세 상단의 코드 라벨에 표시됩니다.</small>
                 <input name="modelCode" defaultValue={product?.model_code ?? ""} required />
               </label>
               <label>
@@ -90,8 +92,12 @@ export function ProductForm({ product, action, supabaseConfigured = true }: Prod
                 <input name="slug" defaultValue={product?.slug ?? ""} required />
               </label>
               <label>
-                Size <small>언어와 관계없이 동일한 규격값을 사용합니다.</small>
+                Spec <small>사이즈 규격을 63-17-145 형식으로 입력합니다.</small>
                 <input name="size" defaultValue={product?.size ?? ""} placeholder="63-17-145" />
+              </label>
+              <label>
+                Ref. Color Name <small>상품표의 공통 컬러 참조명을 입력합니다.</small>
+                <input name="referenceColorName" defaultValue={product?.reference_color_name ?? ""} />
               </label>
             </div>
           </section>
@@ -136,41 +142,21 @@ export function ProductForm({ product, action, supabaseConfigured = true }: Prod
                   >
                     <div className="admin-form-grid">
                       <label>
-                        Name <small>{locale === "ko" ? "한국어 상품명은 필수입니다." : "해당 언어의 상품명입니다."}</small>
+                        Product Name <small>{locale === "ko" ? "한국어 상품명은 필수입니다." : "해당 언어의 상품명입니다."}</small>
                         <input name={`${locale}.name`} defaultValue={translation.name ?? ""} required={locale === "ko"} />
                       </label>
-                      <label>
-                        Colorway <small>컬러 또는 톤 이름을 입력합니다.</small>
-                        <input name={`${locale}.colorway`} defaultValue={translation.colorway ?? ""} />
+                      <label className="admin-wide-field">
+                        Frame <small>해당 언어의 프레임 정보를 입력합니다.</small>
+                        <input name={`${locale}.frame`} defaultValue={translation.frame_material ?? ""} />
                       </label>
                       <label className="admin-wide-field">
-                        Description <small>상품 상세에 사용할 간단한 설명입니다.</small>
-                        <textarea name={`${locale}.description`} defaultValue={translation.description ?? ""} />
-                      </label>
-                    </div>
-
-                    <div className="admin-subsection-heading">
-                      <strong>Detail specs</strong>
-                      <span>공개 상품 상세의 Frame, Lens, Size 행에 표시됩니다.</span>
-                    </div>
-                    <div className="admin-form-grid">
-                      <label>
-                        Size note <small>공통 Size 아래에 표시할 언어별 보조 설명입니다.</small>
-                        <input name={`${locale}.sizeNote`} defaultValue={translation.size_note ?? ""} />
-                      </label>
-                      <label>
-                        Frame material <small>Frame 행의 주요 설명입니다.</small>
-                        <input name={`${locale}.frameMaterial`} defaultValue={translation.frame_material ?? ""} />
-                      </label>
-                      <label>
-                        Lens material <small>Lens 행의 주요 설명입니다.</small>
-                        <input name={`${locale}.lensMaterial`} defaultValue={translation.lens_material ?? ""} />
-                      </label>
-                      <label className="admin-wide-field">
-                        Lens features <small>한 줄에 한 항목씩 입력합니다.</small>
+                        Lens <small>표의 Lens 셀을 그대로 입력하거나, 항목을 | 또는 줄바꿈으로 구분합니다.</small>
                         <textarea
-                          name={`${locale}.lensFeaturesText`}
-                          defaultValue={(translation.lens_features ?? []).join("\n")}
+                          name={`${locale}.lens`}
+                          defaultValue={formatProductLensText(
+                            translation.lens_material,
+                            translation.lens_features ?? []
+                          )}
                         />
                       </label>
                     </div>

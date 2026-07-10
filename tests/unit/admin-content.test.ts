@@ -1,18 +1,17 @@
 import { describe, expect, it } from "vitest";
 import {
   getLandingEditorPages,
-  landingPageOptions,
-  parseLensFeatures
+  landingPageOptions
 } from "@/lib/admin-content";
 import { getProductImageSlots, parseProductImageInputs } from "@/lib/product-images";
+import { parseProductLensText } from "@/lib/products";
 
 describe("admin content helpers", () => {
-  it("parses lens features from separate lines", () => {
-    expect(parseLensFeatures("UV400\nAnti-impact\n\nLow haze <1.5%")).toEqual([
-      "UV400",
-      "Anti-impact",
-      "Low haze <1.5%"
-    ]);
+  it("parses the first lens line as material and the remaining lines as features", () => {
+    expect(parseProductLensText("PA12 Nylon\nUV400\nAnti-impact\n\nLow haze <1.5%")).toEqual({
+      material: "PA12 Nylon",
+      features: ["UV400", "Anti-impact", "Low haze <1.5%"]
+    });
   });
 
   it("exposes editable landing page options", () => {

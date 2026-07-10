@@ -5,7 +5,9 @@ import {
   getProductCatalogHref,
   getProductDetailHref,
   getProductDetailSections,
-  mapProductRow
+  formatProductLensText,
+  mapProductRow,
+  parseProductLensText
 } from "@/lib/products";
 
 describe("product mapping", () => {
@@ -120,6 +122,80 @@ describe("product mapping", () => {
       lensMaterial: "PA12 nylon lens",
       lensFeatures: ["UV400", "Anti-impact"]
     });
+  });
+
+  it("uses the shared reference color name on public product pages", () => {
+    const product = mapProductRow(
+      {
+        id: "p1",
+        slug: "og26001c2",
+        model_code: "OG26001C2",
+        size: "63-17-145",
+        reference_color_name: "Transparent tea frame / tea lens",
+        frame_material: null,
+        lens_material: null,
+        lens_features: [],
+        published: true,
+        featured: false,
+        sort_order: 1,
+        product_translations: [{ locale: "ko", name: "황혼의 산책", colorway: "Legacy brown", description: null }]
+      },
+      "ko"
+    );
+
+    expect(product.colorway).toBe("Transparent tea frame / tea lens");
+  });
+
+  it("splits one lens field into the public primary line and feature details", () => {
+    expect(
+      parseProductLensText(
+        "광학급 PA12 나일론 렌즈 | UV400 100% 자외선 차단 | 반사 방지 코팅 | 저헤이즈 <1.5%"
+      )
+    ).toEqual({
+      material: "광학급 PA12 나일론 렌즈",
+      features: ["UV400 100% 자외선 차단", "반사 방지 코팅", "저헤이즈 <1.5%"]
+    });
+  });
+
+  it("formats legacy lens data without duplicate material or nested separators", () => {
+    expect(
+      formatProductLensText("PA12 Nylon", [
+        "PA12 Nylon",
+        "UV400 protection | Anti-impact",
+        "Low haze <1.5%"
+      ])
+    ).toBe("PA12 Nylon | UV400 protection | Anti-impact | Low haze <1.5%");
+  });
+
+  it("normalizes legacy lens data while mapping a public product", () => {
+    const product = mapProductRow(
+      {
+        id: "p1",
+        slug: "og26001c3",
+        model_code: "OG26001C3",
+        size: "63-17-145",
+        frame_material: "PC Frame",
+        lens_material: "PA12 Nylon",
+        lens_features: ["PA12 Nylon", "UV400 | Anti-impact"],
+        published: true,
+        featured: false,
+        sort_order: 1,
+        product_translations: [
+          {
+            locale: "ko",
+            name: "안개 속 산책",
+            colorway: "Gray",
+            description: null,
+            lens_material: "PA12 Nylon",
+            lens_features: ["PA12 Nylon", "UV400 | Anti-impact"]
+          }
+        ]
+      },
+      "ko"
+    );
+
+    expect(product.lensMaterial).toBe("PA12 Nylon");
+    expect(product.lensFeatures).toEqual(["UV400", "Anti-impact"]);
   });
 
   it("falls back to shared detail specifications when localized values are empty", () => {

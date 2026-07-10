@@ -15,6 +15,10 @@ const localizedProductSpecsMigration = readFileSync(
   join(process.cwd(), "supabase/migrations/0007_localized_product_specs.sql"),
   "utf8"
 );
+const productReferenceColorMigration = readFileSync(
+  join(process.cwd(), "supabase/migrations/20260710114036_add_product_reference_color.sql"),
+  "utf8"
+);
 const resetScript = readFileSync(join(process.cwd(), "supabase/reset-oogo-content.sql"), "utf8");
 const verifyScript = readFileSync(join(process.cwd(), "supabase/verify-oogo-setup.sql"), "utf8");
 
@@ -58,6 +62,12 @@ describe("manageable content schema", () => {
     expect(localizedProductSpecsMigration).toContain("add column if not exists lens_features text[]");
     expect(localizedProductSpecsMigration).toContain("update public.product_translations as translations");
     expect(localizedProductSpecsMigration).toContain("from public.products as products");
+  });
+
+  it("adds a shared reference color and preserves the existing Korean color value", () => {
+    expect(productReferenceColorMigration).toContain("add column if not exists reference_color_name text");
+    expect(productReferenceColorMigration).toContain("from public.product_translations as translations");
+    expect(productReferenceColorMigration).toContain("translations.locale = 'ko'");
   });
 
   it("resets only OOGO-owned public content and storage assets", () => {

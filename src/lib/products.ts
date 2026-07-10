@@ -15,6 +15,7 @@ export type ProductRow = {
   slug: string;
   model_code: string;
   size: string | null;
+  reference_color_name?: string | null;
   frame_material: string | null;
   lens_material: string | null;
   lens_features: string[];
@@ -123,6 +124,13 @@ export function mapProductRow(row: ProductRow, locale: Locale): PublicProduct {
     row.product_translations.find((item) => item.locale === locale) ??
     row.product_translations.find((item) => item.locale === "ko") ??
     row.product_translations[0];
+  const selectedLensMaterial = translation?.lens_material || row.lens_material;
+  const selectedLensFeatures = translation?.lens_features?.length
+    ? translation.lens_features
+    : row.lens_features;
+  const normalizedLens = parseProductLensText(
+    formatProductLensText(selectedLensMaterial, selectedLensFeatures)
+  );
   const translations = row.product_translations.reduce<Partial<Record<Locale, PublicProductTranslation>>>((items, item) => {
     if (item.locale === "ko" || item.locale === "en" || item.locale === "zh") {
       items[item.locale] = {
@@ -144,7 +152,7 @@ export function mapProductRow(row: ProductRow, locale: Locale): PublicProduct {
     slug: row.slug,
     modelCode: row.model_code,
     name: translation?.name ?? row.model_code,
-    colorway: translation?.colorway ?? null,
+    colorway: row.reference_color_name || translation?.colorway || null,
     description: translation?.description ?? null,
     translations,
     size: row.size,
@@ -154,18 +162,39 @@ export function mapProductRow(row: ProductRow, locale: Locale): PublicProduct {
       translation?.frame_material && row.frame_material && translation.frame_material !== row.frame_material
         ? row.frame_material
         : null,
-    lensMaterial: translation?.lens_material || row.lens_material,
+    lensMaterial: normalizedLens.material || null,
     lensMaterialNote:
       translation?.lens_material && row.lens_material && translation.lens_material !== row.lens_material
         ? row.lens_material
         : null,
-    lensFeatures: translation?.lens_features?.length ? translation.lens_features : row.lens_features,
+    lensFeatures: normalizedLens.features,
     sharedFrameMaterial: row.frame_material,
     sharedLensMaterial: row.lens_material,
     featured: row.featured,
     sortOrder: row.sort_order,
     images: mapProductImages(row.product_images)
   };
+}
+
+export function parseProductLensText(value: string) {
+  const parts = value
+    .split(/\s*(?:\||\r?\n)\s*/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  return {
+    material: parts[0] ?? "",
+    features: parts.slice(1)
+  };
+}
+
+export function formatProductLensText(material?: string | null, features: string[] = []) {
+  const parts = [material, ...features]
+    .flatMap((item) => (item ? item.split(/\s*(?:\||\r?\n)\s*/) : []))
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  return [...new Set(parts)].join(" | ");
 }
 
 export function getProductBadges(product: { featured: boolean; sortOrder: number }) {

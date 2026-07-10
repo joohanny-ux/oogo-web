@@ -8,13 +8,19 @@ describe("ProductForm", () => {
     const html = renderToStaticMarkup(<ProductForm action={() => undefined} />);
 
     expect(html).toContain("Shared product");
+    expect(html).toContain("OOGO No.");
+    expect(html).toContain(">Spec ");
     expect(html).toContain('name="size"');
+    expect(html).toContain('name="referenceColorName"');
     expect(html).toContain('aria-label="Product content language"');
     expect(html).toContain('aria-pressed="true"');
-    expect(html).toContain('name="ko.sizeNote"');
-    expect(html).toContain('name="ko.frameMaterial"');
-    expect(html).toContain('name="en.lensMaterial"');
-    expect(html).toContain('name="zh.lensFeaturesText"');
+    expect(html).toContain('name="ko.frame"');
+    expect(html).toContain('name="en.lens"');
+    expect(html).toContain('name="zh.lens"');
+    expect(html).not.toContain('name="ko.colorway"');
+    expect(html).not.toContain('name="ko.description"');
+    expect(html).not.toContain('name="ko.sizeNote"');
+    expect(html).not.toContain('name="ko.lensFeaturesText"');
     expect(html).not.toContain('name="frameMaterial"');
     expect(html.indexOf("Front balance")).toBeLessThan(html.indexOf("Angle view"));
     expect(html.indexOf("Angle view")).toBeLessThan(html.indexOf("Side profile"));
