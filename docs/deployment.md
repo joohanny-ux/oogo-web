@@ -4,12 +4,17 @@
 
 ## 1. Supabase
 
-1. 새 Supabase 프로젝트를 만듭니다.
+1. OOGO Supabase 프로젝트를 엽니다.
 2. Project Settings > API에서 Project URL과 anon public key를 복사합니다.
 3. SQL editor에서 아래 순서로 실행합니다.
 
 ```text
 supabase/migrations/0001_initial_schema.sql
+supabase/migrations/0002_manageable_content.sql
+supabase/migrations/0003_unique_product_image_roles.sql
+supabase/migrations/0004_storage_upload_policies.sql
+supabase/migrations/0005_add_press_inquiry_type.sql
+supabase/migrations/0006_create_oogo_assets_bucket.sql
 supabase/seed/seed-oogo-content.sql
 ```
 
@@ -46,9 +51,11 @@ SUPABASE_SERVICE_ROLE_KEY=Supabase service role key
 1. `https://www.oogolabs.com`에서 공개 홈페이지를 확인합니다.
 2. `https://www.oogolabs.com/collection`에서 상품 카탈로그를 확인합니다.
 3. `https://www.oogolabs.com/admin/login`에서 로그인합니다.
-4. `/admin/products`에서 상품 추가/수정 후 공개 페이지 반영을 확인합니다.
-5. `/admin/landing`에서 홈 섹션 텍스트를 수정하고 저장합니다.
-6. `/admin/inquiries`에서 문의가 들어오는지 확인합니다.
+4. `/admin/products`에서 상품 추가/수정 후 `Public on site`를 체크하고 저장합니다.
+5. `/collection`과 `/products/[slug]`에서 상품 반영을 확인합니다.
+6. `/admin/landing`에서 홈 섹션 텍스트를 수정하고 초안 저장 후 게시합니다.
+7. 해당 public route에서 랜딩 콘텐츠 반영을 확인합니다.
+8. `/admin/inquiries`에서 문의가 들어오는지 확인합니다.
 
 ## 5. Content Operations
 
@@ -58,7 +65,7 @@ SUPABASE_SERVICE_ROLE_KEY=Supabase service role key
 - 회사 연락처/푸터 문구 변경: `/admin/company`
 - 브랜드 이미지 확인: `/admin/files`
 
-현재 파일 업로드 UI는 자산 목록 중심의 MVP입니다. Supabase Storage 업로드와 상품 이미지 연결은 다음 운영 단계에서 붙이면 됩니다.
+파일 업로드와 상품/랜딩 이미지 연결은 Supabase Storage bucket `oogo-assets`와 storage policy 적용 후 사용할 수 있습니다.
 
 ## 6. Pre-Release Checks
 
