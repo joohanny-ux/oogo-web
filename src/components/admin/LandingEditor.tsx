@@ -1,3 +1,4 @@
+import React from "react";
 import { LOCALE_LABELS, LOCALES, type Locale } from "@/lib/i18n";
 import { getLandingEditorPages, landingPageOptions } from "@/lib/admin-content";
 import { getProductCatalogHref } from "@/lib/products";
@@ -24,6 +25,7 @@ type LandingEditorProps = {
   assets?: AssetOption[];
   saveAction: (formData: FormData) => void | Promise<void>;
   publishAction: (formData: FormData) => void | Promise<void>;
+  supabaseConfigured?: boolean;
 };
 
 type FieldConfig = {
@@ -310,7 +312,17 @@ function Field({ field, content }: { field: FieldConfig; content: Record<string,
   );
 }
 
-function MediaPanel({ content, block, assets }: { content: Record<string, unknown>; block: BlockConfig; assets: AssetOption[] }) {
+function MediaPanel({
+  content,
+  block,
+  assets,
+  canPersist
+}: {
+  content: Record<string, unknown>;
+  block: BlockConfig;
+  assets: AssetOption[];
+  canPersist: boolean;
+}) {
   const mediaType = selectValue(content, "mediaType", "image");
   const currentMediaUrl = mediaUrl(content);
 
@@ -339,12 +351,12 @@ function MediaPanel({ content, block, assets }: { content: Record<string, unknow
         <a href="/admin/files" target="_blank" rel="noreferrer">
           Files에서 선택
         </a>
-        <small>Files에서 URL을 복사해 붙여넣거나 바로 업로드하세요.</small>
+        <small>{canPersist ? "Files에서 URL을 복사해 붙여넣거나 바로 업로드하세요." : "Supabase 연결 후 파일 선택과 업로드를 사용할 수 있습니다."}</small>
       </div>
       <label className="admin-upload-control">
         <span>파일 업로드</span>
         <em>{block.mediaGuidance ?? "JPG/PNG/WebP image max 8MB. MP4/WebM video max 25MB."}</em>
-        <input name="mediaFile" type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm" />
+        <input name="mediaFile" type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm" disabled={!canPersist} />
       </label>
       {currentMediaUrl ? (
         mediaType === "video" ? (
@@ -374,7 +386,8 @@ function BlockEditor({
   assets,
   saveAction,
   publishAction,
-  initiallyOpen
+  initiallyOpen,
+  canPersist
 }: {
   blockConfig: BlockConfig;
   row: LandingBlockRow | null;
@@ -384,6 +397,7 @@ function BlockEditor({
   saveAction: LandingEditorProps["saveAction"];
   publishAction: LandingEditorProps["publishAction"];
   initiallyOpen: boolean;
+  canPersist: boolean;
 }) {
   const content = row?.draft_content ?? {};
   const currentMediaUrl = mediaUrl(content);
@@ -426,18 +440,20 @@ function BlockEditor({
                 ))}
               </div>
             </div>
-            {blockConfig.media ? <MediaPanel content={content} block={blockConfig} assets={assets} /> : null}
+            {blockConfig.media ? <MediaPanel content={content} block={blockConfig} assets={assets} canPersist={canPersist} /> : null}
           </div>
           <div className="landing-form-actions">
-            <button type="submit">초안 저장</button>
+            <button type="submit" disabled={!canPersist}>
+              {canPersist ? "초안 저장" : "Supabase 연결 후 저장 가능"}
+            </button>
           </div>
         </form>
 
         {row?.id ? (
           <form className="landing-publish-form" action={publishAction}>
             <input type="hidden" name="id" value={row.id} />
-            <button className="admin-secondary-button" type="submit">
-              게시하기
+            <button className="admin-secondary-button" type="submit" disabled={!canPersist}>
+              {canPersist ? "게시하기" : "Supabase 연결 필요"}
             </button>
           </form>
         ) : null}
@@ -446,8 +462,17 @@ function BlockEditor({
   );
 }
 
-export function LandingEditor({ pageKey, locale, blocks, assets = [], saveAction, publishAction }: LandingEditorProps) {
+export function LandingEditor({
+  pageKey,
+  locale,
+  blocks,
+  assets = [],
+  saveAction,
+  publishAction,
+  supabaseConfigured = true
+}: LandingEditorProps) {
   const editorPages = getLandingEditorPages();
+  const canPersist = supabaseConfigured;
   const pageBlocks = pageBlockMap[pageKey] ?? [
     {
       key: "main",
@@ -461,6 +486,12 @@ export function LandingEditor({ pageKey, locale, blocks, assets = [], saveAction
 
   return (
     <div className="landing-editor">
+      {!canPersist ? (
+        <div className="admin-config-warning" role="status">
+          <strong>Supabase connection required</strong>
+          <p>랜딩 페이지 초안 저장, 게시, 미디어 업로드는 Supabase 연결 후 사용할 수 있습니다.</p>
+        </div>
+      ) : null}
       <div className="site-editor-toolbar">
         <nav className="site-editor-tabs" aria-label="Landing page editor sections">
           {editorPages.map((page) => (
@@ -508,6 +539,7 @@ export function LandingEditor({ pageKey, locale, blocks, assets = [], saveAction
             saveAction={saveAction}
             publishAction={publishAction}
             initiallyOpen={index === 0}
+            canPersist={canPersist}
           />
         ))}
       </div>

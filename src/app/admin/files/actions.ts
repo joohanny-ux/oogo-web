@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { hasSupabaseEnv } from "@/lib/admin-content";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export async function deleteUnusedAssetAction(formData: FormData) {
@@ -8,6 +9,10 @@ export async function deleteUnusedAssetAction(formData: FormData) {
 
   if (!id) {
     throw new Error("Asset id is required.");
+  }
+
+  if (!hasSupabaseEnv()) {
+    throw new Error("Supabase environment variables are not configured. Connect Supabase before deleting files.");
   }
 
   const supabase = await createSupabaseServerClient();

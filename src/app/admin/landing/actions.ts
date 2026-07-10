@@ -1,7 +1,7 @@
 "use server";
 
 import { normalizeLocale } from "@/lib/i18n";
-import { publishLandingBlock, saveLandingBlockDraft } from "@/lib/admin-content";
+import { hasSupabaseEnv, publishLandingBlock, saveLandingBlockDraft } from "@/lib/admin-content";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 function isUploadFile(value: FormDataEntryValue | null): value is File {
@@ -17,6 +17,13 @@ function safePathPart(value: string) {
 }
 
 async function uploadLandingMediaFile(file: File, pageKey: string, blockKey: string) {
+  if (!hasSupabaseEnv()) {
+    return {
+      ok: false as const,
+      message: "Supabase environment variables are not configured. Connect Supabase before uploading landing media."
+    };
+  }
+
   const isImage = ["image/jpeg", "image/png", "image/webp"].includes(file.type);
   const isVideo = ["video/mp4", "video/webm"].includes(file.type);
   const maxSize = isVideo ? 25 * 1024 * 1024 : 8 * 1024 * 1024;

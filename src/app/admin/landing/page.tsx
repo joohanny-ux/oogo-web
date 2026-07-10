@@ -1,5 +1,5 @@
 import { LandingEditor } from "@/components/admin/LandingEditor";
-import { getLandingBlocksForPage, landingPageOptions } from "@/lib/admin-content";
+import { getLandingBlocksForPage, hasSupabaseEnv, landingPageOptions } from "@/lib/admin-content";
 import { listAssets } from "@/lib/assets";
 import { normalizeLocale } from "@/lib/i18n";
 import { publishLandingBlockAction, saveLandingBlockAction } from "@/app/admin/landing/actions";
@@ -27,6 +27,7 @@ export default async function AdminLandingPage({
         assets={assets}
         saveAction={saveLandingBlockAction}
         publishAction={publishLandingBlockAction}
+        supabaseConfigured={hasSupabaseEnv()}
       />
     </main>
   );

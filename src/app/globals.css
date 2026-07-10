@@ -2222,7 +2222,8 @@ h2 {
 }
 
 .admin-form button:disabled,
-.admin-form input:disabled {
+.admin-form input:disabled,
+.admin-form select:disabled {
   cursor: not-allowed;
   opacity: 0.55;
 }
