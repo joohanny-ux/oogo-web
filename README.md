@@ -64,6 +64,21 @@ values ('AUTH_USER_ID', 'admin@example.com', 'admin');
 
 `admin`과 `editor`는 상품, 랜딩 콘텐츠, 회사 정보, 문의 상태를 관리할 수 있습니다. `viewer`는 추후 읽기 전용 운영 계정으로 확장할 수 있습니다.
 
+### Existing Project Reset
+
+기존 홈페이지와 연결되어 있던 Supabase 프로젝트를 깨끗하게 다시 시작하려면 전체 프로젝트 reset 대신 OOGO CMS 영역만 정리합니다. SQL editor에서 아래 순서로 실행합니다.
+
+1. `supabase/reset-oogo-content.sql`
+2. `supabase/migrations/0001_initial_schema.sql`
+3. `supabase/migrations/0002_manageable_content.sql`
+4. `supabase/migrations/0003_unique_product_image_roles.sql`
+5. `supabase/migrations/0004_storage_upload_policies.sql`
+6. `supabase/migrations/0005_add_press_inquiry_type.sql`
+7. `supabase/migrations/0006_create_oogo_assets_bucket.sql`
+8. `supabase/seed/seed-oogo-content.sql`
+
+`reset-oogo-content.sql`은 `auth.users`를 삭제하지 않습니다. 다만 `public.profiles`는 재생성되므로, reset 후 관리자 auth user id를 다시 `profiles`에 추가해야 합니다.
+
 ## Admin to Public Test Point
 
 아래 준비가 끝난 뒤 dashboard에서 작업한 내용이 public page에 반영되는지 테스트합니다.

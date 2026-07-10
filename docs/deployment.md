@@ -9,6 +9,7 @@
 3. SQL editor에서 아래 순서로 실행합니다.
 
 ```text
+supabase/reset-oogo-content.sql   # 기존 홈페이지 DB가 섞여 있을 때만 실행
 supabase/migrations/0001_initial_schema.sql
 supabase/migrations/0002_manageable_content.sql
 supabase/migrations/0003_unique_product_image_roles.sql
@@ -18,7 +19,9 @@ supabase/migrations/0006_create_oogo_assets_bucket.sql
 supabase/seed/seed-oogo-content.sql
 ```
 
-4. Authentication > Users에서 관리자 계정을 만듭니다.
+`reset-oogo-content.sql`은 OOGO CMS public tables, helper functions, `oogo-assets` bucket만 정리하고 `auth.users`는 보존합니다. 기존 프로젝트를 재사용하지 않는 신규 프로젝트라면 reset SQL은 건너뜁니다.
+
+4. Authentication > Users에서 관리자 계정을 만들거나 기존 관리자 계정을 확인합니다.
 5. 생성된 User UID를 사용해 프로필을 추가합니다.
 
 ```sql
@@ -51,11 +54,12 @@ SUPABASE_SERVICE_ROLE_KEY=Supabase service role key
 1. `https://www.oogolabs.com`에서 공개 홈페이지를 확인합니다.
 2. `https://www.oogolabs.com/collection`에서 상품 카탈로그를 확인합니다.
 3. `https://www.oogolabs.com/admin/login`에서 로그인합니다.
-4. `/admin/products`에서 상품 추가/수정 후 `Public on site`를 체크하고 저장합니다.
-5. `/collection`과 `/products/[slug]`에서 상품 반영을 확인합니다.
-6. `/admin/landing`에서 홈 섹션 텍스트를 수정하고 초안 저장 후 게시합니다.
-7. 해당 public route에서 랜딩 콘텐츠 반영을 확인합니다.
-8. `/admin/inquiries`에서 문의가 들어오는지 확인합니다.
+4. `/admin`의 Setup Status에서 Supabase env, migrations, storage, admin auth 준비 상태를 확인합니다.
+5. `/admin/products`에서 테스트 상품을 추가하거나 seed 상품을 수정한 뒤 `Public on site`를 체크하고 저장합니다.
+6. `/collection`과 `/products/[slug]`에서 상품 반영을 확인합니다.
+7. `/admin/landing`에서 Home 또는 Collection 섹션 텍스트를 수정하고 초안 저장 후 게시합니다.
+8. 해당 public route에서 랜딩 콘텐츠 반영을 확인합니다.
+9. `/admin/inquiries`에서 문의가 들어오는지 확인합니다.
 
 ## 5. Content Operations
 
