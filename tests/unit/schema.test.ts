@@ -12,6 +12,7 @@ const storageBucketMigration = readFileSync(
   "utf8"
 );
 const resetScript = readFileSync(join(process.cwd(), "supabase/reset-oogo-content.sql"), "utf8");
+const verifyScript = readFileSync(join(process.cwd(), "supabase/verify-oogo-setup.sql"), "utf8");
 
 describe("manageable content schema", () => {
   it("stores public footer social links", () => {
@@ -53,5 +54,15 @@ describe("manageable content schema", () => {
     expect(resetScript).toContain("delete from storage.objects where bucket_id = 'oogo-assets'");
     expect(resetScript).not.toContain("drop schema auth");
     expect(resetScript).not.toContain("delete from auth.users");
+  });
+
+  it("verifies Supabase setup without mutating data", () => {
+    expect(verifyScript).toContain("information_schema.tables");
+    expect(verifyScript).toContain("bucket:oogo-assets");
+    expect(verifyScript).toContain("admin_profiles");
+    expect(verifyScript).toContain("published_landing_blocks");
+    expect(verifyScript).not.toContain("insert into");
+    expect(verifyScript).not.toContain("drop table");
+    expect(verifyScript).not.toContain("delete from");
   });
 });

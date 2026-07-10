@@ -79,6 +79,8 @@ values ('AUTH_USER_ID', 'admin@example.com', 'admin');
 
 `reset-oogo-content.sql`은 `auth.users`를 삭제하지 않습니다. 다만 `public.profiles`는 재생성되므로, reset 후 관리자 auth user id를 다시 `profiles`에 추가해야 합니다.
 
+reset, migrations, seed, profile 추가가 끝나면 SQL editor에서 `supabase/verify-oogo-setup.sql`을 실행합니다. 모든 table check가 `ok`이고 `bucket:oogo-assets`가 `ok`, `admin_profiles`가 `1` 이상이면 admin에서 public page 반영 테스트를 시작할 수 있습니다.
+
 ## Admin to Public Test Point
 
 아래 준비가 끝난 뒤 dashboard에서 작업한 내용이 public page에 반영되는지 테스트합니다.

@@ -17,9 +17,11 @@ supabase/migrations/0004_storage_upload_policies.sql
 supabase/migrations/0005_add_press_inquiry_type.sql
 supabase/migrations/0006_create_oogo_assets_bucket.sql
 supabase/seed/seed-oogo-content.sql
+supabase/verify-oogo-setup.sql     # read-only 확인용
 ```
 
 `reset-oogo-content.sql`은 OOGO CMS public tables, helper functions, `oogo-assets` bucket만 정리하고 `auth.users`는 보존합니다. 기존 프로젝트를 재사용하지 않는 신규 프로젝트라면 reset SQL은 건너뜁니다.
+`verify-oogo-setup.sql`은 데이터를 변경하지 않는 확인용 쿼리입니다. 모든 table check와 `bucket:oogo-assets`가 `ok`이고 `admin_profiles`가 1 이상이면 관리자 테스트를 진행합니다.
 
 4. Authentication > Users에서 관리자 계정을 만들거나 기존 관리자 계정을 확인합니다.
 5. 생성된 User UID를 사용해 프로필을 추가합니다.
