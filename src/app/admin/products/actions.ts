@@ -3,20 +3,22 @@
 import { redirect } from "next/navigation";
 import { LOCALES, type Locale } from "@/lib/i18n";
 import {
-  getProductImageSlots,
   hasSupabaseEnv,
-  parseProductImageInputs,
   saveProduct,
-  type AdminProductInput,
-  type ProductImageRole
+  type AdminProductInput
 } from "@/lib/admin-content";
+import { getProductImageSlots, parseProductImageInputs, type ProductImageRole } from "@/lib/product-images";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 function readTranslation(formData: FormData, locale: Locale) {
   return {
     name: String(formData.get(`${locale}.name`) ?? ""),
     colorway: String(formData.get(`${locale}.colorway`) ?? ""),
-    description: String(formData.get(`${locale}.description`) ?? "")
+    description: String(formData.get(`${locale}.description`) ?? ""),
+    sizeNote: String(formData.get(`${locale}.sizeNote`) ?? ""),
+    frameMaterial: String(formData.get(`${locale}.frameMaterial`) ?? ""),
+    lensMaterial: String(formData.get(`${locale}.lensMaterial`) ?? ""),
+    lensFeaturesText: String(formData.get(`${locale}.lensFeaturesText`) ?? "")
   };
 }
 
@@ -108,9 +110,6 @@ export async function saveProductAction(formData: FormData) {
     modelCode,
     slug,
     size: String(formData.get("size") ?? ""),
-    frameMaterial: String(formData.get("frameMaterial") ?? ""),
-    lensMaterial: String(formData.get("lensMaterial") ?? ""),
-    lensFeaturesText: String(formData.get("lensFeaturesText") ?? ""),
     featured: formData.get("featured") === "on",
     published: formData.get("published") === "on",
     images,

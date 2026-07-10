@@ -11,6 +11,10 @@ const storageBucketMigration = readFileSync(
   join(process.cwd(), "supabase/migrations/0006_create_oogo_assets_bucket.sql"),
   "utf8"
 );
+const localizedProductSpecsMigration = readFileSync(
+  join(process.cwd(), "supabase/migrations/0007_localized_product_specs.sql"),
+  "utf8"
+);
 const resetScript = readFileSync(join(process.cwd(), "supabase/reset-oogo-content.sql"), "utf8");
 const verifyScript = readFileSync(join(process.cwd(), "supabase/verify-oogo-setup.sql"), "utf8");
 
@@ -45,6 +49,15 @@ describe("manageable content schema", () => {
     expect(storageBucketMigration).toContain("'image/webp'");
     expect(storageBucketMigration).toContain("'video/webm'");
     expect(storageBucketMigration).toContain("on conflict (id) do update");
+  });
+
+  it("adds localized product specifications and backfills existing translations", () => {
+    expect(localizedProductSpecsMigration).toContain("add column if not exists size_note text");
+    expect(localizedProductSpecsMigration).toContain("add column if not exists frame_material text");
+    expect(localizedProductSpecsMigration).toContain("add column if not exists lens_material text");
+    expect(localizedProductSpecsMigration).toContain("add column if not exists lens_features text[]");
+    expect(localizedProductSpecsMigration).toContain("update public.product_translations as translations");
+    expect(localizedProductSpecsMigration).toContain("from public.products as products");
   });
 
   it("resets only OOGO-owned public content and storage assets", () => {

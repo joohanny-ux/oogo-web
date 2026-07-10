@@ -1,5 +1,5 @@
 import type { Locale } from "@/lib/i18n";
-import { mapProductRow, type ProductImages, type ProductRow } from "@/lib/products";
+import { mapProductRow, type ProductImages, type ProductRow, type PublicProduct } from "@/lib/products";
 import { initialProducts } from "@/lib/seed-data";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -7,7 +7,7 @@ function hasSupabaseEnv() {
   return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 }
 
-function fallbackProducts(locale: Locale) {
+function fallbackProducts(locale: Locale): PublicProduct[] {
   return initialProducts.map((product, index) => ({
     id: product.modelCode,
     slug: product.slug,
@@ -17,9 +17,14 @@ function fallbackProducts(locale: Locale) {
     description: product.translations[locale]?.description ?? product.translations.ko.description,
     translations: product.translations,
     size: product.size,
+    sizeNote: null,
     frameMaterial: product.frameMaterial,
+    frameMaterialNote: null,
     lensMaterial: product.lensMaterial,
+    lensMaterialNote: null,
     lensFeatures: product.lensFeatures,
+    sharedFrameMaterial: product.frameMaterial,
+    sharedLensMaterial: product.lensMaterial,
     featured: index < 3,
     sortOrder: index,
     images: {} as ProductImages
@@ -27,7 +32,7 @@ function fallbackProducts(locale: Locale) {
 }
 
 const productSelect =
-  "id, slug, model_code, size, frame_material, lens_material, lens_features, published, featured, sort_order, product_translations(locale, name, colorway, description), product_images(role, assets(public_url, alt))";
+  "id, slug, model_code, size, frame_material, lens_material, lens_features, published, featured, sort_order, product_translations(locale, name, colorway, description, size_note, frame_material, lens_material, lens_features), product_images(role, assets(public_url, alt))";
 
 export async function getFeaturedProducts(locale: Locale) {
   if (!hasSupabaseEnv()) {

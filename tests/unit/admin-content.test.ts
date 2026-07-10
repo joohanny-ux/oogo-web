@@ -1,11 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   getLandingEditorPages,
-  getProductImageSlots,
   landingPageOptions,
-  parseLensFeatures,
-  parseProductImageInputs
+  parseLensFeatures
 } from "@/lib/admin-content";
+import { getProductImageSlots, parseProductImageInputs } from "@/lib/product-images";
 
 describe("admin content helpers", () => {
   it("parses lens features from separate lines", () => {

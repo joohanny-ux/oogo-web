@@ -19,7 +19,7 @@ export default async function AdminLandingPage({
   return (
     <main className="admin-page">
       <h1>Landing Page</h1>
-      <p className="admin-page-note">Pick a page, edit blocks, save drafts, and publish visible content.</p>
+      <p className="admin-page-note">페이지와 언어를 선택한 뒤 콘텐츠를 초안 저장하고 공개합니다.</p>
       <LandingEditor
         pageKey={pageKey}
         locale={locale}

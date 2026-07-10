@@ -9,7 +9,7 @@ export default async function AdminInquiriesPage() {
   return (
     <main className="admin-page">
       <h1>Inquiries</h1>
-      <p className="admin-page-note">Review general, buyer, retail, collaboration, and other inquiries.</p>
+      <p className="admin-page-note">구매, 리테일, 협업 및 일반 문의를 확인하고 상태를 관리합니다.</p>
       <div className="admin-table">
         <div className="admin-table-row inquiry-row admin-table-head">
           <span>Sender</span>
@@ -19,7 +19,7 @@ export default async function AdminInquiriesPage() {
           <span>Message</span>
         </div>
         {inquiries.length === 0 ? (
-          <p className="admin-empty">No inquiries yet.</p>
+          <p className="admin-empty">아직 접수된 문의가 없습니다.</p>
         ) : (
           inquiries.map((inquiry) => (
             <div className="admin-table-row inquiry-row" key={inquiry.id}>

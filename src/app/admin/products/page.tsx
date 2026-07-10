@@ -33,7 +33,7 @@ export default async function AdminProductsPage() {
       <div className="admin-page-heading">
         <div>
           <h1>Product Library</h1>
-          <p>{products.length} in this view</p>
+          <p>현재 조건에 맞는 상품 {products.length}개</p>
         </div>
         <a href="/admin/products/new">Add product</a>
       </div>

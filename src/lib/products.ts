@@ -26,11 +26,55 @@ export type ProductRow = {
     name: string;
     colorway: string | null;
     description: string | null;
+    size_note?: string | null;
+    frame_material?: string | null;
+    lens_material?: string | null;
+    lens_features?: string[];
   }>;
   product_images?: ProductImageRow[];
 };
 
 export type ProductImages = Partial<Record<"angle" | "wearing" | "front" | "side", string>>;
+
+export type PublicProductTranslation = {
+  name: string;
+  colorway: string | null;
+  description: string | null;
+  sizeNote?: string | null;
+  frameMaterial?: string | null;
+  lensMaterial?: string | null;
+  lensFeatures?: string[];
+};
+
+export type PublicProduct = {
+  id: string;
+  slug: string;
+  modelCode: string;
+  name: string;
+  colorway: string | null;
+  description: string | null;
+  translations: Partial<Record<Locale, PublicProductTranslation>>;
+  size: string | null;
+  sizeNote: string | null;
+  frameMaterial: string | null;
+  frameMaterialNote: string | null;
+  lensMaterial: string | null;
+  lensMaterialNote: string | null;
+  lensFeatures: string[];
+  sharedFrameMaterial: string | null;
+  sharedLensMaterial: string | null;
+  featured: boolean;
+  sortOrder: number;
+  images: ProductImages;
+};
+
+export type ProductDetailSection = {
+  title: string;
+  eyebrow: string;
+  primary: string;
+  secondary?: string;
+  detail?: string;
+};
 
 export const PRODUCT_CATALOG_PATH = "/collection";
 export const PRODUCT_DETAIL_PATH = "/products";
@@ -74,19 +118,21 @@ export function mapProductImages(productImages: ProductRow["product_images"] = [
   }, {});
 }
 
-export function mapProductRow(row: ProductRow, locale: Locale) {
+export function mapProductRow(row: ProductRow, locale: Locale): PublicProduct {
   const translation =
     row.product_translations.find((item) => item.locale === locale) ??
     row.product_translations.find((item) => item.locale === "ko") ??
     row.product_translations[0];
-  const translations = row.product_translations.reduce<
-    Partial<Record<Locale, { name: string; colorway: string | null; description: string | null }>>
-  >((items, item) => {
+  const translations = row.product_translations.reduce<Partial<Record<Locale, PublicProductTranslation>>>((items, item) => {
     if (item.locale === "ko" || item.locale === "en" || item.locale === "zh") {
       items[item.locale] = {
         name: item.name,
         colorway: item.colorway,
-        description: item.description
+        description: item.description,
+        sizeNote: item.size_note,
+        frameMaterial: item.frame_material,
+        lensMaterial: item.lens_material,
+        lensFeatures: item.lens_features ?? []
       };
     }
 
@@ -102,9 +148,20 @@ export function mapProductRow(row: ProductRow, locale: Locale) {
     description: translation?.description ?? null,
     translations,
     size: row.size,
-    frameMaterial: row.frame_material,
-    lensMaterial: row.lens_material,
-    lensFeatures: row.lens_features,
+    sizeNote: translation?.size_note ?? null,
+    frameMaterial: translation?.frame_material || row.frame_material,
+    frameMaterialNote:
+      translation?.frame_material && row.frame_material && translation.frame_material !== row.frame_material
+        ? row.frame_material
+        : null,
+    lensMaterial: translation?.lens_material || row.lens_material,
+    lensMaterialNote:
+      translation?.lens_material && row.lens_material && translation.lens_material !== row.lens_material
+        ? row.lens_material
+        : null,
+    lensFeatures: translation?.lens_features?.length ? translation.lens_features : row.lens_features,
+    sharedFrameMaterial: row.frame_material,
+    sharedLensMaterial: row.lens_material,
     featured: row.featured,
     sortOrder: row.sort_order,
     images: mapProductImages(row.product_images)
@@ -162,10 +219,13 @@ export function filterProductsByCategory<T extends { featured: boolean; sortOrde
 
 export function getProductDetailSections(product: {
   frameMaterial: string | null;
+  frameMaterialNote?: string | null;
   lensMaterial: string | null;
+  lensMaterialNote?: string | null;
   size: string | null;
+  sizeNote?: string | null;
   lensFeatures: string[];
-}) {
+}): ProductDetailSection[] {
   const defaultLensFeatures = [
     "UV400 100% protection",
     "Anti-impact",
@@ -173,26 +233,27 @@ export function getProductDetailSections(product: {
     "Low haze <1.5%",
     "1.0g/cm³"
   ];
-  const lensDetails = product.lensFeatures.length >= 3 ? product.lensFeatures : defaultLensFeatures;
+  const lensDetails = product.lensFeatures.length ? product.lensFeatures : defaultLensFeatures;
 
   return [
     {
       title: "Frame",
       eyebrow: "프레임 / Frame",
-      primary: "고품질 PC 폴리카보네이트 프레임",
-      secondary: product.frameMaterial ?? "High-quality PC Frame (Polycarbonate)"
+      primary: product.frameMaterial ?? "High-quality PC Frame (Polycarbonate)",
+      ...(product.frameMaterialNote ? { secondary: product.frameMaterialNote } : {})
     },
     {
       title: "Lens",
       eyebrow: "렌즈 / Lens",
-      primary: "광학급 PA12 나일론 렌즈",
-      secondary: product.lensMaterial ?? "PA12 Nylon (Swiss EMS Grilamid TR90 LXS)",
+      primary: product.lensMaterial ?? "PA12 Nylon (Swiss EMS Grilamid TR90 LXS)",
+      ...(product.lensMaterialNote ? { secondary: product.lensMaterialNote } : {}),
       detail: lensDetails.join(" / ")
     },
     {
       title: "Size",
       eyebrow: "Size",
-      primary: product.size ?? "One size"
+      primary: product.size ?? "One size",
+      ...(product.sizeNote ? { secondary: product.sizeNote } : {})
     }
   ];
 }

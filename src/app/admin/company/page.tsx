@@ -20,7 +20,7 @@ export default async function AdminCompanyPage() {
   return (
     <main className="admin-page">
       <h1>Company & Brand</h1>
-      <p className="admin-page-note">Manage public footer, direct contact channels, and localized brand copy.</p>
+      <p className="admin-page-note">공개 Footer, 연락 채널, 언어별 브랜드 문구를 관리합니다.</p>
       <form className="admin-form" action={saveCompanySettingsAction}>
         <div className="admin-form-grid">
           <label>

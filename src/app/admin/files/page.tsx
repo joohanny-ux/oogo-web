@@ -12,7 +12,7 @@ export default async function AdminFilesPage() {
   return (
     <main className="admin-page">
       <h1>Files</h1>
-      <p className="admin-page-note">Upload and manage brand, product, special edition, and general assets.</p>
+      <p className="admin-page-note">브랜드, 상품, 프로젝트에 사용할 이미지와 파일을 관리합니다.</p>
       {!supabaseConfigured ? (
         <div className="admin-config-warning" role="status">
           <strong>Supabase connection required</strong>

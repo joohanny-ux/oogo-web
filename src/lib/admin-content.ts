@@ -2,6 +2,7 @@ import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { Locale } from "@/lib/i18n";
 import { getProductCatalogHref, getProductDetailHref } from "@/lib/products";
+import { getProductImageSlots, type ProductImageInput } from "@/lib/product-images";
 
 export const landingPageOptions = [
   { key: "header", label: "Header" },
@@ -31,7 +32,7 @@ export function getLandingEditorPages(): Array<{
       publicHref: "/",
       routeLabel: "Global",
       surface: "Site chrome",
-      description: "Logo, main navigation, language selector, and utility links"
+      description: "로고, 메인 메뉴, 언어 선택과 주요 링크를 관리합니다."
     },
     {
       key: "home",
@@ -39,7 +40,7 @@ export function getLandingEditorPages(): Array<{
       publicHref: "/",
       routeLabel: "/",
       surface: "Homepage",
-      description: "Hero, collection preview, project preview, archive, and inquiry bridge"
+      description: "Hero, Collection, Project, Archive와 Inquiry 연결 영역을 관리합니다."
     },
     {
       key: "brand-story",
@@ -47,7 +48,7 @@ export function getLandingEditorPages(): Array<{
       publicHref: "/brand",
       routeLabel: "/brand",
       surface: "Brand page",
-      description: "Brand hero, philosophy copy, visual grid, and collection CTA"
+      description: "브랜드 Hero, 철학 문구, 이미지 구성과 Collection CTA를 관리합니다."
     },
     {
       key: "collection",
@@ -55,7 +56,7 @@ export function getLandingEditorPages(): Array<{
       publicHref: getProductCatalogHref(),
       routeLabel: getProductCatalogHref(),
       surface: "Collection page",
-      description: "Catalog intro, product grid helper copy, and collection CTA"
+      description: "카탈로그 소개, 상품 목록 안내와 Collection CTA를 관리합니다."
     },
     {
       key: "product-detail",
@@ -63,7 +64,7 @@ export function getLandingEditorPages(): Array<{
       publicHref: getProductDetailHref(sampleProductSlug),
       routeLabel: "/products/[slug]",
       surface: "Product detail",
-      description: "Reusable product detail labels, buyer CTA, and related product copy"
+      description: "상품 상세 공통 라벨, Buyer CTA와 관련 문구를 관리합니다."
     },
     {
       key: "special-edition",
@@ -71,7 +72,7 @@ export function getLandingEditorPages(): Array<{
       publicHref: "/projects/youngbin-edition",
       routeLabel: "/projects/youngbin-edition",
       surface: "Project detail",
-      description: "Special edition hero, campaign narrative, and collaboration guide"
+      description: "프로젝트 Hero, 캠페인 이야기와 협업 안내를 관리합니다."
     },
     {
       key: "inquiry",
@@ -79,7 +80,7 @@ export function getLandingEditorPages(): Array<{
       publicHref: "/inquiry",
       routeLabel: "/inquiry",
       surface: "Inquiry page",
-      description: "Contact intro, inquiry type guidance, and form helper copy"
+      description: "문의 소개, 유형 안내와 입력 도움말을 관리합니다."
     },
     {
       key: "footer",
@@ -87,61 +88,9 @@ export function getLandingEditorPages(): Array<{
       publicHref: "/",
       routeLabel: "Global",
       surface: "Site footer",
-      description: "Footer brand copy, contact information, social links, and legal links"
+      description: "브랜드 문구, 연락처, SNS와 법적 고지 링크를 관리합니다."
     }
   ];
-}
-
-export type ProductImageRole = "angle" | "wearing" | "front" | "side";
-
-export type ProductImageInput = {
-  role: ProductImageRole;
-  url: string;
-  bucket?: string;
-  path?: string;
-};
-
-export function getProductImageSlots(): Array<{
-  role: ProductImageRole;
-  label: string;
-  note: string;
-  guidance: string;
-}> {
-  return [
-    {
-      role: "front",
-      label: "Front balance",
-      note: "Detail gallery 1, collection card default",
-      guidance: "Recommended 1400 x 900px, product centered, JPG/PNG/WebP, max 5MB"
-    },
-    {
-      role: "angle",
-      label: "Angle view",
-      note: "Detail gallery 2, collection hover image",
-      guidance: "Recommended 1600 x 1200px, 4:3, JPG/PNG/WebP, max 5MB"
-    },
-    {
-      role: "side",
-      label: "Side profile",
-      note: "Detail gallery 3, temple and side silhouette",
-      guidance: "Recommended 1400 x 900px, product centered, JPG/PNG/WebP, max 5MB"
-    },
-    {
-      role: "wearing",
-      label: "Wearing / Lifestyle",
-      note: "Detail gallery 4, face or showroom lifestyle image",
-      guidance: "Recommended 1600 x 2000px portrait or 2400 x 1500px landscape, JPG/PNG/WebP, max 5MB"
-    }
-  ];
-}
-
-export function parseProductImageInputs(values: Partial<Record<ProductImageRole, string>>): ProductImageInput[] {
-  return getProductImageSlots()
-    .map((slot) => ({
-      role: slot.role,
-      url: values[slot.role]?.trim() ?? ""
-    }))
-    .filter((image) => image.url.length > 0);
 }
 
 export type AdminProductInput = {
@@ -149,13 +98,21 @@ export type AdminProductInput = {
   modelCode: string;
   slug: string;
   size: string;
-  frameMaterial: string;
-  lensMaterial: string;
-  lensFeaturesText: string;
   featured: boolean;
   published: boolean;
   images: ProductImageInput[];
-  translations: Record<Locale, { name: string; colorway: string; description: string }>;
+  translations: Record<
+    Locale,
+    {
+      name: string;
+      colorway: string;
+      description: string;
+      sizeNote: string;
+      frameMaterial: string;
+      lensMaterial: string;
+      lensFeaturesText: string;
+    }
+  >;
 };
 
 export function parseLensFeatures(value: string) {
@@ -187,6 +144,36 @@ export async function getAdminProducts() {
   return data ?? [];
 }
 
+export type AdminDashboardSummary = {
+  products: number;
+  publishedProducts: number;
+  openInquiries: number;
+};
+
+export async function getAdminDashboardSummary(): Promise<AdminDashboardSummary> {
+  if (!hasSupabaseEnv()) {
+    return { products: 0, publishedProducts: 0, openInquiries: 0 };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const [productsResult, publishedResult, inquiriesResult] = await Promise.all([
+    supabase.from("products").select("id", { count: "exact", head: true }),
+    supabase.from("products").select("id", { count: "exact", head: true }).eq("published", true),
+    supabase.from("inquiries").select("id", { count: "exact", head: true }).neq("status", "closed")
+  ]);
+
+  const error = productsResult.error ?? publishedResult.error ?? inquiriesResult.error;
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return {
+    products: productsResult.count ?? 0,
+    publishedProducts: publishedResult.count ?? 0,
+    openInquiries: inquiriesResult.count ?? 0
+  };
+}
+
 export async function getAdminProduct(id: string) {
   if (!hasSupabaseEnv()) {
     return null;
@@ -196,7 +183,7 @@ export async function getAdminProduct(id: string) {
   const { data, error } = await supabase
     .from("products")
     .select(
-      "id, slug, model_code, size, frame_material, lens_material, lens_features, published, featured, product_translations(locale, name, colorway, description), product_images(role, assets(id, public_url, path, alt))"
+      "id, slug, model_code, size, frame_material, lens_material, lens_features, published, featured, product_translations(locale, name, colorway, description, size_note, frame_material, lens_material, lens_features), product_images(role, assets(id, public_url, path, alt))"
     )
     .eq("id", id)
     .single();
@@ -241,9 +228,9 @@ export async function saveProduct(input: AdminProductInput) {
     slug: input.slug,
     model_code: input.modelCode,
     size: input.size || null,
-    frame_material: input.frameMaterial || null,
-    lens_material: input.lensMaterial || null,
-    lens_features: parseLensFeatures(input.lensFeaturesText),
+    frame_material: input.translations.ko.frameMaterial || null,
+    lens_material: input.translations.ko.lensMaterial || null,
+    lens_features: parseLensFeatures(input.translations.ko.lensFeaturesText),
     featured: input.featured,
     published: input.published
   };
@@ -263,7 +250,11 @@ export async function saveProduct(input: AdminProductInput) {
     locale,
     name: input.translations[locale].name,
     colorway: input.translations[locale].colorway || null,
-    description: input.translations[locale].description || null
+    description: input.translations[locale].description || null,
+    size_note: input.translations[locale].sizeNote || null,
+    frame_material: input.translations[locale].frameMaterial || null,
+    lens_material: input.translations[locale].lensMaterial || null,
+    lens_features: parseLensFeatures(input.translations[locale].lensFeaturesText)
   }));
 
   const { error: translationError } = await supabase.from("product_translations").upsert(translationRows);

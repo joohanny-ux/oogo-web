@@ -149,7 +149,7 @@ const pageBlockMap: Record<string, BlockConfig[]> = {
     {
       key: "story-hero",
       title: "Brand Story Hero",
-      note: "Subpage hero copy and visual",
+      note: "서브페이지 Hero 문구와 대표 이미지",
       media: true,
       mediaGuidance: "Recommended 2400 x 1400px, editorial brand image, JPG/PNG/WebP max 8MB.",
       fields: commonCopyFields
@@ -157,7 +157,7 @@ const pageBlockMap: Record<string, BlockConfig[]> = {
     {
       key: "philosophy",
       title: "Philosophy",
-      note: "Core brand paragraph and supporting image",
+      note: "브랜드 핵심 문구와 보조 이미지",
       media: true,
       fields: commonCopyFields
     }
@@ -166,14 +166,14 @@ const pageBlockMap: Record<string, BlockConfig[]> = {
     {
       key: "collection-hero",
       title: "Collection Hero",
-      note: "Products page intro copy and image",
+      note: "Collection 소개 문구와 이미지",
       media: true,
       fields: commonCopyFields
     },
     {
       key: "filter-copy",
       title: "Category / Filter Copy",
-      note: "Short helper copy for product listing",
+      note: "상품 목록에 표시할 짧은 안내 문구",
       fields: commonCopyFields
     }
   ],
@@ -181,7 +181,7 @@ const pageBlockMap: Record<string, BlockConfig[]> = {
     {
       key: "detail-template",
       title: "Product Detail Template",
-      note: "Reusable labels and CTA copy for product modal/detail",
+      note: "상품 상세 공통 라벨과 CTA 문구",
       fields: [
         { name: "specTitle", label: "Spec title", placeholder: "Details" },
         { name: "buyerCta", label: "Buyer CTA", placeholder: "Request buyer catalog" },
@@ -194,7 +194,7 @@ const pageBlockMap: Record<string, BlockConfig[]> = {
     {
       key: "special-hero",
       title: "Special Edition Hero",
-      note: "Special edition landing copy and campaign visual",
+      note: "프로젝트 소개 문구와 캠페인 이미지",
       media: true,
       mediaGuidance: "Recommended 2400 x 1500px campaign image or MP4/WebM short loop, max 25MB for video.",
       fields: commonCopyFields
@@ -202,7 +202,7 @@ const pageBlockMap: Record<string, BlockConfig[]> = {
     {
       key: "collaboration-guide",
       title: "Collaboration Guide",
-      note: "Reusable copy for future special edition collaborations",
+      note: "프로젝트 협업에 재사용할 안내 문구",
       fields: commonCopyFields
     }
   ],
@@ -210,7 +210,7 @@ const pageBlockMap: Record<string, BlockConfig[]> = {
     {
       key: "inquiry-main",
       title: "Inquiry Page",
-      note: "Contact copy, category chips, and form helper",
+      note: "문의 소개, 유형 선택과 입력 도움말",
       fields: commonCopyFields
     }
   ],
@@ -477,7 +477,7 @@ export function LandingEditor({
     {
       key: "main",
       title: landingPageOptions.find((option) => option.key === pageKey)?.label ?? pageKey,
-      note: "Page copy and primary visual",
+      note: "페이지 문구와 대표 이미지",
       media: true,
       fields: commonCopyFields
     }

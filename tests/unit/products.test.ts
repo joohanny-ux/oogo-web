@@ -84,6 +84,81 @@ describe("product mapping", () => {
     expect(product.name).toBe("황혼의 산책");
   });
 
+  it("maps localized detail specifications for the active locale", () => {
+    const product = mapProductRow(
+      {
+        id: "p1",
+        slug: "og26001c2-sunset-stroll",
+        model_code: "OG26001C2",
+        size: "63-17-145",
+        frame_material: "Shared frame",
+        lens_material: "Shared lens",
+        lens_features: ["Shared feature"],
+        published: true,
+        featured: true,
+        sort_order: 1,
+        product_translations: [
+          {
+            locale: "en",
+            name: "Sunset Stroll",
+            colorway: "Brown",
+            description: "Desc",
+            size_note: "Temple length in millimeters",
+            frame_material: "High-quality PC frame",
+            lens_material: "PA12 nylon lens",
+            lens_features: ["UV400", "Anti-impact"]
+          }
+        ]
+      },
+      "en"
+    );
+
+    expect(product).toMatchObject({
+      size: "63-17-145",
+      sizeNote: "Temple length in millimeters",
+      frameMaterial: "High-quality PC frame",
+      lensMaterial: "PA12 nylon lens",
+      lensFeatures: ["UV400", "Anti-impact"]
+    });
+  });
+
+  it("falls back to shared detail specifications when localized values are empty", () => {
+    const product = mapProductRow(
+      {
+        id: "p1",
+        slug: "og26001c2-sunset-stroll",
+        model_code: "OG26001C2",
+        size: "63-17-145",
+        frame_material: "Shared frame",
+        lens_material: "Shared lens",
+        lens_features: ["Shared feature"],
+        published: true,
+        featured: false,
+        sort_order: 2,
+        product_translations: [
+          {
+            locale: "en",
+            name: "Sunset Stroll",
+            colorway: null,
+            description: null,
+            size_note: null,
+            frame_material: null,
+            lens_material: null,
+            lens_features: []
+          }
+        ]
+      },
+      "en"
+    );
+
+    expect(product).toMatchObject({
+      sizeNote: null,
+      frameMaterial: "Shared frame",
+      lensMaterial: "Shared lens",
+      lensFeatures: ["Shared feature"]
+    });
+  });
+
   it("builds catalog badges from product order and featured state", () => {
     expect(getProductBadges({ featured: true, sortOrder: 0 })).toEqual(["New", "Best", "Sunglasses"]);
     expect(getProductBadges({ featured: false, sortOrder: 2 })).toEqual(["Special Edition", "Sunglasses"]);
@@ -91,9 +166,12 @@ describe("product mapping", () => {
 
   it("builds catalog-led product detail sections without duplicate protection rows", () => {
     const sections = getProductDetailSections({
-      frameMaterial: "PC Frame",
-      lensMaterial: "PA12 Nylon",
+      frameMaterial: "고품질 PC 폴리카보네이트 프레임",
+      frameMaterialNote: "High-quality PC Frame (Polycarbonate)",
+      lensMaterial: "광학급 PA12 나일론 렌즈",
+      lensMaterialNote: "PA12 Nylon",
       size: "63-17-145",
+      sizeNote: "렌즈 63mm · 브리지 17mm · 템플 145mm",
       lensFeatures: ["UV400", "Anti-impact", "Low haze"]
     });
 
@@ -102,7 +180,7 @@ describe("product mapping", () => {
         title: "Frame",
         eyebrow: "프레임 / Frame",
         primary: "고품질 PC 폴리카보네이트 프레임",
-        secondary: "PC Frame"
+        secondary: "High-quality PC Frame (Polycarbonate)"
       },
       {
         title: "Lens",
@@ -111,16 +189,21 @@ describe("product mapping", () => {
         secondary: "PA12 Nylon",
         detail: "UV400 / Anti-impact / Low haze"
       },
-      { title: "Size", eyebrow: "Size", primary: "63-17-145" }
+      {
+        title: "Size",
+        eyebrow: "Size",
+        primary: "63-17-145",
+        secondary: "렌즈 63mm · 브리지 17mm · 템플 145mm"
+      }
     ]);
   });
 
-  it("uses full catalog lens details when imported lens data is too short", () => {
+  it("uses catalog fallback lens details only when localized lens data is empty", () => {
     const sections = getProductDetailSections({
       frameMaterial: "PC Frame",
       lensMaterial: "PA12 Nylon",
       size: "63-17-145",
-      lensFeatures: ["UV400 100% protection"]
+      lensFeatures: []
     });
 
     expect(sections[1]).toMatchObject({
