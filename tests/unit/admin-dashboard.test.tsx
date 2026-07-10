@@ -15,4 +15,15 @@ describe("AdminDashboardPage", () => {
     expect(html).toContain("/projects/youngbin-edition");
     expect(html).toContain("/inquiry");
   });
+
+  it("renders setup steps for connecting Supabase", () => {
+    const html = renderToStaticMarkup(<AdminDashboardPage />);
+
+    expect(html).toContain("Setup Status");
+    expect(html).toContain("Supabase env");
+    expect(html).toContain("Database migrations");
+    expect(html).toContain("Storage bucket");
+    expect(html).toContain("Admin auth");
+    expect(html).toContain("NEXT_PUBLIC_SUPABASE_URL");
+  });
 });

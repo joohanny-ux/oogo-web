@@ -1793,6 +1793,56 @@ h2 {
   font-size: 1.5rem;
 }
 
+.admin-setup-panel {
+  display: grid;
+  gap: 16px;
+}
+
+.admin-setup-panel p {
+  max-width: 760px;
+  color: #9d9287;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.admin-setup-list {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.admin-setup-list li {
+  display: grid;
+  gap: 12px;
+  border: 1px solid #34302b;
+  border-radius: 8px;
+  background: #13110f;
+  padding: 14px;
+}
+
+.admin-setup-list li > span {
+  color: #d8c0a0;
+  font-size: 0.74rem;
+  letter-spacing: 0.16em;
+}
+
+.admin-setup-list div {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-setup-list strong {
+  color: #f4f0e8;
+}
+
+.admin-setup-list small {
+  color: #8f857b;
+  line-height: 1.5;
+}
+
 .admin-shortcuts {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
