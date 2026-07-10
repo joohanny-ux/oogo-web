@@ -1,4 +1,5 @@
 import { LoginForm } from "@/components/admin/LoginForm";
+import { hasSupabaseEnv } from "@/lib/admin-content";
 
 export default function AdminLoginPage() {
   return (
@@ -8,7 +9,7 @@ export default function AdminLoginPage() {
         <h1>Sign in</h1>
         <p>Manage products, landing content, files, inquiries, and brand settings.</p>
       </div>
-      <LoginForm />
+      <LoginForm supabaseConfigured={hasSupabaseEnv()} />
     </main>
   );
 }

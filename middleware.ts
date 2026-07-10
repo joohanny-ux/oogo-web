@@ -2,8 +2,16 @@ import { createServerClient } from "@supabase/ssr";
 import type { SetAllCookies } from "@supabase/ssr/dist/module/types";
 import { NextResponse, type NextRequest } from "next/server";
 
+export function hasSupabaseMiddlewareEnv(env: NodeJS.ProcessEnv = process.env) {
+  return Boolean(env.NEXT_PUBLIC_SUPABASE_URL && env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+}
+
 export async function middleware(request: NextRequest) {
   if (!request.nextUrl.pathname.startsWith("/admin") || request.nextUrl.pathname === "/admin/login") {
+    return NextResponse.next();
+  }
+
+  if (!hasSupabaseMiddlewareEnv()) {
     return NextResponse.next();
   }
 
