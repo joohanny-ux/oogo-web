@@ -105,6 +105,19 @@ Apply the following conventions across Dashboard, Products, Landing Page, Files,
 
 This is a consistency pass, not a dashboard navigation redesign. Existing routes and information architecture remain unchanged.
 
+## Dashboard Home
+
+The dashboard home is an operational summary, not a setup guide or a second landing-page editor.
+
+- Remove the one-time `Setup Status` panel.
+- Remove the duplicated `Landing Pages` route-card grid.
+- Remove the `Landing drafts` summary card until draft counts are reliable and actionable.
+- Show live counts for Products, Public on site, and Open inquiries.
+- Keep compact shortcuts for Add product, Landing Page, and Files.
+- Use Korean helper text beneath the English page title and metric labels.
+
+Setup instructions remain in project documentation. Landing-page route selection remains inside `/admin/landing`.
+
 ## Data Flow
 
 1. The admin loads the shared product record and all three translation rows.
