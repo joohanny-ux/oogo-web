@@ -124,7 +124,7 @@ describe("product mapping", () => {
     });
   });
 
-  it("uses the shared reference color name on public product pages", () => {
+  it("uses localized frame size and color on public product pages", () => {
     const product = mapProductRow(
       {
         id: "p1",
@@ -138,12 +138,23 @@ describe("product mapping", () => {
         published: true,
         featured: false,
         sort_order: 1,
-        product_translations: [{ locale: "ko", name: "황혼의 산책", colorway: "Legacy brown", description: null }]
+        product_translations: [
+          {
+            locale: "ko",
+            name: "황혼의 산책",
+            colorway: "투명 브라운 프레임 + 브라운 렌즈",
+            description: null,
+            frame_size: "63□17-145",
+            size_note: "렌즈 63mm / 브리지 17mm / 다리 145mm"
+          }
+        ]
       },
       "ko"
     );
 
-    expect(product.colorway).toBe("Transparent tea frame / tea lens");
+    expect(product.colorway).toBe("투명 브라운 프레임 + 브라운 렌즈");
+    expect(product.size).toBe("63□17-145");
+    expect(product.sizeNote).toBe("렌즈 63mm / 브리지 17mm / 다리 145mm");
   });
 
   it("splits one lens field into the public primary line and feature details", () => {
@@ -266,8 +277,8 @@ describe("product mapping", () => {
         detail: "UV400 / Anti-impact / Low haze"
       },
       {
-        title: "Size",
-        eyebrow: "Size",
+        title: "Frame Size",
+        eyebrow: "Frame Size",
         primary: "63-17-145",
         secondary: "렌즈 63mm · 브리지 17mm · 템플 145mm"
       }

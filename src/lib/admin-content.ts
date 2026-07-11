@@ -97,8 +97,6 @@ export type AdminProductInput = {
   id?: string;
   modelCode: string;
   slug: string;
-  size: string;
-  referenceColorName: string;
   featured: boolean;
   published: boolean;
   images: ProductImageInput[];
@@ -108,6 +106,9 @@ export type AdminProductInput = {
       name: string;
       frame: string;
       lens: string;
+      frameSize: string;
+      frameSizeNote: string;
+      color: string;
     }
   >;
 };
@@ -173,7 +174,7 @@ export async function getAdminProduct(id: string) {
   const { data, error } = await supabase
     .from("products")
     .select(
-      "id, slug, model_code, size, reference_color_name, frame_material, lens_material, lens_features, published, featured, product_translations(locale, name, colorway, description, size_note, frame_material, lens_material, lens_features), product_images(role, assets(id, public_url, path, alt))"
+      "id, slug, model_code, size, reference_color_name, frame_material, lens_material, lens_features, published, featured, product_translations(locale, name, colorway, description, frame_size, size_note, frame_material, lens_material, lens_features), product_images(role, assets(id, public_url, path, alt))"
     )
     .eq("id", id)
     .single();
@@ -218,8 +219,8 @@ export async function saveProduct(input: AdminProductInput) {
     id: productId,
     slug: input.slug,
     model_code: input.modelCode,
-    size: input.size || null,
-    reference_color_name: input.referenceColorName || null,
+    size: input.translations.ko.frameSize || null,
+    reference_color_name: input.translations.ko.color || null,
     frame_material: input.translations.ko.frame || null,
     lens_material: koreanLens.material || null,
     lens_features: koreanLens.features,
@@ -244,6 +245,9 @@ export async function saveProduct(input: AdminProductInput) {
       product_id: product.id,
       locale,
       name: input.translations[locale].name,
+      frame_size: input.translations[locale].frameSize || null,
+      size_note: input.translations[locale].frameSizeNote || null,
+      colorway: input.translations[locale].color || null,
       frame_material: input.translations[locale].frame || null,
       lens_material: lens.material || null,
       lens_features: lens.features

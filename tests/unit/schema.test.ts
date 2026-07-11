@@ -19,6 +19,10 @@ const productReferenceColorMigration = readFileSync(
   join(process.cwd(), "supabase/migrations/20260710114036_add_product_reference_color.sql"),
   "utf8"
 );
+const localizedFrameSizeMigration = readFileSync(
+  join(process.cwd(), "supabase/migrations/20260711072540_localize_product_frame_size.sql"),
+  "utf8"
+);
 const resetScript = readFileSync(join(process.cwd(), "supabase/reset-oogo-content.sql"), "utf8");
 const verifyScript = readFileSync(join(process.cwd(), "supabase/verify-oogo-setup.sql"), "utf8");
 
@@ -68,6 +72,13 @@ describe("manageable content schema", () => {
     expect(productReferenceColorMigration).toContain("add column if not exists reference_color_name text");
     expect(productReferenceColorMigration).toContain("from public.product_translations as translations");
     expect(productReferenceColorMigration).toContain("translations.locale = 'ko'");
+  });
+
+  it("localizes frame size and backfills size and color values", () => {
+    expect(localizedFrameSizeMigration).toContain("add column if not exists frame_size text");
+    expect(localizedFrameSizeMigration).toContain("frame_size = coalesce");
+    expect(localizedFrameSizeMigration).toContain("colorway = coalesce");
+    expect(localizedFrameSizeMigration).toContain("from public.products as products");
   });
 
   it("resets only OOGO-owned public content and storage assets", () => {

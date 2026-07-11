@@ -14,7 +14,10 @@ function readTranslation(formData: FormData, locale: Locale) {
   return {
     name: String(formData.get(`${locale}.name`) ?? ""),
     frame: String(formData.get(`${locale}.frame`) ?? ""),
-    lens: String(formData.get(`${locale}.lens`) ?? "")
+    lens: String(formData.get(`${locale}.lens`) ?? ""),
+    frameSize: String(formData.get(`${locale}.frameSize`) ?? ""),
+    frameSizeNote: String(formData.get(`${locale}.frameSizeNote`) ?? ""),
+    color: String(formData.get(`${locale}.color`) ?? "")
   };
 }
 
@@ -105,8 +108,6 @@ export async function saveProductAction(formData: FormData) {
     id: String(formData.get("id") || "") || undefined,
     modelCode,
     slug,
-    size: String(formData.get("size") ?? ""),
-    referenceColorName: String(formData.get("referenceColorName") ?? ""),
     featured: formData.get("featured") === "on",
     published: formData.get("published") === "on",
     images,

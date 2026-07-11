@@ -27,6 +27,7 @@ export type ProductRow = {
     name: string;
     colorway: string | null;
     description: string | null;
+    frame_size?: string | null;
     size_note?: string | null;
     frame_material?: string | null;
     lens_material?: string | null;
@@ -41,6 +42,7 @@ export type PublicProductTranslation = {
   name: string;
   colorway: string | null;
   description: string | null;
+  frameSize?: string | null;
   sizeNote?: string | null;
   frameMaterial?: string | null;
   lensMaterial?: string | null;
@@ -137,6 +139,7 @@ export function mapProductRow(row: ProductRow, locale: Locale): PublicProduct {
         name: item.name,
         colorway: item.colorway,
         description: item.description,
+        frameSize: item.frame_size,
         sizeNote: item.size_note,
         frameMaterial: item.frame_material,
         lensMaterial: item.lens_material,
@@ -152,10 +155,10 @@ export function mapProductRow(row: ProductRow, locale: Locale): PublicProduct {
     slug: row.slug,
     modelCode: row.model_code,
     name: translation?.name ?? row.model_code,
-    colorway: row.reference_color_name || translation?.colorway || null,
+    colorway: translation?.colorway || row.reference_color_name || null,
     description: translation?.description ?? null,
     translations,
-    size: row.size,
+    size: translation?.frame_size || row.size,
     sizeNote: translation?.size_note ?? null,
     frameMaterial: translation?.frame_material || row.frame_material,
     frameMaterialNote:
@@ -279,8 +282,8 @@ export function getProductDetailSections(product: {
       detail: lensDetails.join(" / ")
     },
     {
-      title: "Size",
-      eyebrow: "Size",
+      title: "Frame Size",
+      eyebrow: "Frame Size",
       primary: product.size ?? "One size",
       ...(product.sizeNote ? { secondary: product.sizeNote } : {})
     }

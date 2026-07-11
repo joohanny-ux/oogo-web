@@ -10,6 +10,7 @@ type TranslationValue = {
   name?: string;
   colorway?: string | null;
   description?: string | null;
+  frame_size?: string | null;
   size_note?: string | null;
   frame_material?: string | null;
   lens_material?: string | null;
@@ -43,6 +44,8 @@ function translationFor(product: ProductFormProps["product"], locale: Locale): T
 
   return {
     ...translation,
+    frame_size: translation.frame_size ?? product?.size ?? "",
+    colorway: translation.colorway ?? product?.reference_color_name ?? "",
     frame_material: translation.frame_material ?? product?.frame_material ?? "",
     lens_material: translation.lens_material ?? product?.lens_material ?? "",
     lens_features: translation.lens_features?.length ? translation.lens_features : product?.lens_features ?? []
@@ -90,14 +93,6 @@ export function ProductForm({ product, action, supabaseConfigured = true }: Prod
               <label>
                 Slug <small>공개 주소는 /products/[slug] 형식입니다.</small>
                 <input name="slug" defaultValue={product?.slug ?? ""} required />
-              </label>
-              <label>
-                Spec <small>사이즈 규격을 63-17-145 형식으로 입력합니다.</small>
-                <input name="size" defaultValue={product?.size ?? ""} placeholder="63-17-145" />
-              </label>
-              <label>
-                Ref. Color Name <small>상품표의 공통 컬러 참조명을 입력합니다.</small>
-                <input name="referenceColorName" defaultValue={product?.reference_color_name ?? ""} />
               </label>
             </div>
           </section>
@@ -157,6 +152,30 @@ export function ProductForm({ product, action, supabaseConfigured = true }: Prod
                             translation.lens_material,
                             translation.lens_features ?? []
                           )}
+                        />
+                      </label>
+                      <label>
+                        Frame Size <small>예: 63□17-145</small>
+                        <input
+                          name={`${locale}.frameSize`}
+                          defaultValue={translation.frame_size ?? ""}
+                          placeholder="63□17-145"
+                        />
+                      </label>
+                      <label>
+                        Frame Size Description <small>렌즈, 브리지, 다리 길이를 해당 언어로 설명합니다.</small>
+                        <input
+                          name={`${locale}.frameSizeNote`}
+                          defaultValue={translation.size_note ?? ""}
+                          placeholder="렌즈 63mm / 브리지 17mm / 다리 145mm"
+                        />
+                      </label>
+                      <label className="admin-wide-field">
+                        Color <small>프레임과 렌즈 컬러를 해당 언어로 입력합니다.</small>
+                        <input
+                          name={`${locale}.color`}
+                          defaultValue={translation.colorway ?? ""}
+                          placeholder="투명 브라운 프레임 + 브라운 렌즈"
                         />
                       </label>
                     </div>
