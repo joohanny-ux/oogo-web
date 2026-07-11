@@ -3,7 +3,7 @@ import {
   getLandingEditorPages,
   landingPageOptions
 } from "@/lib/admin-content";
-import { getProductImageSlots, parseProductImageInputs } from "@/lib/product-images";
+import { getProductImageSlots, getProductThumbnailUrl, parseProductImageInputs } from "@/lib/product-images";
 import { parseProductLensText } from "@/lib/products";
 
 describe("admin content helpers", () => {
@@ -67,5 +67,14 @@ describe("admin content helpers", () => {
       { role: "front", url: "https://cdn.example.com/front.png" },
       { role: "angle", url: "https://cdn.example.com/angle.png" }
     ]);
+  });
+
+  it("uses the front image for product library thumbnails", () => {
+    expect(
+      getProductThumbnailUrl([
+        { role: "angle", assets: { public_url: "https://cdn.example.com/angle.png" } },
+        { role: "front", assets: { public_url: "https://cdn.example.com/front.png" } }
+      ])
+    ).toBe("https://cdn.example.com/front.png");
   });
 });

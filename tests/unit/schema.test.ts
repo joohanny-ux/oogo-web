@@ -23,6 +23,10 @@ const localizedFrameSizeMigration = readFileSync(
   join(process.cwd(), "supabase/migrations/20260711072540_localize_product_frame_size.sql"),
   "utf8"
 );
+const ss26CatalogMigration = readFileSync(
+  join(process.cwd(), "supabase/migrations/20260711091617_sync_ss26_catalog_content.sql"),
+  "utf8"
+);
 const resetScript = readFileSync(join(process.cwd(), "supabase/reset-oogo-content.sql"), "utf8");
 const verifyScript = readFileSync(join(process.cwd(), "supabase/verify-oogo-setup.sql"), "utf8");
 
@@ -79,6 +83,16 @@ describe("manageable content schema", () => {
     expect(localizedFrameSizeMigration).toContain("frame_size = coalesce");
     expect(localizedFrameSizeMigration).toContain("colorway = coalesce");
     expect(localizedFrameSizeMigration).toContain("from public.products as products");
+  });
+
+  it("syncs all SS26 catalog products without publishing new records", () => {
+    const modelCodes = [...ss26CatalogMigration.matchAll(/'OG\d{5}C\d'/g)].map(([code]) => code);
+
+    expect(new Set(modelCodes).size).toBe(24);
+    expect(ss26CatalogMigration).toContain("New products start as drafts");
+    expect(ss26CatalogMigration).toContain("false,\n  false\nfrom ss26_catalog_import");
+    expect(ss26CatalogMigration).toContain("and not exists (");
+    expect(ss26CatalogMigration).toContain("on conflict (product_id, locale) do update");
   });
 
   it("resets only OOGO-owned public content and storage assets", () => {

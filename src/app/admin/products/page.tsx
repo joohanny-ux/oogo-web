@@ -1,4 +1,5 @@
 import { getAdminProducts } from "@/lib/admin-content";
+import { getProductThumbnailUrl } from "@/lib/product-images";
 
 export const dynamic = "force-dynamic";
 
@@ -8,21 +9,8 @@ function koreanName(product: AdminProductRow) {
   return product.product_translations?.find((item) => item.locale === "ko")?.name ?? product.model_code;
 }
 
-function assetPublicUrl(asset: unknown) {
-  if (Array.isArray(asset)) {
-    return asset[0]?.public_url ?? null;
-  }
-
-  if (asset && typeof asset === "object" && "public_url" in asset) {
-    return String(asset.public_url ?? "") || null;
-  }
-
-  return null;
-}
-
 function mainImageUrl(product: AdminProductRow) {
-  const asset = product.product_images?.find((item) => item.role === "angle")?.assets;
-  return assetPublicUrl(asset);
+  return getProductThumbnailUrl(product.product_images ?? []);
 }
 
 export default async function AdminProductsPage() {

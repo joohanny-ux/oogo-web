@@ -7,6 +7,24 @@ export type ProductImageInput = {
   path?: string;
 };
 
+type ProductThumbnailSource = {
+  role?: string | null;
+  assets?: { public_url?: string | null } | Array<{ public_url?: string | null }> | null;
+};
+
+function assetUrl(source?: ProductThumbnailSource) {
+  if (Array.isArray(source?.assets)) {
+    return source.assets[0]?.public_url ?? null;
+  }
+
+  return source?.assets?.public_url ?? null;
+}
+
+export function getProductThumbnailUrl(images: ProductThumbnailSource[] = []) {
+  return assetUrl(images.find((image) => image.role === "front")) ??
+    assetUrl(images.find((image) => image.role === "angle"));
+}
+
 export function getProductImageSlots(): Array<{
   role: ProductImageRole;
   label: string;
