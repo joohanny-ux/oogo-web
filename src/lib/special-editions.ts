@@ -6,11 +6,54 @@ export type ProjectImageSet = {
   product: string;
   wearing: string;
   archive: string;
+  collaborationHero: string;
+  limitedEdition: string;
+  lightHands: string;
+  photographerAtWork: string;
+  photographerProfile: string;
+};
+
+export type ProjectGalleryImage = {
+  key: string;
+  src: string;
+  fit: "cover" | "contain";
 };
 
 export type ProjectEditorialBlock =
-  | { kind: "image"; key: keyof ProjectImageSet; label: string; fit?: "cover" | "contain"; span?: "full" | "half" }
+  | { kind: "image"; key: "campaign" | "product" | "wearing" | "archive"; label: string; fit?: "cover" | "contain"; span?: "full" | "half" }
   | { kind: "text"; body: string };
+
+export type YoungbinEditionContent = {
+  hero: {
+    eyebrow: string;
+    heading: string;
+    subtitle: string;
+    body: string;
+  };
+  statement: {
+    statementEn: string;
+    bodyKo: string;
+    themes: [string, string, string];
+  };
+  limited: {
+    eyebrow: string;
+    heading: string;
+    body: string;
+    features: Array<{ title: string; body: string }>;
+  };
+  gallery: ProjectGalleryImage[];
+  profile: {
+    eyebrow: string;
+    name: string;
+    role: string;
+    quoteKo: string;
+    quoteEn: string;
+    body: string;
+    credentials: [string, string, string];
+    archiveLabel: string;
+    archiveHref: string;
+  };
+};
 
 export type SpecialEdition = {
   id: string;
@@ -25,6 +68,10 @@ export type SpecialEdition = {
   tags: string[];
   relatedProducts: string[];
   images: ProjectImageSet;
+  statement: YoungbinEditionContent["statement"];
+  limited: YoungbinEditionContent["limited"];
+  gallery: YoungbinEditionContent["gallery"];
+  profile: YoungbinEditionContent["profile"];
   editorial: ProjectEditorialBlock[];
   cta: string;
 };
@@ -44,22 +91,68 @@ export const specialEditions: SpecialEdition[] = [
     tags: ["Photography", "Limited color", "Buyer catalog"],
     relatedProducts: ["OG26001C2", "OG26002C1"],
     images: {
-      hero: "/images/oogo-gallery.png",
-      campaign: "/images/oogo-gallery.png",
+      hero: "/images/projects/youngbin-edition/collaboration-hero.jpg",
+      campaign: "/images/projects/youngbin-edition/collaboration-hero.jpg",
       product: "/images/oogo-product-front.png",
-      wearing: "/images/oogo-hero.png",
-      archive: "/images/oogo-product-angle.png"
+      wearing: "/images/projects/youngbin-edition/photographer-profile.jpg",
+      archive: "/images/oogo-product-angle.png",
+      collaborationHero: "/images/projects/youngbin-edition/collaboration-hero.jpg",
+      limitedEdition: "/images/projects/youngbin-edition/limited-edition.jpg",
+      lightHands: "/images/projects/youngbin-edition/light-hands.jpg",
+      photographerAtWork: "/images/projects/youngbin-edition/photographer-at-work.jpg",
+      photographerProfile: "/images/projects/youngbin-edition/photographer-profile.jpg"
+    },
+    statement: {
+      statementEn:
+        "Photography begins with light. Eyewear begins with light. Both are about choosing what to see, what to soften, and what to remember.",
+      bodyKo:
+        "사진은 빛에서 시작되고, 아이웨어 역시 빛에서 시작됩니다. 무엇을 바라보고, 무엇을 부드럽게 남기며, 무엇을 기억할지 선택하는 두 시선이 만납니다.",
+      themes: ["Light", "Gaze", "Memory"]
+    },
+    limited: {
+      eyebrow: "Limited Edition",
+      heading: "Youngbin Edition",
+      body:
+        "빛을 바라보는 태도와 시선을 기록하는 감각이 만나, OOGO의 세계관을 한정판 프레임과 스페셜 패키지로 확장합니다.",
+      features: [
+        { title: "Limited Quantity", body: "한정 수량으로 제작되는 협업 프레임" },
+        { title: "Special Package", body: "에디션을 위해 구성한 전용 패키지" },
+        { title: "Campaign & Exhibition", body: "사진과 제품이 이어지는 캠페인 서사" }
+      ]
+    },
+    gallery: [
+      { key: "collaboration", src: "/images/projects/youngbin-edition/collaboration-hero.jpg", fit: "cover" },
+      { key: "limited", src: "/images/projects/youngbin-edition/limited-edition.jpg", fit: "cover" },
+      { key: "hands", src: "/images/projects/youngbin-edition/light-hands.jpg", fit: "cover" },
+      { key: "working", src: "/images/projects/youngbin-edition/photographer-at-work.jpg", fit: "cover" },
+      {
+        key: "product",
+        src: "/images/oogo-product-angle.png",
+        fit: "contain"
+      }
+    ],
+    profile: {
+      eyebrow: "Photographer",
+      name: "Ji Youngbin",
+      role: "Photographer · Visual Storyteller",
+      quoteKo: "모든 순간은 예술이 될 수 있다.",
+      quoteEn: "Every moment can become art.",
+      body:
+        "지영빈은 35년 이상 인물, 앨범 재킷, 에디토리얼과 다큐멘터리 사진을 통해 사람과 순간의 태도를 기록해 온 사진가입니다.",
+      credentials: [
+        "35+ years across portrait, editorial, and documentary photography",
+        "Official photographer for UNESCO Korea",
+        "New York Times Square documentary international screening"
+      ],
+      archiveLabel: "View Photo Archive",
+      archiveHref: "/archive/youngbin-edition"
     },
     editorial: [
       { kind: "image", key: "campaign", label: "Campaign", fit: "cover", span: "full" },
       { kind: "text", body: "Light direction, quiet attitude, and seasonal frames." },
       { kind: "image", key: "product", label: "Object", fit: "contain", span: "half" },
       { kind: "image", key: "wearing", label: "Wearing", fit: "cover", span: "half" },
-      { kind: "image", key: "archive", label: "Detail", fit: "contain", span: "half" },
-      {
-        kind: "text",
-        body: "Released through buyer inquiry. Related frames: OG26001C2 / OG26002C1."
-      }
+      { kind: "image", key: "archive", label: "Detail", fit: "contain", span: "half" }
     ],
     cta: "Buyer inquiry"
   }
