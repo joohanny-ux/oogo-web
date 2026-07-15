@@ -20,7 +20,7 @@ describe("public product detail page", () => {
 describe("Youngbin Edition project page", () => {
   it("links to the dedicated photo archive only from the closing profile", () => {
     expect(youngbinProjectPage).toContain(
-      'const photoArchiveHref = "/archive/youngbin-edition";'
+      'const photoArchiveHref = withLocalePrefix("/archive/youngbin-edition", locale);'
     );
     expect(youngbinProjectPage).toContain("edition.profile.archiveLabel");
     expect(youngbinProjectPage).toContain(

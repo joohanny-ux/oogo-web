@@ -1,5 +1,7 @@
 import type { CSSProperties } from "react";
+import type { Locale } from "@/lib/i18n";
 import { landingText, type LandingContent } from "@/lib/home-landing";
+import { withLocalePrefix } from "@/lib/locale-path";
 
 const archiveItems = [
   {
@@ -22,12 +24,18 @@ const archiveItems = [
 
 type ArchiveStyle = CSSProperties & { "--archive-image": string };
 
-export function ArchiveSection({ content }: { content?: LandingContent }) {
+export function ArchiveSection({
+  content,
+  locale = "ko"
+}: {
+  content?: LandingContent;
+  locale?: Locale;
+}) {
   return (
     <section className="archive-section" id="archive">
       <div className="archive-heading">
         <p className="eyebrow">{landingText(content, "eyebrow", "Archive")}</p>
-        <a href={landingText(content, "primaryHref", "/archive")}>
+        <a href={withLocalePrefix(landingText(content, "primaryHref", "/archive"), locale)}>
           {landingText(content, "primaryLabel", "View archive")}
         </a>
       </div>

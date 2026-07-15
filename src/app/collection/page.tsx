@@ -5,6 +5,7 @@ import { filterProductsByCategory, getProductDetailHref, normalizeCatalogCategor
 import { getPublishedProducts } from "@/lib/public-content";
 import { getLandingBlocks } from "@/lib/public-content";
 import { getLandingPageContent, landingText } from "@/lib/home-landing";
+import { getRequestLocale } from "@/lib/public-locale";
 
 export default async function CollectionPage({
   searchParams
@@ -12,8 +13,9 @@ export default async function CollectionPage({
   searchParams: Promise<{ category?: string }>;
 }) {
   const { category } = await searchParams;
+  const locale = await getRequestLocale();
   const activeCategory = normalizeCatalogCategory(category);
-  const [products, blocks] = await Promise.all([getPublishedProducts("ko"), getLandingBlocks("ko")]);
+  const [products, blocks] = await Promise.all([getPublishedProducts(locale), getLandingBlocks(locale)]);
   const intro = getLandingPageContent(blocks, "collection")["collection-hero"];
   const visibleProducts = filterProductsByCategory(products, activeCategory);
   const displayProducts = Array.from({ length: Math.max(visibleProducts.length, 12) }, (_, index) => {
@@ -48,14 +50,14 @@ export default async function CollectionPage({
               <article className="collection-list-card" key={product.displayKey}>
                 <a
                   className="collection-list-image"
-                  href={getProductDetailHref(product.slug)}
+                  href={getProductDetailHref(product.slug, locale)}
                   style={{
                     backgroundImage: `url("${frontImage}")`,
                     "--hover-image": `url("${angleImage}")`
                   } as CSSProperties & Record<"--hover-image", string>}
                   aria-label={`${product.displayName} detail`}
                 />
-                <a className="collection-list-name" href={getProductDetailHref(product.slug)}>
+                <a className="collection-list-name" href={getProductDetailHref(product.slug, locale)}>
                   {product.displayName}
                 </a>
               </article>

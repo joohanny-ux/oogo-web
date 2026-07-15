@@ -105,7 +105,9 @@ body .locale-switcher div {
   backdrop-filter: blur(8px) !important;
 }
 
-body .locale-switcher button {
+body .locale-switcher button,
+body .locale-switcher a {
+  display: block !important;
   width: auto !important;
   min-width: 0 !important;
   height: auto !important;
@@ -117,6 +119,7 @@ body .locale-switcher button {
   color: rgba(244, 239, 230, 0.76) !important;
   font-size: 0.58rem !important;
   letter-spacing: 0.12em !important;
+  text-decoration: none !important;
 }
 
 body:has(.collection-page) .site-header,
@@ -181,13 +184,21 @@ body:has(.inquiry-page) .locale-switcher div {
 }
 
 body:has(.collection-page) .locale-switcher button,
+body:has(.collection-page) .locale-switcher a,
 body:has(.product-detail-page) .locale-switcher button,
+body:has(.product-detail-page) .locale-switcher a,
 body:has(.projects-page) .locale-switcher button,
+body:has(.projects-page) .locale-switcher a,
 body:has(.project-detail-page) .locale-switcher button,
+body:has(.project-detail-page) .locale-switcher a,
 body:has(.archive-page) .locale-switcher button,
+body:has(.archive-page) .locale-switcher a,
 body:has(.brand-page) .locale-switcher button,
+body:has(.brand-page) .locale-switcher a,
 body:has(.legal-page) .locale-switcher button,
-body:has(.inquiry-page) .locale-switcher button {
+body:has(.legal-page) .locale-switcher a,
+body:has(.inquiry-page) .locale-switcher button,
+body:has(.inquiry-page) .locale-switcher a {
   color: rgba(22, 19, 15, 0.68) !important;
 }
 

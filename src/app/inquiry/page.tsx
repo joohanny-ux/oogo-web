@@ -3,9 +3,11 @@ import { SiteFooter } from "@/components/public/SiteFooter";
 import { SiteHeader } from "@/components/public/SiteHeader";
 import { getLandingPageContent } from "@/lib/home-landing";
 import { getLandingBlocks } from "@/lib/public-content";
+import { getRequestLocale } from "@/lib/public-locale";
 
 export default async function InquiryPage() {
-  const content = getLandingPageContent(await getLandingBlocks("ko"), "inquiry");
+  const locale = await getRequestLocale();
+  const content = getLandingPageContent(await getLandingBlocks(locale), "inquiry");
   return (
     <>
       <SiteHeader />

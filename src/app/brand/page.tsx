@@ -3,6 +3,7 @@ import { SiteFooter } from "@/components/public/SiteFooter";
 import { SiteHeader } from "@/components/public/SiteHeader";
 import { getLandingPageContent, landingMediaUrl, landingText } from "@/lib/home-landing";
 import { getLandingBlocks } from "@/lib/public-content";
+import { getRequestLocale, withLocalePrefix } from "@/lib/public-locale";
 
 const essences = [
   { index: "01", title: "QUIET", body: "과시하지 않는 존재감" },
@@ -31,7 +32,8 @@ const experienceImages = [
 ] as const;
 
 export default async function BrandPage() {
-  const content = getLandingPageContent(await getLandingBlocks("ko"), "brand-story");
+  const locale = await getRequestLocale();
+  const content = getLandingPageContent(await getLandingBlocks(locale), "brand-story");
   const hero = content["story-hero"];
   const about = content.about;
   const statement = content.statement;
@@ -127,8 +129,8 @@ export default async function BrandPage() {
         <section className="brand-page-closing">
           <p>{landingText(closing, "body", "OOGO는 단순한 아이웨어가 아니라, 한 발짝 더 깊이 바라보는 방식입니다.")}</p>
           <div className="brand-page-cta">
-            <a className="editorial-cta brand-page-cta-link" href={landingText(closing, "primaryHref", "/collection")}>{landingText(closing, "primaryLabel", "View Collection")}</a>
-            <a className="brand-page-cta-secondary" href={landingText(closing, "secondaryHref", "/inquiry")}>{landingText(closing, "secondaryLabel", "Business Inquiry")}</a>
+            <a className="editorial-cta brand-page-cta-link" href={withLocalePrefix(landingText(closing, "primaryHref", "/collection"), locale)}>{landingText(closing, "primaryLabel", "View Collection")}</a>
+            <a className="brand-page-cta-secondary" href={withLocalePrefix(landingText(closing, "secondaryHref", "/inquiry"), locale)}>{landingText(closing, "secondaryLabel", "Business Inquiry")}</a>
           </div>
         </section>
       </main>

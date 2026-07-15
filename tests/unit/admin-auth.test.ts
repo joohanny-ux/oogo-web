@@ -8,8 +8,8 @@ const archiveActionsSource = readFileSync(join(process.cwd(), "src/app/admin/arc
 
 describe("admin authentication", () => {
   it("redirects expired admin sessions while leaving the login page public", () => {
-    expect(middlewareSource).toContain('pathname.startsWith("/admin")');
-    expect(middlewareSource).toContain('pathname !== "/admin/login"');
+    expect(middlewareSource).toContain('pathnameWithoutLocale.startsWith("/admin")');
+    expect(middlewareSource).toContain('pathnameWithoutLocale === "/admin/login"');
     expect(middlewareSource).toContain("supabase.auth.getUser()");
     expect(middlewareSource).toContain('loginUrl.searchParams.set("reason", "session-expired")');
   });

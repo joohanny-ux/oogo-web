@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getProductCatalogHref, normalizeCatalogCategory } from "@/lib/products";
+import { getRequestLocale } from "@/lib/public-locale";
 
 export default async function ProductsPage({
   searchParams
@@ -7,5 +8,6 @@ export default async function ProductsPage({
   searchParams: Promise<{ category?: string }>;
 }) {
   const { category } = await searchParams;
-  redirect(getProductCatalogHref(normalizeCatalogCategory(category)));
+  const locale = await getRequestLocale();
+  redirect(getProductCatalogHref(normalizeCatalogCategory(category), locale));
 }

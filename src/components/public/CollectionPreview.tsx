@@ -1,6 +1,8 @@
 import { CollectionRail } from "@/components/public/CollectionRail";
+import type { Locale } from "@/lib/i18n";
 import { landingText, type LandingContent } from "@/lib/home-landing";
 import { getProductCatalogHref } from "@/lib/products";
+import { withLocalePrefix } from "@/lib/locale-path";
 
 type CollectionProduct = {
   slug: string;
@@ -11,7 +13,15 @@ type CollectionProduct = {
   images?: Partial<Record<"angle" | "front", string>>;
 };
 
-export function CollectionPreview({ products, content }: { products: CollectionProduct[]; content?: LandingContent }) {
+export function CollectionPreview({
+  products,
+  content,
+  locale = "ko"
+}: {
+  products: CollectionProduct[];
+  content?: LandingContent;
+  locale?: Locale;
+}) {
   const displayProducts = products.length === 0 ? [] : Array.from({ length: Math.max(8, products.length) }, (_, index) => {
     const product = products[index % products.length];
 
@@ -30,11 +40,11 @@ export function CollectionPreview({ products, content }: { products: CollectionP
     <section className="dark-section collection-wall" id="collection">
       <div className="collection-rail-heading">
         <p className="eyebrow">{landingText(content, "eyebrow", "Collection")}</p>
-        <a href={landingText(content, "primaryHref", getProductCatalogHref())}>
+        <a href={withLocalePrefix(landingText(content, "primaryHref", getProductCatalogHref(undefined, locale)), locale)}>
           {landingText(content, "primaryLabel", "View all")}
         </a>
       </div>
-      <CollectionRail products={displayProducts} />
+      <CollectionRail products={displayProducts} locale={locale} />
     </section>
   );
 }

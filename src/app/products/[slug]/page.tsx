@@ -5,10 +5,12 @@ import { SiteHeader } from "@/components/public/SiteHeader";
 import { getProductDetailSections } from "@/lib/products";
 import { getLandingBlocks, getProductBySlug } from "@/lib/public-content";
 import { getLandingPageContent, landingText } from "@/lib/home-landing";
+import { getRequestLocale } from "@/lib/public-locale";
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [product, blocks] = await Promise.all([getProductBySlug(slug, "ko"), getLandingBlocks("ko")]);
+  const locale = await getRequestLocale();
+  const [product, blocks] = await Promise.all([getProductBySlug(slug, locale), getLandingBlocks(locale)]);
 
   if (!product) {
     notFound();

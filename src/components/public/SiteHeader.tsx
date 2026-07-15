@@ -1,8 +1,15 @@
 import React from "react";
 import { SiteHeaderFrame } from "@/components/public/SiteHeaderFrame";
+import { LOCALE_LABELS, LOCALES, type Locale } from "@/lib/i18n";
 import { getProductCatalogHref } from "@/lib/products";
 import { getLandingPageContent, landingMediaUrl, landingText } from "@/lib/home-landing";
 import { getLandingBlocks } from "@/lib/public-content";
+import {
+  getRequestLocale,
+  getRequestPathname,
+  localizedHrefForLocale,
+  withLocalePrefix
+} from "@/lib/public-locale";
 
 export type HeaderContent = {
   logoText?: string;
@@ -29,10 +36,12 @@ const fallbackNav = [
 ];
 
 export async function SiteHeader({ content, overlay = false }: { content?: HeaderContent; overlay?: boolean }) {
-  const blocks = content ? [] : await getLandingBlocks("ko");
+  const locale = await getRequestLocale();
+  const pathname = await getRequestPathname();
+  const blocks = content ? [] : await getLandingBlocks(locale);
   const saved = getLandingPageContent(blocks, "header").main;
   const resolvedContent = content ?? {
-    logoText: landingText(saved, "logoLabel", "OOGO"),
+    logoText: landingText(saved, "logoText", landingText(saved, "logoLabel", "OOGO")),
     logoHref: landingText(saved, "logoHref", "/"),
     nav1Label: landingText(saved, "nav1Label", "Brand"),
     nav1Href: landingText(saved, "nav1Href", "/brand"),
@@ -53,23 +62,30 @@ export async function SiteHeader({ content, overlay = false }: { content?: Heade
 
     return {
       label: typeof label === "string" && label.trim() ? label : item.label,
-      href: typeof href === "string" && href.trim() ? href : item.href
+      href: withLocalePrefix(
+        typeof href === "string" && href.trim() ? href : item.href,
+        locale
+      )
     };
   });
   const uniqueItems = configuredItems.filter(
     (item, index, items) => items.findIndex((candidate) => candidate.href === item.href) === index
   );
-  const navItems = uniqueItems.some((item) => item.href === "/archive" || item.label.toLowerCase() === "archive")
+  const navItems = uniqueItems.some((item) => item.href.endsWith("/archive") || item.label.toLowerCase() === "archive")
     ? uniqueItems
     : [
-        ...uniqueItems.filter((item) => item.href !== "/inquiry"),
-        { label: "Archive", href: "/archive" },
-        ...uniqueItems.filter((item) => item.href === "/inquiry")
+        ...uniqueItems.filter((item) => !item.href.endsWith("/inquiry")),
+        { label: "Archive", href: withLocalePrefix("/archive", locale) },
+        ...uniqueItems.filter((item) => item.href.endsWith("/inquiry"))
       ];
 
   return (
     <SiteHeaderFrame overlay={overlay}>
-      <a className="brand-mark" href={resolvedContent.logoHref || "/"} aria-label="OOGO home">
+      <a
+        className="brand-mark"
+        href={withLocalePrefix(resolvedContent.logoHref || "/", locale)}
+        aria-label="OOGO home"
+      >
         <img src={landingMediaUrl(saved, "/images/oogo-logo-white.png")} alt={resolvedContent.logoText || "OOGO"} />
       </a>
       <nav className="site-nav" aria-label="Primary navigation">
@@ -81,10 +97,17 @@ export async function SiteHeader({ content, overlay = false }: { content?: Heade
       </nav>
       {resolvedContent.showLocale !== "false" ? (
         <details className="locale-switcher">
-          <summary aria-label="Current language">KR</summary>
+          <summary aria-label="Current language">{LOCALE_LABELS[locale]}</summary>
           <div aria-label="Language selector">
-            <button type="button">EN</button>
-            <button type="button">CN</button>
+            {LOCALES.map((item: Locale) => (
+              <a
+                key={item}
+                href={localizedHrefForLocale(pathname, item)}
+                aria-current={item === locale ? "true" : undefined}
+              >
+                {LOCALE_LABELS[item]}
+              </a>
+            ))}
           </div>
         </details>
       ) : null}

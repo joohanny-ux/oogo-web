@@ -5,9 +5,11 @@ import { buildPublicArchiveItems, getPublicArchiveItems } from "@/lib/archive-co
 import { archiveGridItems } from "@/lib/archive-items";
 import { getLandingPageContent, landingMediaUrl, landingText } from "@/lib/home-landing";
 import { getLandingBlocks } from "@/lib/public-content";
+import { getRequestLocale, withLocalePrefix } from "@/lib/public-locale";
 
 export default async function ArchivePage() {
-  const [landingBlocks, archiveRows] = await Promise.all([getLandingBlocks("ko"), getPublicArchiveItems("oogo")]);
+  const locale = await getRequestLocale();
+  const [landingBlocks, archiveRows] = await Promise.all([getLandingBlocks(locale), getPublicArchiveItems("oogo")]);
   const content = getLandingPageContent(landingBlocks, "archive");
   const intro = content.intro;
   const gallery = content.gallery;
@@ -26,8 +28,10 @@ export default async function ArchivePage() {
           <p>{landingText(intro, "body", "Visual records of OOGO frames, light, faces, and campaigns.")}</p>
         </section>
         <nav className="archive-collection-nav" aria-label="Archive collections">
-          <a href="/archive" aria-current="page">OOGO Archive</a>
-          <a href="/archive/youngbin-edition">Youngbin Edition</a>
+          <a href={withLocalePrefix("/archive", locale)} aria-current="page">
+            OOGO Archive
+          </a>
+          <a href={withLocalePrefix("/archive/youngbin-edition", locale)}>Youngbin Edition</a>
         </nav>
         <ArchiveGallery items={items} />
       </main>

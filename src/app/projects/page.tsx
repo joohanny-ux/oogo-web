@@ -4,9 +4,11 @@ import { SiteHeader } from "@/components/public/SiteHeader";
 import { specialEditions } from "@/lib/special-editions";
 import { getLandingPageContent, landingMediaUrl, landingText } from "@/lib/home-landing";
 import { getLandingBlocks } from "@/lib/public-content";
+import { getRequestLocale, withLocalePrefix } from "@/lib/public-locale";
 
 export default async function ProjectsPage() {
-  const content = getLandingPageContent(await getLandingBlocks("ko"), "projects");
+  const locale = await getRequestLocale();
+  const content = getLandingPageContent(await getLandingBlocks(locale), "projects");
   const intro = content.intro;
   const featured = content["featured-project"];
   const collaboration = content["collaboration-cta"];
@@ -23,7 +25,14 @@ export default async function ProjectsPage() {
         </section>
         <section className="project-list" aria-label="OOGO projects">
           {specialEditions.map((project, index) => (
-            <a className="project-list-card" href={index === 0 ? landingText(featured, "primaryHref", `/projects/${project.slug}`) : `/projects/${project.slug}`} key={project.id}>
+            <a
+              className="project-list-card"
+              href={withLocalePrefix(
+                index === 0 ? landingText(featured, "primaryHref", `/projects/${project.slug}`) : `/projects/${project.slug}`,
+                locale
+              )}
+              key={project.id}
+            >
               <span
                 className="project-list-image"
                 style={{ backgroundImage: `url("${index === 0 ? landingMediaUrl(featured, project.images.hero) : project.images.hero}")` } as CSSProperties}
@@ -35,7 +44,10 @@ export default async function ProjectsPage() {
               </span>
             </a>
           ))}
-          <a className="project-list-card project-list-cta" href={landingText(collaboration, "primaryHref", "/inquiry")}>
+          <a
+            className="project-list-card project-list-cta"
+            href={withLocalePrefix(landingText(collaboration, "primaryHref", "/inquiry"), locale)}
+          >
             <span className="project-list-cta-copy">
               <small>{landingText(collaboration, "eyebrow", "Next")}</small>
               <strong>{landingText(collaboration, "heading", "Open collaboration")}</strong>

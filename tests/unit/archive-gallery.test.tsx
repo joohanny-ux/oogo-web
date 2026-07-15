@@ -40,16 +40,16 @@ describe("ArchiveGallery", () => {
   it("renders a separate Youngbin Edition archive with a project return link", () => {
     expect(youngbinArchivePageSource).toContain('getPublicArchiveItems("youngbin-edition")');
     expect(youngbinArchivePageSource).toContain('buildPublicArchiveItems(rows, [], "youngbin-edition")');
-    expect(youngbinArchivePageSource).toContain('href="/projects/youngbin-edition"');
+    expect(youngbinArchivePageSource).toContain('withLocalePrefix("/projects/youngbin-edition", locale)');
     expect(youngbinArchivePageSource).toContain("ArchiveGallery");
   });
 
   it("exposes both archive collections from the main and Youngbin archive pages", () => {
     expect(archivePageSource).toContain('className="archive-collection-nav"');
-    expect(archivePageSource).toContain('href="/archive/youngbin-edition"');
+    expect(archivePageSource).toContain('withLocalePrefix("/archive/youngbin-edition", locale)');
     expect(archivePageSource).toContain("Youngbin Edition");
     expect(youngbinArchivePageSource).toContain('className="archive-collection-nav"');
-    expect(youngbinArchivePageSource).toContain('href="/archive"');
+    expect(youngbinArchivePageSource).toContain('withLocalePrefix("/archive", locale)');
     expect(youngbinArchivePageSource).toContain('aria-current="page"');
   });
 });

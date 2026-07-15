@@ -1,12 +1,20 @@
 import { getFeaturedSpecialEdition } from "@/lib/special-editions";
 import type { CSSProperties } from "react";
+import type { Locale } from "@/lib/i18n";
 import { landingMediaUrl, landingText, type LandingContent } from "@/lib/home-landing";
+import { withLocalePrefix } from "@/lib/locale-path";
 
 type ProjectStyle = CSSProperties & { "--home-project-image": string };
 
-export function SpecialEditionSection({ content }: { content?: LandingContent }) {
+export function SpecialEditionSection({
+  content,
+  locale = "ko"
+}: {
+  content?: LandingContent;
+  locale?: Locale;
+}) {
   const edition = getFeaturedSpecialEdition();
-  const href = landingText(content, "primaryHref", "/projects/youngbin-edition");
+  const href = withLocalePrefix(landingText(content, "primaryHref", "/projects/youngbin-edition"), locale);
   const style: ProjectStyle = {
     "--home-project-image": `url("${landingMediaUrl(content, "/images/oogo-gallery.png")}")`
   };

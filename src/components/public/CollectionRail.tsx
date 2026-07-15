@@ -2,6 +2,7 @@
 
 import type { CSSProperties } from "react";
 import { useRef, useState } from "react";
+import type { Locale } from "@/lib/i18n";
 import { getProductDetailHref } from "@/lib/products";
 
 type RailProduct = {
@@ -11,7 +12,7 @@ type RailProduct = {
   previewName: string;
 };
 
-export function CollectionRail({ products }: { products: RailProduct[] }) {
+export function CollectionRail({ products, locale = "ko" }: { products: RailProduct[]; locale?: Locale }) {
   const railRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef({ active: false, startX: 0, scrollLeft: 0, moved: false });
   const [dragging, setDragging] = useState(false);
@@ -109,7 +110,7 @@ export function CollectionRail({ products }: { products: RailProduct[] }) {
         <article className="product-tile" key={product.previewKey}>
           <a
             className={`product-visual product-visual-${(index % 2) + 1}`}
-            href={getProductDetailHref(product.slug)}
+            href={getProductDetailHref(product.slug, locale)}
             draggable={false}
             onDragStart={(event) => event.preventDefault()}
             onClick={preventClickAfterDrag}
@@ -119,7 +120,7 @@ export function CollectionRail({ products }: { products: RailProduct[] }) {
           <div className="product-tile-copy">
             <h3>
               <a
-                href={getProductDetailHref(product.slug)}
+                href={getProductDetailHref(product.slug, locale)}
                 draggable={false}
                 onDragStart={(event) => event.preventDefault()}
                 onClick={preventClickAfterDrag}

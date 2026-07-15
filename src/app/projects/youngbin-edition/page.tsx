@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/public/SiteHeader";
 import { getSpecialEditionBySlug } from "@/lib/special-editions";
 import { getLandingPageContent, landingMediaUrl, landingText } from "@/lib/home-landing";
 import { getLandingBlocks } from "@/lib/public-content";
+import { getRequestLocale, withLocalePrefix } from "@/lib/public-locale";
 
 const imageStyle = (url: string, fit: CSSProperties["backgroundSize"] = "cover") =>
   ({
@@ -14,8 +15,6 @@ const imageStyle = (url: string, fit: CSSProperties["backgroundSize"] = "cover")
     backgroundSize: fit
   }) satisfies CSSProperties;
 
-const photoArchiveHref = "/archive/youngbin-edition";
-
 export default async function YoungbinEditionPage() {
   const edition = getSpecialEditionBySlug("youngbin-edition");
 
@@ -23,7 +22,9 @@ export default async function YoungbinEditionPage() {
     notFound();
   }
 
-  const content = getLandingPageContent(await getLandingBlocks("ko"), "special-edition");
+  const locale = await getRequestLocale();
+  const photoArchiveHref = withLocalePrefix("/archive/youngbin-edition", locale);
+  const content = getLandingPageContent(await getLandingBlocks(locale), "special-edition");
   const hero = content["special-hero"];
   const statement = content["collaboration-statement"];
   const limited = content["limited-edition"];
@@ -131,11 +132,17 @@ export default async function YoungbinEditionPage() {
             <div className="youngbin-project-profile-actions">
               <a
                 className="youngbin-project-button youngbin-project-button-dark"
-                href={landingText(profile, "archiveHref", edition.profile.archiveHref || photoArchiveHref)}
+                href={withLocalePrefix(
+                  landingText(profile, "archiveHref", edition.profile.archiveHref || photoArchiveHref),
+                  locale
+                )}
               >
                 {landingText(profile, "archiveLabel", edition.profile.archiveLabel)}
               </a>
-              <a className="youngbin-project-text-link" href={landingText(footerCta, "primaryHref", "/inquiry")}>
+              <a
+                className="youngbin-project-text-link"
+                href={withLocalePrefix(landingText(footerCta, "primaryHref", "/inquiry"), locale)}
+              >
                 {landingText(footerCta, "primaryLabel", edition.cta)}
               </a>
             </div>

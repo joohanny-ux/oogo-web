@@ -1,6 +1,7 @@
 import { getProductCatalogHref } from "@/lib/products";
 import { getLandingPageContent, landingText } from "@/lib/home-landing";
 import { getLandingBlocks } from "@/lib/public-content";
+import { getRequestLocale, withLocalePrefix } from "@/lib/public-locale";
 
 const socialLinks = [
   { label: "Instagram", icon: "instagram", href: "https://www.instagram.com/oogolabs" },
@@ -57,17 +58,18 @@ function SocialIcon({ icon }: { icon: SocialIconName }) {
 }
 
 export async function SiteFooter() {
-  const blocks = await getLandingBlocks("ko");
+  const locale = await getRequestLocale();
+  const blocks = await getLandingBlocks(locale);
   const content = getLandingPageContent(blocks, "footer");
   const brand = content.brand;
   const navigation = content.navigation;
   const contact = content["contact-legal"];
   const navLinks = [
-    ["nav1Label", "nav1Href", "Collection", getProductCatalogHref()],
-    ["nav2Label", "nav2Href", "Projects", "/projects"],
-    ["nav3Label", "nav3Href", "Archive", "/archive"],
-    ["nav4Label", "nav4Href", "Inquiry", "/inquiry"],
-    ["nav5Label", "nav5Href", "Brand Story", "/brand"]
+    ["nav1Label", "nav1Href", "Collection", getProductCatalogHref(undefined, locale)],
+    ["nav2Label", "nav2Href", "Projects", withLocalePrefix("/projects", locale)],
+    ["nav3Label", "nav3Href", "Archive", withLocalePrefix("/archive", locale)],
+    ["nav4Label", "nav4Href", "Inquiry", withLocalePrefix("/inquiry", locale)],
+    ["nav5Label", "nav5Href", "Brand Story", withLocalePrefix("/brand", locale)]
   ];
   const resolvedSocialLinks = socialLinks.map((link) => ({
     ...link,
@@ -82,7 +84,7 @@ export async function SiteFooter() {
       </div>
       <nav aria-label="Footer navigation">
         {navLinks.map(([labelKey, hrefKey, fallbackLabel, fallbackHref]) => (
-          <a href={landingText(navigation, hrefKey, fallbackHref)} key={labelKey}>
+          <a href={withLocalePrefix(landingText(navigation, hrefKey, fallbackHref), locale)} key={labelKey}>
             {landingText(navigation, labelKey, fallbackLabel)}
           </a>
         ))}
@@ -92,8 +94,12 @@ export async function SiteFooter() {
         <span>Buyer / Retail / Collaboration</span>
         <span>{landingText(contact, "address", "Seoul, Korea")}</span>
         <nav className="footer-legal" aria-label="Legal links">
-          <a href={landingText(contact, "termsHref", "/terms-conditions")}>{landingText(contact, "termsLabel", "Terms & Conditions")}</a>
-          <a href={landingText(contact, "privacyHref", "/privacy-policy")}>{landingText(contact, "privacyLabel", "Privacy Policy")}</a>
+          <a href={withLocalePrefix(landingText(contact, "termsHref", "/terms-conditions"), locale)}>
+            {landingText(contact, "termsLabel", "Terms & Conditions")}
+          </a>
+          <a href={withLocalePrefix(landingText(contact, "privacyHref", "/privacy-policy"), locale)}>
+            {landingText(contact, "privacyLabel", "Privacy Policy")}
+          </a>
         </nav>
         <div className="footer-socials" aria-label="Social links">
           {resolvedSocialLinks.map((link) => (

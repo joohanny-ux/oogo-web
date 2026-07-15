@@ -4,10 +4,12 @@ import { SiteHeader } from "@/components/public/SiteHeader";
 import { buildPublicArchiveItems, getPublicArchiveItems } from "@/lib/archive-content";
 import { getLandingPageContent, landingText } from "@/lib/home-landing";
 import { getLandingBlocks } from "@/lib/public-content";
+import { getRequestLocale, withLocalePrefix } from "@/lib/public-locale";
 
 export default async function YoungbinEditionArchivePage() {
+  const locale = await getRequestLocale();
   const [blocks, rows] = await Promise.all([
-    getLandingBlocks("ko"),
+    getLandingBlocks(locale),
     getPublicArchiveItems("youngbin-edition")
   ]);
   const content = getLandingPageContent(blocks, "special-edition");
@@ -28,14 +30,16 @@ export default async function YoungbinEditionArchivePage() {
               {landingText(intro, "artistCredit", "Photography by Youngbin Ji")}
             </p>
             <p>{landingText(intro, "body", "Collaboration studies and selected photographic works by Youngbin Ji.")}</p>
-            <a href="/projects/youngbin-edition">
+            <a href={withLocalePrefix("/projects/youngbin-edition", locale)}>
               {landingText(intro, "projectLabel", "View Project")}
             </a>
           </div>
         </section>
         <nav className="archive-collection-nav" aria-label="Archive collections">
-          <a href="/archive">OOGO Archive</a>
-          <a href="/archive/youngbin-edition" aria-current="page">Youngbin Edition</a>
+          <a href={withLocalePrefix("/archive", locale)}>OOGO Archive</a>
+          <a href={withLocalePrefix("/archive/youngbin-edition", locale)} aria-current="page">
+            Youngbin Edition
+          </a>
         </nav>
         {items.length > 0 ? (
           <ArchiveGallery items={items} label="Youngbin Edition photo archive" />

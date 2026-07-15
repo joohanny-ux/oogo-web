@@ -1,4 +1,5 @@
 import type { Locale } from "@/lib/i18n";
+import { withLocalePrefix } from "@/lib/locale-path";
 
 export type ProductImageAsset = {
   public_url?: string | null;
@@ -82,16 +83,17 @@ export type ProductDetailSection = {
 export const PRODUCT_CATALOG_PATH = "/collection";
 export const PRODUCT_DETAIL_PATH = "/products";
 
-export function getProductCatalogHref(category?: CatalogCategory) {
-  if (!category || category === "all") {
-    return PRODUCT_CATALOG_PATH;
-  }
+export function getProductCatalogHref(category?: CatalogCategory, locale: Locale = "ko") {
+  const path =
+    !category || category === "all"
+      ? PRODUCT_CATALOG_PATH
+      : `${PRODUCT_CATALOG_PATH}?category=${encodeURIComponent(category)}`;
 
-  return `${PRODUCT_CATALOG_PATH}?category=${encodeURIComponent(category)}`;
+  return withLocalePrefix(path, locale);
 }
 
-export function getProductDetailHref(slug: string) {
-  return `${PRODUCT_DETAIL_PATH}/${encodeURIComponent(slug)}`;
+export function getProductDetailHref(slug: string, locale: Locale = "ko") {
+  return withLocalePrefix(`${PRODUCT_DETAIL_PATH}/${encodeURIComponent(slug)}`, locale);
 }
 
 function assetPublicUrl(asset: ProductImageRow["assets"]) {
