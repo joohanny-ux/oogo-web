@@ -2842,7 +2842,9 @@ body .turnstile-widget {
   }
 
   body .locale-switcher {
-    display: none !important;
+    display: block !important;
+    justify-self: end !important;
+    padding: 6px 10px !important;
   }
 
   body .collection-subpage .catalog-grid,
@@ -3290,6 +3292,23 @@ body .site-header.is-overlay.is-scrolled .locale-switcher {
   color: #1b1814 !important;
   border-color: rgba(27, 24, 20, 0.18) !important;
   background: rgba(255, 255, 255, 0.28) !important;
+}
+
+@media (max-width: 840px) {
+  body .site-header {
+    grid-template-columns: 1fr auto !important;
+    gap: 12px !important;
+  }
+
+  body .site-nav {
+    display: none !important;
+  }
+
+  body .locale-switcher {
+    display: block !important;
+    justify-self: end !important;
+    z-index: 6 !important;
+  }
 }
 
 @media (max-width: 640px) {

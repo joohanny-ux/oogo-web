@@ -56,4 +56,11 @@ body .copyright {
   it("keeps the single-project index compact", () => {
     expect(css).toMatch(/\.projects-page[\s\S]*?min-height: auto !important;/);
   });
+
+  it("shows the language switcher on mobile and tablet headers", () => {
+    expect(css).toMatch(
+      /@media \(max-width: 840px\)[\s\S]*?\.site-nav[\s\S]*?display: none !important;[\s\S]*?\.locale-switcher[\s\S]*?display: block !important;/
+    );
+    expect(css).not.toMatch(/@media \(max-width: 640px\)[\s\S]*?body \.locale-switcher \{\s*display: none !important;/);
+  });
 });
