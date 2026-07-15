@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import type { Locale } from "@/lib/i18n";
 import { landingText, type LandingContent } from "@/lib/home-landing";
 import { withLocalePrefix } from "@/lib/locale-path";
+import { landingTextForLocale, publicCopy } from "@/lib/public-copy";
 
 const archiveItems = [
   {
@@ -34,9 +35,9 @@ export function ArchiveSection({
   return (
     <section className="archive-section" id="archive">
       <div className="archive-heading">
-        <p className="eyebrow">{landingText(content, "eyebrow", "Archive")}</p>
+        <p className="eyebrow">{landingTextForLocale(content, "eyebrow", locale, publicCopy.home.archiveEyebrow)}</p>
         <a href={withLocalePrefix(landingText(content, "primaryHref", "/archive"), locale)}>
-          {landingText(content, "primaryLabel", "View archive")}
+          {landingTextForLocale(content, "primaryLabel", locale, publicCopy.common.viewArchive)}
         </a>
       </div>
       <div className="archive-grid">

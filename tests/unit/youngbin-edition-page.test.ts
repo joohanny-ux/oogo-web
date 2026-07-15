@@ -58,6 +58,6 @@ describe("Youngbin Edition project page", () => {
     expect(source).not.toContain('>View Photo Archive</a>');
     expect(source).not.toContain('"All projects"');
     expect(source.match(/youngbin-project-profile-actions/g)).toHaveLength(1);
-    expect(source).toContain('landingText(footerCta, "primaryLabel", edition.cta)');
+    expect(source).toContain('landingTextForLocale(footerCta, "primaryLabel", locale, publicCopy.youngbin.buyerInquiry)');
   });
 });

@@ -1,5 +1,7 @@
 import type { Locale } from "@/lib/i18n";
 import { withLocalePrefix } from "@/lib/locale-path";
+import { containsHangul } from "@/lib/public-copy";
+import { initialProducts } from "@/lib/seed-data";
 
 export type ProductImageAsset = {
   public_url?: string | null;
@@ -123,11 +125,33 @@ export function mapProductImages(productImages: ProductRow["product_images"] = [
   }, {});
 }
 
+function getSeedProductTranslation(slug: string, modelCode: string, locale: Locale) {
+  const seed = initialProducts.find((product) => product.slug === slug || product.modelCode === modelCode);
+  return seed?.translations[locale] ?? null;
+}
+
+export function resolveLocalizedProductText(
+  locale: Locale,
+  candidates: Array<string | null | undefined>
+): string | null {
+  for (const candidate of candidates) {
+    if (!candidate?.trim()) continue;
+    if (locale === "ko" || !containsHangul(candidate)) {
+      return candidate.trim();
+    }
+  }
+
+  const last = candidates.find((item) => item?.trim());
+  return last?.trim() ?? null;
+}
+
 export function mapProductRow(row: ProductRow, locale: Locale): PublicProduct {
-  const translation =
-    row.product_translations.find((item) => item.locale === locale) ??
-    row.product_translations.find((item) => item.locale === "ko") ??
-    row.product_translations[0];
+  const localeTranslation = row.product_translations.find((item) => item.locale === locale);
+  const koTranslation = row.product_translations.find((item) => item.locale === "ko");
+  const enTranslation = row.product_translations.find((item) => item.locale === "en");
+  const translation = localeTranslation ?? koTranslation ?? row.product_translations[0];
+  const seedLocale = getSeedProductTranslation(row.slug, row.model_code, locale);
+  const seedEn = locale === "zh" ? getSeedProductTranslation(row.slug, row.model_code, "en") : null;
   const selectedLensMaterial = translation?.lens_material || row.lens_material;
   const selectedLensFeatures = translation?.lens_features?.length
     ? translation.lens_features
@@ -152,13 +176,40 @@ export function mapProductRow(row: ProductRow, locale: Locale): PublicProduct {
     return items;
   }, {});
 
+  const name =
+    resolveLocalizedProductText(locale, [
+      localeTranslation?.name,
+      seedLocale?.name,
+      enTranslation?.name,
+      seedEn?.name,
+      koTranslation?.name,
+      row.model_code
+    ]) ?? row.model_code;
+
+  const colorway = resolveLocalizedProductText(locale, [
+    localeTranslation?.colorway,
+    seedLocale?.colorway,
+    enTranslation?.colorway,
+    seedEn?.colorway,
+    koTranslation?.colorway,
+    row.reference_color_name
+  ]);
+
+  const description = resolveLocalizedProductText(locale, [
+    localeTranslation?.description,
+    seedLocale?.description,
+    enTranslation?.description,
+    seedEn?.description,
+    koTranslation?.description
+  ]);
+
   return {
     id: row.id,
     slug: row.slug,
     modelCode: row.model_code,
-    name: translation?.name ?? row.model_code,
-    colorway: translation?.colorway || row.reference_color_name || null,
-    description: translation?.description ?? null,
+    name,
+    colorway,
+    description,
     translations,
     size: translation?.frame_size || row.size,
     sizeNote: translation?.size_note ?? null,

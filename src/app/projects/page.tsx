@@ -5,6 +5,7 @@ import { specialEditions } from "@/lib/special-editions";
 import { getLandingPageContent, landingMediaUrl, landingText } from "@/lib/home-landing";
 import { getLandingBlocks } from "@/lib/public-content";
 import { getRequestLocale, withLocalePrefix } from "@/lib/public-locale";
+import { landingTextForLocale, publicCopy } from "@/lib/public-copy";
 
 export default async function ProjectsPage() {
   const locale = await getRequestLocale();
@@ -18,10 +19,10 @@ export default async function ProjectsPage() {
       <main className="projects-page">
         <section className="projects-page-intro">
           <div>
-            <p className="eyebrow">{landingText(intro, "eyebrow", "Projects")}</p>
-            <h1>{landingText(intro, "heading", "Projects")}</h1>
+            <p className="eyebrow">{landingTextForLocale(intro, "eyebrow", locale, publicCopy.projects.eyebrow)}</p>
+            <h1>{landingTextForLocale(intro, "heading", locale, publicCopy.projects.heading)}</h1>
           </div>
-          <p>{landingText(intro, "body", "Seasonal studies / collaborations / image archive")}</p>
+          <p>{landingTextForLocale(intro, "body", locale, publicCopy.projects.body)}</p>
         </section>
         <section className="project-list" aria-label="OOGO projects">
           {specialEditions.map((project, index) => (
@@ -40,7 +41,15 @@ export default async function ProjectsPage() {
               <span className="project-list-copy">
                 <small>{index === 0 ? landingText(featured, "year", project.year) : project.year}</small>
                 <strong>{index === 0 ? landingText(featured, "heading", project.title) : project.title}</strong>
-                <span>{index === 0 ? landingText(featured, "body", project.summary) : project.summary}</span>
+                <span>
+                  {index === 0
+                    ? landingTextForLocale(featured, "body", locale, {
+                        ko: project.summary,
+                        en: project.summary,
+                        zh: project.summary
+                      })
+                    : project.summary}
+                </span>
               </span>
             </a>
           ))}
@@ -49,9 +58,9 @@ export default async function ProjectsPage() {
             href={withLocalePrefix(landingText(collaboration, "primaryHref", "/inquiry"), locale)}
           >
             <span className="project-list-cta-copy">
-              <small>{landingText(collaboration, "eyebrow", "Next")}</small>
-              <strong>{landingText(collaboration, "heading", "Open collaboration")}</strong>
-              <span>{landingText(collaboration, "body", "Buyer, retail, and campaign inquiries.")}</span>
+              <small>{landingTextForLocale(collaboration, "eyebrow", locale, publicCopy.projects.next)}</small>
+              <strong>{landingTextForLocale(collaboration, "heading", locale, publicCopy.projects.openCollab)}</strong>
+              <span>{landingTextForLocale(collaboration, "body", locale, publicCopy.projects.openCollabBody)}</span>
             </span>
           </a>
         </section>

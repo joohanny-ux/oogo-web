@@ -6,6 +6,7 @@ import { getSpecialEditionBySlug } from "@/lib/special-editions";
 import { getLandingPageContent, landingMediaUrl, landingText } from "@/lib/home-landing";
 import { getLandingBlocks } from "@/lib/public-content";
 import { getRequestLocale, withLocalePrefix } from "@/lib/public-locale";
+import { landingTextForLocale, pickLocaleCopy, publicCopy } from "@/lib/public-copy";
 
 const imageStyle = (url: string, fit: CSSProperties["backgroundSize"] = "cover") =>
   ({
@@ -33,7 +34,16 @@ export default async function YoungbinEditionPage() {
   const footerCta = content["footer-cta"];
   const limitedFeatures = edition.limited.features.map((feature, index) => ({
     title: landingText(limited, `feature${index + 1}Title`, feature.title),
-    body: landingText(limited, `feature${index + 1}Body`, feature.body)
+    body: landingTextForLocale(
+      limited,
+      `feature${index + 1}Body`,
+      locale,
+      publicCopy.youngbin.featureBodies[index] ?? {
+        ko: feature.body,
+        en: feature.body,
+        zh: feature.body
+      }
+    )
   }));
   const gallery = edition.gallery
     .map((image, index) => ({
@@ -45,6 +55,12 @@ export default async function YoungbinEditionPage() {
     }))
     .filter((image, index) => image.src.length > 0 && index > 0)
     .slice(0, 4);
+  const quote = landingTextForLocale(
+    profile,
+    locale === "ko" ? "quoteKo" : "quoteEn",
+    locale,
+    publicCopy.youngbin.quote
+  );
 
   return (
     <>
@@ -61,17 +77,25 @@ export default async function YoungbinEditionPage() {
             <p className="youngbin-project-meta">
               {landingText(hero, "subtitle", `${edition.year} · ${edition.collaborator}`)}
             </p>
-            <p className="youngbin-project-lead">{landingText(hero, "body", edition.story)}</p>
+            <p className="youngbin-project-lead">
+              {landingTextForLocale(hero, "body", locale, {
+                ko: edition.story,
+                en: edition.story,
+                zh: edition.story
+              })}
+            </p>
           </div>
         </section>
 
         <section className="youngbin-project-story-edition" aria-labelledby="youngbin-story-title">
           <div className="youngbin-project-story-copy">
-            <p className="eyebrow">Collaboration Story</p>
+            <p className="eyebrow">{pickLocaleCopy(locale, publicCopy.youngbin.collaborationStory)}</p>
             <h2 id="youngbin-story-title">
               {landingText(statement, "statementEn", edition.statement.statementEn)}
             </h2>
-            <p className="youngbin-project-story-body">{landingText(statement, "bodyKo", edition.statement.bodyKo)}</p>
+            <p className="youngbin-project-story-body">
+              {landingTextForLocale(statement, "bodyKo", locale, publicCopy.youngbin.storyBody)}
+            </p>
             <div className="youngbin-project-edition-intro">
               <p className="eyebrow">{landingText(limited, "eyebrow", edition.limited.eyebrow)}</p>
               <h3>{landingText(limited, "heading", edition.limited.heading)}</h3>
@@ -91,8 +115,8 @@ export default async function YoungbinEditionPage() {
         <section className="youngbin-project-gallery" aria-labelledby="youngbin-gallery-title">
           <header className="youngbin-project-section-heading">
             <div>
-              <p className="eyebrow">Campaign & Product</p>
-              <h2 id="youngbin-gallery-title">Edition Gallery</h2>
+              <p className="eyebrow">{pickLocaleCopy(locale, publicCopy.youngbin.campaignProduct)}</p>
+              <h2 id="youngbin-gallery-title">{pickLocaleCopy(locale, publicCopy.youngbin.editionGallery)}</h2>
             </div>
           </header>
           <div className="youngbin-project-gallery-grid">
@@ -120,10 +144,10 @@ export default async function YoungbinEditionPage() {
             <h2 id="youngbin-profile-title">{landingText(profile, "name", edition.profile.name)}</h2>
             <p className="youngbin-project-profile-role">{landingText(profile, "role", edition.profile.role)}</p>
             <blockquote>
-              <strong>{landingText(profile, "quoteKo", edition.profile.quoteKo)}</strong>
-              <span>{landingText(profile, "quoteEn", edition.profile.quoteEn)}</span>
+              <strong>{quote}</strong>
+              {locale === "ko" ? <span>{landingText(profile, "quoteEn", edition.profile.quoteEn)}</span> : null}
             </blockquote>
-            <p>{landingText(profile, "body", edition.profile.body)}</p>
+            <p>{landingTextForLocale(profile, "body", locale, publicCopy.youngbin.profileBody)}</p>
             <ul>
               {edition.profile.credentials.map((credential, index) => (
                 <li key={credential}>{landingText(profile, `credential${index + 1}`, credential)}</li>
@@ -137,13 +161,13 @@ export default async function YoungbinEditionPage() {
                   locale
                 )}
               >
-                {landingText(profile, "archiveLabel", edition.profile.archiveLabel)}
+                {landingTextForLocale(profile, "archiveLabel", locale, publicCopy.youngbin.archiveLabel)}
               </a>
               <a
                 className="youngbin-project-text-link"
                 href={withLocalePrefix(landingText(footerCta, "primaryHref", "/inquiry"), locale)}
               >
-                {landingText(footerCta, "primaryLabel", edition.cta)}
+                {landingTextForLocale(footerCta, "primaryLabel", locale, publicCopy.youngbin.buyerInquiry)}
               </a>
             </div>
           </div>

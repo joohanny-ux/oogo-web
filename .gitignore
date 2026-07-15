@@ -13,3 +13,5 @@ yarn-error.log*
 test-results/
 playwright-report/
 *.tsbuildinfo
+
+.vercel

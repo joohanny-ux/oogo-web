@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useEffect, useRef, useState, type CSSProperties, type PointerEvent } from "react";
+import type { Locale } from "@/lib/i18n";
 import type { HomeHeroSlide } from "@/lib/home-landing";
+import { pickLocaleCopy, publicCopy } from "@/lib/public-copy";
 
 type HeroSlideStyle = CSSProperties & { "--hero-slide-image": string };
 
@@ -9,6 +11,7 @@ type HomeHeroSliderProps = {
   slides: HomeHeroSlide[];
   autoplay: boolean;
   intervalMs: number;
+  locale?: Locale;
 };
 
 export function getAdjacentHeroIndex(index: number, direction: number, count: number) {
@@ -16,7 +19,7 @@ export function getAdjacentHeroIndex(index: number, direction: number, count: nu
   return (index + direction + count) % count;
 }
 
-export function HomeHeroSlider({ slides, autoplay, intervalMs }: HomeHeroSliderProps) {
+export function HomeHeroSlider({ slides, autoplay, intervalMs, locale = "ko" }: HomeHeroSliderProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const pointerStart = useRef<number | null>(null);
@@ -57,7 +60,7 @@ export function HomeHeroSlider({ slides, autoplay, intervalMs }: HomeHeroSliderP
   return (
     <section
       className="home-hero-slider"
-      aria-label="OOGO 하이라이트"
+      aria-label={pickLocaleCopy(locale, publicCopy.a11y.heroCarousel)}
       aria-roledescription="carousel"
       data-interval-ms={intervalMs}
       onMouseEnter={() => setPaused(true)}
@@ -99,7 +102,11 @@ export function HomeHeroSlider({ slides, autoplay, intervalMs }: HomeHeroSliderP
             <button
               type="button"
               className={`hero-progress-button${index === activeIndex ? " is-active" : ""}`}
-              aria-label={`슬라이드 ${index + 1} 보기`}
+              aria-label={
+                locale === "ko"
+                  ? `슬라이드 ${index + 1} 보기`
+                  : `${pickLocaleCopy(locale, publicCopy.a11y.slideView)} ${index + 1}`
+              }
               aria-current={index === activeIndex ? "true" : undefined}
               onClick={() => setActiveIndex(index)}
               key={slide.id}

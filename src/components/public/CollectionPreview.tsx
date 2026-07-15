@@ -3,6 +3,7 @@ import type { Locale } from "@/lib/i18n";
 import { landingText, type LandingContent } from "@/lib/home-landing";
 import { getProductCatalogHref } from "@/lib/products";
 import { withLocalePrefix } from "@/lib/locale-path";
+import { landingTextForLocale, publicCopy } from "@/lib/public-copy";
 
 type CollectionProduct = {
   slug: string;
@@ -39,9 +40,9 @@ export function CollectionPreview({
   return (
     <section className="dark-section collection-wall" id="collection">
       <div className="collection-rail-heading">
-        <p className="eyebrow">{landingText(content, "eyebrow", "Collection")}</p>
+        <p className="eyebrow">{landingTextForLocale(content, "eyebrow", locale, publicCopy.home.collectionEyebrow)}</p>
         <a href={withLocalePrefix(landingText(content, "primaryHref", getProductCatalogHref(undefined, locale)), locale)}>
-          {landingText(content, "primaryLabel", "View all")}
+          {landingTextForLocale(content, "primaryLabel", locale, publicCopy.common.viewAll)}
         </a>
       </div>
       <CollectionRail products={displayProducts} locale={locale} />

@@ -10,6 +10,7 @@ import {
   localizedHrefForLocale,
   withLocalePrefix
 } from "@/lib/public-locale";
+import { landingTextForLocale, pickLocaleCopy, publicCopy } from "@/lib/public-copy";
 
 export type HeaderContent = {
   logoText?: string;
@@ -28,11 +29,11 @@ export type HeaderContent = {
 };
 
 const fallbackNav = [
-  { label: "Brand", href: "/brand" },
-  { label: "Collection", href: getProductCatalogHref() },
-  { label: "Projects", href: "/projects" },
-  { label: "Archive", href: "/archive" },
-  { label: "Inquiry", href: "/inquiry" }
+  { labelKey: "brand" as const, href: "/brand" },
+  { labelKey: "collection" as const, href: getProductCatalogHref() },
+  { labelKey: "projects" as const, href: "/projects" },
+  { labelKey: "archive" as const, href: "/archive" },
+  { labelKey: "inquiry" as const, href: "/inquiry" }
 ];
 
 export async function SiteHeader({ content, overlay = false }: { content?: HeaderContent; overlay?: boolean }) {
@@ -40,18 +41,19 @@ export async function SiteHeader({ content, overlay = false }: { content?: Heade
   const pathname = await getRequestPathname();
   const blocks = content ? [] : await getLandingBlocks(locale);
   const saved = getLandingPageContent(blocks, "header").main;
+  const navCopy = publicCopy.nav;
   const resolvedContent = content ?? {
     logoText: landingText(saved, "logoText", landingText(saved, "logoLabel", "OOGO")),
     logoHref: landingText(saved, "logoHref", "/"),
-    nav1Label: landingText(saved, "nav1Label", "Brand"),
+    nav1Label: landingTextForLocale(saved, "nav1Label", locale, navCopy.brand),
     nav1Href: landingText(saved, "nav1Href", "/brand"),
-    nav2Label: landingText(saved, "nav2Label", "Collection"),
+    nav2Label: landingTextForLocale(saved, "nav2Label", locale, navCopy.collection),
     nav2Href: landingText(saved, "nav2Href", getProductCatalogHref()),
-    nav3Label: landingText(saved, "nav3Label", "Projects"),
+    nav3Label: landingTextForLocale(saved, "nav3Label", locale, navCopy.projects),
     nav3Href: landingText(saved, "nav3Href", "/projects"),
-    nav4Label: landingText(saved, "nav4Label", "Archive"),
+    nav4Label: landingTextForLocale(saved, "nav4Label", locale, navCopy.archive),
     nav4Href: landingText(saved, "nav4Href", "/archive"),
-    nav5Label: landingText(saved, "nav5Label", "Inquiry"),
+    nav5Label: landingTextForLocale(saved, "nav5Label", locale, navCopy.inquiry),
     nav5Href: landingText(saved, "nav5Href", "/inquiry"),
     showLocale: landingText(saved, "showLocale", "true")
   };
@@ -61,11 +63,13 @@ export async function SiteHeader({ content, overlay = false }: { content?: Heade
     const href = resolvedContent?.[`nav${itemNumber}Href` as keyof HeaderContent];
 
     return {
-      label: typeof label === "string" && label.trim() ? label : item.label,
-      href: withLocalePrefix(
-        typeof href === "string" && href.trim() ? href : item.href,
-        locale
-      )
+      label:
+        typeof label === "string" && label.trim()
+          ? locale !== "ko" && /[\uAC00-\uD7A3]/.test(label)
+            ? pickLocaleCopy(locale, navCopy[item.labelKey])
+            : label
+          : pickLocaleCopy(locale, navCopy[item.labelKey]),
+      href: withLocalePrefix(typeof href === "string" && href.trim() ? href : item.href, locale)
     };
   });
   const uniqueItems = configuredItems.filter(
@@ -75,7 +79,7 @@ export async function SiteHeader({ content, overlay = false }: { content?: Heade
     ? uniqueItems
     : [
         ...uniqueItems.filter((item) => !item.href.endsWith("/inquiry")),
-        { label: "Archive", href: withLocalePrefix("/archive", locale) },
+        { label: pickLocaleCopy(locale, navCopy.archive), href: withLocalePrefix("/archive", locale) },
         ...uniqueItems.filter((item) => item.href.endsWith("/inquiry"))
       ];
 

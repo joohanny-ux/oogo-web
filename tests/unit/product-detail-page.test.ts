@@ -22,7 +22,7 @@ describe("Youngbin Edition project page", () => {
     expect(youngbinProjectPage).toContain(
       'const photoArchiveHref = withLocalePrefix("/archive/youngbin-edition", locale);'
     );
-    expect(youngbinProjectPage).toContain("edition.profile.archiveLabel");
+    expect(youngbinProjectPage).toContain("publicCopy.youngbin.archiveLabel");
     expect(youngbinProjectPage).toContain(
       'className="youngbin-project-profile-actions"'
     );

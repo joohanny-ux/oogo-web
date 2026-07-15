@@ -1,3 +1,6 @@
+import type { Locale } from "@/lib/i18n";
+import { landingTextForLocale, publicCopy, resolveLocaleText } from "@/lib/public-copy";
+
 export type LandingContent = Record<string, unknown>;
 
 export type HomeHeroSlide = {
@@ -47,25 +50,85 @@ function isLandingContent(value: unknown): value is LandingContent {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-export function getHomeHeroSettings(content: LandingContent = {}): HomeHeroSettings {
-  const globalEyebrow = landingText(content, "eyebrow", "OOGO 2026");
-  const globalHeading = landingText(content, "heading", "OOGO");
-  const globalLine = landingText(content, "line", "Frames for light, face, and quiet attitude.");
+const HOME_MEDIA_KEYS = ["mediaUrl", "imageUrl", "image2Url", "image3Url", "image4Url"] as const;
+
+function copyLandingMediaFields(target: LandingContent, source: LandingContent): LandingContent {
+  const next: LandingContent = { ...target };
+
+  for (const key of HOME_MEDIA_KEYS) {
+    const value = source[key];
+    if (typeof value === "string" && value.trim()) {
+      next[key] = value.trim();
+    }
+  }
+
+  if (Array.isArray(source.slides) && source.slides.length > 0) {
+    const targetSlides = Array.isArray(target.slides) ? target.slides : [];
+    next.slides = source.slides.map((slide, index) => {
+      if (!isLandingContent(slide)) {
+        return slide;
+      }
+
+      const existing = isLandingContent(targetSlides[index]) ? targetSlides[index] : {};
+      return copyLandingMediaFields(existing, slide);
+    });
+  }
+
+  return next;
+}
+
+/** EN/CN Home은 문구만 유지하고, 최신 공개 이미지는 KO Home 미디어를 공유한다. */
+export function applyHomeMediaFromSource(
+  content: Record<string, LandingContent>,
+  mediaSource: Record<string, LandingContent>
+) {
+  const blockKeys = ["hero", "collection-preview", "special-preview", "archive-preview"] as const;
+  const next = { ...content };
+
+  for (const key of blockKeys) {
+    const sourceBlock = mediaSource[key];
+    if (!sourceBlock) continue;
+    next[key] = copyLandingMediaFields(content[key] ?? {}, sourceBlock);
+  }
+
+  return next;
+}
+
+export function getHomeHeroSettings(content: LandingContent = {}, locale: Locale = "ko"): HomeHeroSettings {
+  const globalEyebrow = landingTextForLocale(content, "eyebrow", locale, publicCopy.home.heroEyebrow);
+  const globalHeading = landingTextForLocale(content, "heading", locale, publicCopy.home.heroHeading);
+  const globalLine = landingTextForLocale(content, "line", locale, publicCopy.home.heroLine);
   const savedSlides = Array.isArray(content.slides) ? content.slides : [];
   const slides = savedSlides
     .filter(isLandingContent)
     .filter((slide) => landingMediaUrl(slide, "") !== "")
     .slice(0, 5)
     .map((slide, index) => {
-      const heading = landingText(slide, "heading", globalHeading);
+      const heading = resolveLocaleText(
+        typeof slide.heading === "string" ? slide.heading : undefined,
+        locale,
+        { ko: globalHeading, en: globalHeading, zh: globalHeading }
+      );
 
       return {
         id: landingText(slide, "id", `hero-${index + 1}`),
         mediaUrl: landingMediaUrl(slide, ""),
-        alt: landingText(slide, "alt", heading),
-        eyebrow: landingText(slide, "eyebrow", globalEyebrow),
+        alt: resolveLocaleText(typeof slide.alt === "string" ? slide.alt : undefined, locale, {
+          ko: heading,
+          en: heading,
+          zh: heading
+        }),
+        eyebrow: resolveLocaleText(typeof slide.eyebrow === "string" ? slide.eyebrow : undefined, locale, {
+          ko: globalEyebrow,
+          en: globalEyebrow,
+          zh: globalEyebrow
+        }),
         heading,
-        line: landingText(slide, "line", globalLine)
+        line: resolveLocaleText(typeof slide.line === "string" ? slide.line : undefined, locale, {
+          ko: globalLine,
+          en: globalLine,
+          zh: globalLine
+        })
       };
     });
 
@@ -80,7 +143,11 @@ export function getHomeHeroSettings(content: LandingContent = {}): HomeHeroSetti
             {
               id: "hero-1",
               mediaUrl: landingMediaUrl(content, "/images/oogo-hero.png"),
-              alt: landingText(content, "alt", globalHeading),
+              alt: landingTextForLocale(content, "alt", locale, {
+                ko: globalHeading,
+                en: globalHeading,
+                zh: globalHeading
+              }),
               eyebrow: globalEyebrow,
               heading: globalHeading,
               line: globalLine

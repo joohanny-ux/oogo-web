@@ -2,6 +2,7 @@ import { getProductCatalogHref } from "@/lib/products";
 import { getLandingPageContent, landingText } from "@/lib/home-landing";
 import { getLandingBlocks } from "@/lib/public-content";
 import { getRequestLocale, withLocalePrefix } from "@/lib/public-locale";
+import { landingTextForLocale, pickLocaleCopy, publicCopy } from "@/lib/public-copy";
 
 const socialLinks = [
   { label: "Instagram", icon: "instagram", href: "https://www.instagram.com/oogolabs" },
@@ -65,12 +66,12 @@ export async function SiteFooter() {
   const navigation = content.navigation;
   const contact = content["contact-legal"];
   const navLinks = [
-    ["nav1Label", "nav1Href", "Collection", getProductCatalogHref(undefined, locale)],
-    ["nav2Label", "nav2Href", "Projects", withLocalePrefix("/projects", locale)],
-    ["nav3Label", "nav3Href", "Archive", withLocalePrefix("/archive", locale)],
-    ["nav4Label", "nav4Href", "Inquiry", withLocalePrefix("/inquiry", locale)],
-    ["nav5Label", "nav5Href", "Brand Story", withLocalePrefix("/brand", locale)]
-  ];
+    ["nav1Label", "nav1Href", publicCopy.nav.collection, getProductCatalogHref(undefined, locale)],
+    ["nav2Label", "nav2Href", publicCopy.nav.projects, withLocalePrefix("/projects", locale)],
+    ["nav3Label", "nav3Href", publicCopy.nav.archive, withLocalePrefix("/archive", locale)],
+    ["nav4Label", "nav4Href", publicCopy.nav.inquiry, withLocalePrefix("/inquiry", locale)],
+    ["nav5Label", "nav5Href", publicCopy.common.brandStory, withLocalePrefix("/brand", locale)]
+  ] as const;
   const resolvedSocialLinks = socialLinks.map((link) => ({
     ...link,
     href: landingText(contact, link.icon, link.href)
@@ -80,25 +81,25 @@ export async function SiteFooter() {
     <footer className="site-footer">
       <div>
         <img className="footer-logo" src="/images/oogo-logo-white.png" alt="OOGO" />
-        <p>{landingText(brand, "brandDescription", "Frames for light, face, and quiet attitude.")}</p>
+        <p>{landingTextForLocale(brand, "brandDescription", locale, publicCopy.home.footerBrand)}</p>
       </div>
       <nav aria-label="Footer navigation">
-        {navLinks.map(([labelKey, hrefKey, fallbackLabel, fallbackHref]) => (
+        {navLinks.map(([labelKey, hrefKey, fallbackCopy, fallbackHref]) => (
           <a href={withLocalePrefix(landingText(navigation, hrefKey, fallbackHref), locale)} key={labelKey}>
-            {landingText(navigation, labelKey, fallbackLabel)}
+            {landingTextForLocale(navigation, labelKey, locale, fallbackCopy)}
           </a>
         ))}
       </nav>
       <div className="footer-contact">
         <span>{landingText(contact, "email", "contact@oogolabs.com")}</span>
-        <span>Buyer / Retail / Collaboration</span>
-        <span>{landingText(contact, "address", "Seoul, Korea")}</span>
+        <span>{pickLocaleCopy(locale, publicCopy.common.buyerRetail)}</span>
+        <span>{landingTextForLocale(contact, "address", locale, publicCopy.inquiry.address)}</span>
         <nav className="footer-legal" aria-label="Legal links">
           <a href={withLocalePrefix(landingText(contact, "termsHref", "/terms-conditions"), locale)}>
-            {landingText(contact, "termsLabel", "Terms & Conditions")}
+            {landingTextForLocale(contact, "termsLabel", locale, publicCopy.common.terms)}
           </a>
           <a href={withLocalePrefix(landingText(contact, "privacyHref", "/privacy-policy"), locale)}>
-            {landingText(contact, "privacyLabel", "Privacy Policy")}
+            {landingTextForLocale(contact, "privacyLabel", locale, publicCopy.common.privacy)}
           </a>
         </nav>
         <div className="footer-socials" aria-label="Social links">
@@ -108,7 +109,7 @@ export async function SiteFooter() {
             </a>
           ))}
         </div>
-        <p className="copyright">{landingText(contact, "copyright", "© 2026 OOGO. All rights reserved.")}</p>
+        <p className="copyright">{landingTextForLocale(contact, "copyright", locale, publicCopy.common.copyright)}</p>
       </div>
     </footer>
   );

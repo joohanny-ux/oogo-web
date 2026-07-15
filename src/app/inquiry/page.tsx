@@ -12,7 +12,7 @@ export default async function InquiryPage() {
     <>
       <SiteHeader />
       <main className="inquiry-page">
-        <InquirySection content={content} />
+        <InquirySection content={content} locale={locale} />
       </main>
       <SiteFooter />
     </>

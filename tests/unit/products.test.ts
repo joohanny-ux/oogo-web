@@ -65,7 +65,7 @@ describe("product mapping", () => {
     });
   });
 
-  it("falls back to Korean translation when requested locale is missing", () => {
+  it("uses seed EN/CN names when DB only has Hangul translations", () => {
     const product = mapProductRow(
       {
         id: "p1",
@@ -83,7 +83,29 @@ describe("product mapping", () => {
       "zh"
     );
 
-    expect(product.name).toBe("황혼의 산책");
+    expect(product.name).toBe("夕光漫步");
+  });
+
+  it("uses seed English name for EN when DB translation is missing", () => {
+    const product = mapProductRow(
+      {
+        id: "p1",
+        slug: "og26001c2-sunset-stroll",
+        model_code: "OG26001C2",
+        size: "63-17-145",
+        frame_material: "PC",
+        lens_material: "PA12",
+        lens_features: ["UV400"],
+        published: true,
+        featured: true,
+        sort_order: 1,
+        product_translations: [{ locale: "ko", name: "황혼의 산책", colorway: null, description: "한글 설명" }]
+      },
+      "en"
+    );
+
+    expect(product.name).toBe("Sunset Stroll");
+    expect(product.description).toBe("An OOGO frame shaped by the balance of light and shadow.");
   });
 
   it("maps localized detail specifications for the active locale", () => {

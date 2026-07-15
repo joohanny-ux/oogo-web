@@ -1,1 +1,7 @@
-export { hasSupabaseMiddlewareEnv, middleware, config } from "./src/middleware";
+export {
+  hasSupabaseMiddlewareEnv,
+  resolveMiddlewareLocale,
+  resolveMiddlewarePathname,
+  middleware,
+  config
+} from "./src/middleware";

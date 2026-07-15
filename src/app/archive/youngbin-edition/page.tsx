@@ -5,6 +5,7 @@ import { buildPublicArchiveItems, getPublicArchiveItems } from "@/lib/archive-co
 import { getLandingPageContent, landingText } from "@/lib/home-landing";
 import { getLandingBlocks } from "@/lib/public-content";
 import { getRequestLocale, withLocalePrefix } from "@/lib/public-locale";
+import { landingTextForLocale, pickLocaleCopy, publicCopy } from "@/lib/public-copy";
 
 export default async function YoungbinEditionArchivePage() {
   const locale = await getRequestLocale();
@@ -22,30 +23,32 @@ export default async function YoungbinEditionArchivePage() {
       <main className="archive-page youngbin-archive-page">
         <section className="archive-page-intro youngbin-archive-intro">
           <div>
-            <p className="eyebrow">{landingText(intro, "eyebrow", "Youngbin Edition")}</p>
-            <h1>{landingText(intro, "heading", "Photo Archive")}</h1>
+            <p className="eyebrow">
+              {landingTextForLocale(intro, "eyebrow", locale, publicCopy.archive.youngbinEdition)}
+            </p>
+            <h1>{landingTextForLocale(intro, "heading", locale, publicCopy.archive.photoArchive)}</h1>
           </div>
           <div className="youngbin-archive-copy">
             <p className="youngbin-archive-credit">
-              {landingText(intro, "artistCredit", "Photography by Youngbin Ji")}
+              {landingTextForLocale(intro, "artistCredit", locale, publicCopy.archive.artistCredit)}
             </p>
-            <p>{landingText(intro, "body", "Collaboration studies and selected photographic works by Youngbin Ji.")}</p>
+            <p>{landingTextForLocale(intro, "body", locale, publicCopy.archive.youngbinBody)}</p>
             <a href={withLocalePrefix("/projects/youngbin-edition", locale)}>
-              {landingText(intro, "projectLabel", "View Project")}
+              {landingTextForLocale(intro, "projectLabel", locale, publicCopy.common.viewProject)}
             </a>
           </div>
         </section>
         <nav className="archive-collection-nav" aria-label="Archive collections">
-          <a href={withLocalePrefix("/archive", locale)}>OOGO Archive</a>
+          <a href={withLocalePrefix("/archive", locale)}>{pickLocaleCopy(locale, publicCopy.archive.oogoArchive)}</a>
           <a href={withLocalePrefix("/archive/youngbin-edition", locale)} aria-current="page">
-            Youngbin Edition
+            {pickLocaleCopy(locale, publicCopy.archive.youngbinEdition)}
           </a>
         </nav>
         {items.length > 0 ? (
-          <ArchiveGallery items={items} label="Youngbin Edition photo archive" />
+          <ArchiveGallery items={items} label="Youngbin Edition photo archive" locale={locale} />
         ) : (
           <section className="archive-page-empty">
-            <p>Youngbin Edition의 사진 작품을 준비하고 있습니다.</p>
+            <p>{pickLocaleCopy(locale, publicCopy.archive.empty)}</p>
           </section>
         )}
       </main>

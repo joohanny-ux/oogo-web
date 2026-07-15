@@ -6,6 +6,7 @@ import { getPublishedProducts } from "@/lib/public-content";
 import { getLandingBlocks } from "@/lib/public-content";
 import { getLandingPageContent, landingText } from "@/lib/home-landing";
 import { getRequestLocale } from "@/lib/public-locale";
+import { landingTextForLocale, publicCopy } from "@/lib/public-copy";
 
 export default async function CollectionPage({
   searchParams
@@ -37,9 +38,9 @@ export default async function CollectionPage({
       <SiteHeader />
       <main className="collection-page">
         <section className="collection-page-intro">
-          <p className="eyebrow">{landingText(intro, "eyebrow", "Collection")}</p>
-          <h1>{landingText(intro, "heading", "Sunglasses")}</h1>
-          <p>{landingText(intro, "body", "2026 OOGO Collection")}</p>
+          <p className="eyebrow">{landingTextForLocale(intro, "eyebrow", locale, publicCopy.collection.eyebrow)}</p>
+          <h1>{landingTextForLocale(intro, "heading", locale, publicCopy.collection.heading)}</h1>
+          <p>{landingTextForLocale(intro, "body", locale, publicCopy.collection.body)}</p>
         </section>
         <section className="collection-list-grid" aria-label="OOGO collection products">
           {displayProducts.map((product) => {

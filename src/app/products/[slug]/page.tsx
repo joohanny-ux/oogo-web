@@ -5,7 +5,8 @@ import { SiteHeader } from "@/components/public/SiteHeader";
 import { getProductDetailSections } from "@/lib/products";
 import { getLandingBlocks, getProductBySlug } from "@/lib/public-content";
 import { getLandingPageContent, landingText } from "@/lib/home-landing";
-import { getRequestLocale } from "@/lib/public-locale";
+import { getRequestLocale, withLocalePrefix } from "@/lib/public-locale";
+import { landingTextForLocale, publicCopy } from "@/lib/public-copy";
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -61,7 +62,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           </div>
 
           <div className="detail-actions detail-actions-single">
-            <a href={landingText(template, "buyerHref", "/inquiry")}>{landingText(template, "buyerCta", "Buyer inquiry")}</a>
+            <a href={withLocalePrefix(landingText(template, "buyerHref", "/inquiry"), locale)}>
+              {landingTextForLocale(template, "buyerCta", locale, publicCopy.product.buyerCta)}
+            </a>
           </div>
         </aside>
       </main>

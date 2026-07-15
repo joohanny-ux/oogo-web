@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  applyHomeMediaFromSource,
   getHomeHeroSettings,
   getHomeLandingContent,
   getLandingPageContent,
@@ -31,6 +32,45 @@ describe("home landing content", () => {
         "brand-story"
       )
     ).toEqual({ statement: { body: "Brand copy" } });
+  });
+
+  it("reuses Korean home media while keeping locale copy", () => {
+    const merged = applyHomeMediaFromSource(
+      {
+        hero: {
+          heading: "OOGO EN",
+          line: "English line",
+          mediaUrl: "/images/oogo-hero.png",
+          slides: [{ heading: "EN slide", mediaUrl: "/images/old-en.webp" }]
+        },
+        "special-preview": {
+          heading: "Youngbin Edition",
+          mediaUrl: "/images/oogo-gallery.png"
+        }
+      },
+      {
+        hero: {
+          heading: "OOGO KO",
+          mediaUrl: "/images/ko-hero.webp",
+          slides: [{ heading: "KO slide", mediaUrl: "/images/ko-slide.webp" }]
+        },
+        "special-preview": {
+          heading: "Youngbin KO",
+          mediaUrl: "https://cdn.example.com/ko-special.png"
+        }
+      }
+    );
+
+    expect(merged.hero).toMatchObject({
+      heading: "OOGO EN",
+      line: "English line",
+      mediaUrl: "/images/ko-hero.webp"
+    });
+    expect(merged.hero.slides).toEqual([{ heading: "EN slide", mediaUrl: "/images/ko-slide.webp" }]);
+    expect(merged["special-preview"]).toMatchObject({
+      heading: "Youngbin Edition",
+      mediaUrl: "https://cdn.example.com/ko-special.png"
+    });
   });
 
   it("normalizes at most five valid hero slides", () => {

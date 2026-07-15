@@ -47,7 +47,7 @@ describe("ArchiveGallery", () => {
   it("exposes both archive collections from the main and Youngbin archive pages", () => {
     expect(archivePageSource).toContain('className="archive-collection-nav"');
     expect(archivePageSource).toContain('withLocalePrefix("/archive/youngbin-edition", locale)');
-    expect(archivePageSource).toContain("Youngbin Edition");
+    expect(archivePageSource).toContain("publicCopy.archive.youngbinEdition");
     expect(youngbinArchivePageSource).toContain('className="archive-collection-nav"');
     expect(youngbinArchivePageSource).toContain('withLocalePrefix("/archive", locale)');
     expect(youngbinArchivePageSource).toContain('aria-current="page"');

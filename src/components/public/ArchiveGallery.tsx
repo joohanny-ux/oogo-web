@@ -4,12 +4,22 @@ import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent, TouchEvent } f
 import React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ArchiveGridItem } from "@/lib/archive-items";
+import type { Locale } from "@/lib/i18n";
+import { pickLocaleCopy, publicCopy } from "@/lib/public-copy";
 
 export function getAdjacentArchiveIndex(current: number, direction: -1 | 1, length: number) {
   return (current + direction + length) % length;
 }
 
-export function ArchiveGallery({ items, label = "OOGO visual archive" }: { items: ArchiveGridItem[]; label?: string }) {
+export function ArchiveGallery({
+  items,
+  label = "OOGO visual archive",
+  locale = "ko"
+}: {
+  items: ArchiveGridItem[];
+  label?: string;
+  locale?: Locale;
+}) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const triggerRefs = useRef<Array<HTMLButtonElement | null>>([]);
@@ -91,7 +101,7 @@ export function ArchiveGallery({ items, label = "OOGO visual archive" }: { items
             type="button"
             className={`archive-page-card archive-page-card-${item.category}`}
             key={item.id}
-            aria-label={`원본 이미지 보기: ${item.label}`}
+            aria-label={`${pickLocaleCopy(locale, publicCopy.a11y.openOriginal)}: ${item.label}`}
             aria-haspopup="dialog"
             onClick={() => setActiveIndex(index)}
             ref={(element) => {
@@ -115,7 +125,7 @@ export function ArchiveGallery({ items, label = "OOGO visual archive" }: { items
           className="archive-lightbox"
           role="dialog"
           aria-modal="true"
-          aria-label={`${activeItem.label} 원본 이미지`}
+          aria-label={`${activeItem.label} ${pickLocaleCopy(locale, publicCopy.a11y.originalImage)}`}
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) close();
           }}
@@ -125,7 +135,12 @@ export function ArchiveGallery({ items, label = "OOGO visual archive" }: { items
         >
           <div className="archive-lightbox-toolbar">
             <span>{activeIndex + 1} / {items.length}</span>
-            <button ref={closeButtonRef} type="button" onClick={close} aria-label="원본 이미지 닫기">
+            <button
+              ref={closeButtonRef}
+              type="button"
+              onClick={close}
+              aria-label={pickLocaleCopy(locale, publicCopy.a11y.closeOriginal)}
+            >
               ×
             </button>
           </div>
@@ -135,11 +150,11 @@ export function ArchiveGallery({ items, label = "OOGO visual archive" }: { items
               if (event.target === event.currentTarget) close();
             }}
           >
-            <button type="button" onClick={() => move(-1)} aria-label="이전 이미지">
+            <button type="button" onClick={() => move(-1)} aria-label={pickLocaleCopy(locale, publicCopy.a11y.prevImage)}>
               ‹
             </button>
             <img src={activeItem.image} alt={activeItem.label} />
-            <button type="button" onClick={() => move(1)} aria-label="다음 이미지">
+            <button type="button" onClick={() => move(1)} aria-label={pickLocaleCopy(locale, publicCopy.a11y.nextImage)}>
               ›
             </button>
           </div>

@@ -6,6 +6,7 @@ import { archiveGridItems } from "@/lib/archive-items";
 import { getLandingPageContent, landingMediaUrl, landingText } from "@/lib/home-landing";
 import { getLandingBlocks } from "@/lib/public-content";
 import { getRequestLocale, withLocalePrefix } from "@/lib/public-locale";
+import { landingTextForLocale, pickLocaleCopy, publicCopy } from "@/lib/public-copy";
 
 export default async function ArchivePage() {
   const locale = await getRequestLocale();
@@ -23,17 +24,19 @@ export default async function ArchivePage() {
       <SiteHeader />
       <main className="archive-page">
         <section className="archive-page-intro">
-          <p className="eyebrow">{landingText(intro, "eyebrow", "Archive")}</p>
-          <h1>{landingText(intro, "heading", "Archive")}</h1>
-          <p>{landingText(intro, "body", "Visual records of OOGO frames, light, faces, and campaigns.")}</p>
+          <p className="eyebrow">{landingTextForLocale(intro, "eyebrow", locale, publicCopy.archive.eyebrow)}</p>
+          <h1>{landingTextForLocale(intro, "heading", locale, publicCopy.archive.heading)}</h1>
+          <p>{landingTextForLocale(intro, "body", locale, publicCopy.archive.body)}</p>
         </section>
         <nav className="archive-collection-nav" aria-label="Archive collections">
           <a href={withLocalePrefix("/archive", locale)} aria-current="page">
-            OOGO Archive
+            {pickLocaleCopy(locale, publicCopy.archive.oogoArchive)}
           </a>
-          <a href={withLocalePrefix("/archive/youngbin-edition", locale)}>Youngbin Edition</a>
+          <a href={withLocalePrefix("/archive/youngbin-edition", locale)}>
+            {pickLocaleCopy(locale, publicCopy.archive.youngbinEdition)}
+          </a>
         </nav>
-        <ArchiveGallery items={items} />
+        <ArchiveGallery items={items} locale={locale} />
       </main>
       <SiteFooter />
     </>
