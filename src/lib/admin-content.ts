@@ -2,6 +2,7 @@ import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { Locale } from "@/lib/i18n";
 import { getProductCatalogHref, getProductDetailHref, parseProductLensText } from "@/lib/products";
+import type { AdminProductListParams } from "@/lib/admin-product-list";
 import { getProductImageSlots, type ProductImageInput } from "@/lib/product-images";
 
 export const landingPageOptions = [
@@ -9,13 +10,27 @@ export const landingPageOptions = [
   { key: "home", label: "Home" },
   { key: "brand-story", label: "Brand Story" },
   { key: "collection", label: "Collection" },
+  { key: "projects", label: "Projects" },
   { key: "product-detail", label: "Product Detail" },
   { key: "special-edition", label: "Special Edition" },
+  { key: "archive", label: "Archive" },
   { key: "inquiry", label: "Inquiry" },
   { key: "footer", label: "Footer" }
 ] as const;
 
-const sampleProductSlug = "og26001c2-sunset-stroll";
+export function getLandingPageRecord(pageKey: string) {
+  const index = landingPageOptions.findIndex((option) => option.key === pageKey);
+  const option = landingPageOptions[index];
+
+  return {
+    page_key: pageKey,
+    title: option?.label ?? pageKey,
+    published: true,
+    sort_order: (index >= 0 ? index + 1 : landingPageOptions.length + 1) * 10
+  };
+}
+
+const sampleProductSlug = "og26001c2";
 
 export function getLandingEditorPages(): Array<{
   key: (typeof landingPageOptions)[number]["key"];
@@ -40,7 +55,7 @@ export function getLandingEditorPages(): Array<{
       publicHref: "/",
       routeLabel: "/",
       surface: "Homepage",
-      description: "Hero, Collection, Project, Archive와 Inquiry 연결 영역을 관리합니다."
+      description: "Hero, Collection, Projects, Archive 네 영역을 공개 홈 순서대로 관리합니다."
     },
     {
       key: "brand-story",
@@ -48,7 +63,7 @@ export function getLandingEditorPages(): Array<{
       publicHref: "/brand",
       routeLabel: "/brand",
       surface: "Brand page",
-      description: "브랜드 Hero, 철학 문구, 이미지 구성과 Collection CTA를 관리합니다."
+      description: "브랜드 소개, 선언, 핵심 가치, 디자인 철학, 경험 이미지와 CTA를 관리합니다."
     },
     {
       key: "collection",
@@ -57,6 +72,14 @@ export function getLandingEditorPages(): Array<{
       routeLabel: getProductCatalogHref(),
       surface: "Collection page",
       description: "카탈로그 소개, 상품 목록 안내와 Collection CTA를 관리합니다."
+    },
+    {
+      key: "projects",
+      label: "Projects",
+      publicHref: "/projects",
+      routeLabel: "/projects",
+      surface: "Projects page",
+      description: "Projects 소개, 대표 프로젝트와 협업 CTA를 관리합니다."
     },
     {
       key: "product-detail",
@@ -73,6 +96,14 @@ export function getLandingEditorPages(): Array<{
       routeLabel: "/projects/youngbin-edition",
       surface: "Project detail",
       description: "프로젝트 Hero, 캠페인 이야기와 협업 안내를 관리합니다."
+    },
+    {
+      key: "archive",
+      label: "Archive",
+      publicHref: "/archive",
+      routeLabel: "/archive",
+      surface: "Archive page",
+      description: "Archive 상단 소개 문구를 관리합니다. 갤러리 이미지는 왼쪽 Archive 메뉴에서 관리합니다."
     },
     {
       key: "inquiry",
@@ -117,22 +148,73 @@ export function hasSupabaseEnv() {
   return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 }
 
-export async function getAdminProducts() {
+export async function getAdminProducts(params: AdminProductListParams) {
   if (!hasSupabaseEnv()) {
-    return [];
+    return { products: [], count: 0 };
   }
 
   const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase
+  let matchingIds: string[] | null = null;
+
+  if (params.search) {
+    const pattern = `%${params.search}%`;
+    const [slugMatches, modelMatches, translationMatches] = await Promise.all([
+      supabase.from("products").select("id").ilike("slug", pattern),
+      supabase.from("products").select("id").ilike("model_code", pattern),
+      supabase.from("product_translations").select("product_id").ilike("name", pattern)
+    ]);
+    const searchError = slugMatches.error ?? modelMatches.error ?? translationMatches.error;
+
+    if (searchError) {
+      throw new Error(searchError.message);
+    }
+
+    matchingIds = Array.from(
+      new Set([
+        ...(slugMatches.data ?? []).map((item) => item.id),
+        ...(modelMatches.data ?? []).map((item) => item.id),
+        ...(translationMatches.data ?? []).map((item) => item.product_id)
+      ])
+    );
+
+    if (matchingIds.length === 0) {
+      return { products: [], count: 0 };
+    }
+  }
+
+  let query = supabase
     .from("products")
-    .select("id, slug, model_code, published, featured, sort_order, product_translations(locale, name), product_images(role, assets(public_url))")
-    .order("sort_order", { ascending: true });
+    .select(
+      "id, slug, model_code, published, featured, sort_order, updated_at, product_translations(locale, name), product_images(role, assets(public_url))",
+      { count: "exact" }
+    );
+
+  if (matchingIds) {
+    query = query.in("id", matchingIds);
+  }
+
+  if (params.visibility !== "all") {
+    query = query.eq("published", params.visibility === "public");
+  }
+
+  if (params.sort === "order") {
+    query = query.order("sort_order", { ascending: true });
+  } else if (params.sort === "model") {
+    query = query.order("model_code", { ascending: true });
+  } else {
+    query = query.order("updated_at", { ascending: false });
+  }
+
+  const offset = (params.page - 1) * params.pageSize;
+  const { data, error, count } = await query
+    .order("model_code", { ascending: true })
+    .range(offset, offset + params.pageSize - 1);
 
   if (error) {
     throw new Error(error.message);
   }
 
-  return data ?? [];
+  return { products: data ?? [], count: count ?? 0 };
 }
 
 export type AdminDashboardSummary = {
@@ -225,7 +307,8 @@ export async function saveProduct(input: AdminProductInput) {
     lens_material: koreanLens.material || null,
     lens_features: koreanLens.features,
     featured: input.featured,
-    published: input.published
+    published: input.published,
+    updated_at: new Date().toISOString()
   };
 
   const { data: product, error: productError } = await supabase
@@ -337,7 +420,10 @@ export async function setProductPublished(id: string, published: boolean) {
   }
 
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.from("products").update({ published }).eq("id", id);
+  const { error } = await supabase
+    .from("products")
+    .update({ published, updated_at: new Date().toISOString() })
+    .eq("id", id);
 
   if (error) {
     return { ok: false, message: error.message };
@@ -368,26 +454,97 @@ export async function getLandingBlocksForPage(pageKey: string, locale: Locale) {
   return data ?? [];
 }
 
-export async function saveLandingBlockDraft(input: {
+export type LandingBlockDraftInput = {
   id?: string;
   pageKey: string;
   blockKey: string;
   locale: Locale;
   content: Record<string, unknown>;
-}) {
+};
+
+export function getLandingDraftWritePayload(
+  input: LandingBlockDraftInput,
+  updatedAt: string,
+  existingId: string
+): {
+  draft_content: Record<string, unknown>;
+  updated_at: string;
+};
+export function getLandingDraftWritePayload(
+  input: LandingBlockDraftInput,
+  updatedAt: string,
+  existingId?: undefined
+): {
+  page_key: string;
+  block_key: string;
+  locale: Locale;
+  draft_content: Record<string, unknown>;
+  published_content: Record<string, never>;
+  published: boolean;
+  updated_at: string;
+};
+export function getLandingDraftWritePayload(
+  input: LandingBlockDraftInput,
+  updatedAt: string,
+  existingId?: string
+) {
+  if (existingId) {
+    return {
+      draft_content: input.content,
+      updated_at: updatedAt
+    };
+  }
+
+  return {
+    page_key: input.pageKey,
+    block_key: input.blockKey,
+    locale: input.locale,
+    draft_content: input.content,
+    published_content: {},
+    published: false,
+    updated_at: updatedAt
+  };
+}
+
+export async function saveLandingBlockDraft(input: LandingBlockDraftInput) {
   if (!hasSupabaseEnv()) {
     return { ok: false, message: "Supabase environment variables are not configured." };
   }
 
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.from("landing_blocks").upsert({
-    id: input.id,
-    page_key: input.pageKey,
-    block_key: input.blockKey,
-    locale: input.locale,
-    draft_content: input.content,
-    published: false
-  });
+  const { error: pageError } = await supabase
+    .from("landing_pages")
+    .upsert(getLandingPageRecord(input.pageKey), { onConflict: "page_key" });
+
+  if (pageError) {
+    return { ok: false, message: pageError.message };
+  }
+
+  let existingId = input.id;
+
+  if (!existingId) {
+    const { data: existingBlock, error: readError } = await supabase
+      .from("landing_blocks")
+      .select("id")
+      .eq("page_key", input.pageKey)
+      .eq("block_key", input.blockKey)
+      .eq("locale", input.locale)
+      .maybeSingle();
+
+    if (readError) {
+      return { ok: false, message: readError.message };
+    }
+
+    existingId = existingBlock?.id;
+  }
+
+  const updatedAt = new Date().toISOString();
+  const { error } = existingId
+    ? await supabase
+        .from("landing_blocks")
+        .update(getLandingDraftWritePayload(input, updatedAt, existingId))
+        .eq("id", existingId)
+    : await supabase.from("landing_blocks").insert(getLandingDraftWritePayload(input, updatedAt, undefined));
 
   if (error) {
     return { ok: false, message: error.message };
@@ -424,6 +581,12 @@ export async function publishLandingBlock(id: string) {
 
   revalidatePath("/");
   revalidatePath(getProductCatalogHref());
+  revalidatePath("/brand");
+  revalidatePath("/projects");
+  revalidatePath("/projects/youngbin-edition");
+  revalidatePath("/archive");
+  revalidatePath("/inquiry");
+  revalidatePath("/products/[slug]", "page");
   revalidatePath("/admin/landing");
   return { ok: true, message: "Block published." };
 }

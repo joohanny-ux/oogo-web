@@ -1,4 +1,6 @@
 import { getProductCatalogHref } from "@/lib/products";
+import { getLandingPageContent, landingText } from "@/lib/home-landing";
+import { getLandingBlocks } from "@/lib/public-content";
 
 const socialLinks = [
   { label: "Instagram", icon: "instagram", href: "https://www.instagram.com/oogolabs" },
@@ -54,36 +56,53 @@ function SocialIcon({ icon }: { icon: SocialIconName }) {
   );
 }
 
-export function SiteFooter() {
+export async function SiteFooter() {
+  const blocks = await getLandingBlocks("ko");
+  const content = getLandingPageContent(blocks, "footer");
+  const brand = content.brand;
+  const navigation = content.navigation;
+  const contact = content["contact-legal"];
+  const navLinks = [
+    ["nav1Label", "nav1Href", "Collection", getProductCatalogHref()],
+    ["nav2Label", "nav2Href", "Projects", "/projects"],
+    ["nav3Label", "nav3Href", "Archive", "/archive"],
+    ["nav4Label", "nav4Href", "Inquiry", "/inquiry"],
+    ["nav5Label", "nav5Href", "Brand Story", "/brand"]
+  ];
+  const resolvedSocialLinks = socialLinks.map((link) => ({
+    ...link,
+    href: landingText(contact, link.icon, link.href)
+  }));
+
   return (
     <footer className="site-footer">
       <div>
         <img className="footer-logo" src="/images/oogo-logo-white.png" alt="OOGO" />
-        <p>Frames for light, face, and quiet attitude.</p>
+        <p>{landingText(brand, "brandDescription", "Frames for light, face, and quiet attitude.")}</p>
       </div>
       <nav aria-label="Footer navigation">
-        <a href={getProductCatalogHref()}>Collection</a>
-        <a href="/projects">Projects</a>
-        <a href="/archive">Archive</a>
-        <a href="/inquiry">Inquiry</a>
-        <a href="/brand">Brand Story</a>
+        {navLinks.map(([labelKey, hrefKey, fallbackLabel, fallbackHref]) => (
+          <a href={landingText(navigation, hrefKey, fallbackHref)} key={labelKey}>
+            {landingText(navigation, labelKey, fallbackLabel)}
+          </a>
+        ))}
       </nav>
       <div className="footer-contact">
-        <span>contact@oogolabs.com</span>
+        <span>{landingText(contact, "email", "contact@oogolabs.com")}</span>
         <span>Buyer / Retail / Collaboration</span>
-        <span>Seoul, Korea</span>
+        <span>{landingText(contact, "address", "Seoul, Korea")}</span>
         <nav className="footer-legal" aria-label="Legal links">
-          <a href="/terms-conditions">Terms &amp; Conditions</a>
-          <a href="/privacy-policy">Privacy Policy</a>
+          <a href={landingText(contact, "termsHref", "/terms-conditions")}>{landingText(contact, "termsLabel", "Terms & Conditions")}</a>
+          <a href={landingText(contact, "privacyHref", "/privacy-policy")}>{landingText(contact, "privacyLabel", "Privacy Policy")}</a>
         </nav>
         <div className="footer-socials" aria-label="Social links">
-          {socialLinks.map((link) => (
+          {resolvedSocialLinks.map((link) => (
             <a key={link.label} href={link.href} target="_blank" rel="noreferrer" aria-label={link.label}>
               <SocialIcon icon={link.icon} />
             </a>
           ))}
         </div>
-        <p className="copyright">© 2026 OOGO. All rights reserved.</p>
+        <p className="copyright">{landingText(contact, "copyright", "© 2026 OOGO. All rights reserved.")}</p>
       </div>
     </footer>
   );

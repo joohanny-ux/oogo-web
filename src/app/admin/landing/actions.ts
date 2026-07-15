@@ -16,7 +16,7 @@ function safePathPart(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
-async function uploadLandingMediaFile(file: File, pageKey: string, blockKey: string) {
+export async function uploadLandingMediaFile(file: File, pageKey: string, blockKey: string) {
   if (!hasSupabaseEnv()) {
     return {
       ok: false as const,
@@ -92,6 +92,32 @@ const landingContentKeys = [
   "secondaryLabel",
   "secondaryHref",
   "posterUrl",
+  "image2Url",
+  "image3Url",
+  "image4Url",
+  "image5Url",
+  "image6Url",
+  "image7Url",
+  "image8Url",
+  "image9Url",
+  "image10Url",
+  "image11Url",
+  "image12Url",
+  "subtitle",
+  "year",
+  "item1Title",
+  "item1Body",
+  "item2Title",
+  "item2Body",
+  "item3Title",
+  "item3Body",
+  "item4Title",
+  "item4Body",
+  "topic1",
+  "topic2",
+  "topic3",
+  "topic4",
+  "response",
   "logoLabel",
   "logoHref",
   "nav1Label",
@@ -102,11 +128,14 @@ const landingContentKeys = [
   "nav3Href",
   "nav4Label",
   "nav4Href",
+  "nav5Label",
+  "nav5Href",
   "utilityLabel",
   "utilityHref",
   "showLocale",
   "specTitle",
   "buyerCta",
+  "buyerHref",
   "relatedTitle",
   "brandDescription",
   "email",
@@ -114,6 +143,12 @@ const landingContentKeys = [
   "instagram",
   "facebook",
   "tiktok",
+  "youtube",
+  "pinterest",
+  "termsLabel",
+  "termsHref",
+  "privacyLabel",
+  "privacyHref",
   "copyright"
 ];
 

@@ -91,7 +91,7 @@ export const specialEditions: SpecialEdition[] = [
     tags: ["Photography", "Limited color", "Buyer catalog"],
     relatedProducts: ["OG26001C2", "OG26002C1"],
     images: {
-      hero: "/images/projects/youngbin-edition/collaboration-hero.jpg",
+      hero: "/images/projects/projects-list-hero.png",
       campaign: "/images/projects/youngbin-edition/collaboration-hero.jpg",
       product: "/images/oogo-product-front.png",
       wearing: "/images/projects/youngbin-edition/photographer-profile.jpg",
@@ -104,9 +104,8 @@ export const specialEditions: SpecialEdition[] = [
     },
     statement: {
       statementEn:
-        "Photography begins with light. Eyewear begins with light. Both are about choosing what to see, what to soften, and what to remember.",
-      bodyKo:
-        "사진은 빛에서 시작되고, 아이웨어 역시 빛에서 시작됩니다. 무엇을 바라보고, 무엇을 부드럽게 남기며, 무엇을 기억할지 선택하는 두 시선이 만납니다.",
+        "Photography and eyewear begin with light. Both shape what we choose to remember.",
+      bodyKo: "사진가의 시선과 OOGO의 프레임이 만나 빛과 순간을 기록합니다.",
       themes: ["Light", "Gaze", "Memory"]
     },
     limited: {
@@ -122,13 +121,13 @@ export const specialEditions: SpecialEdition[] = [
     },
     gallery: [
       { key: "collaboration", src: "/images/projects/youngbin-edition/collaboration-hero.jpg", fit: "cover" },
-      { key: "limited", src: "/images/projects/youngbin-edition/limited-edition.jpg", fit: "cover" },
+      { key: "limited", src: "/images/projects/youngbin-edition/edition-gallery-01.png", fit: "contain" },
       { key: "hands", src: "/images/projects/youngbin-edition/light-hands.jpg", fit: "cover" },
       { key: "working", src: "/images/projects/youngbin-edition/photographer-at-work.jpg", fit: "cover" },
       {
         key: "product",
-        src: "/images/oogo-product-angle.png",
-        fit: "contain"
+        src: "/images/projects/youngbin-edition/edition-gallery-04.png",
+        fit: "cover"
       }
     ],
     profile: {

@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  getLandingDraftWritePayload,
   getLandingEditorPages,
+  getLandingPageRecord,
   landingPageOptions
 } from "@/lib/admin-content";
 import { getProductImageSlots, getProductThumbnailUrl, parseProductImageInputs } from "@/lib/product-images";
@@ -20,8 +22,10 @@ describe("admin content helpers", () => {
       "home",
       "brand-story",
       "collection",
+      "projects",
       "product-detail",
       "special-edition",
+      "archive",
       "inquiry",
       "footer"
     ]);
@@ -33,7 +37,7 @@ describe("admin content helpers", () => {
     );
     expect(getLandingEditorPages().find((page) => page.key === "collection")?.publicHref).toBe("/collection");
     expect(getLandingEditorPages().find((page) => page.key === "product-detail")?.publicHref).toBe(
-      "/products/og26001c2-sunset-stroll"
+      "/products/og26001c2"
     );
     expect(getLandingEditorPages().find((page) => page.key === "home")).toMatchObject({
       surface: "Homepage",
@@ -42,6 +46,50 @@ describe("admin content helpers", () => {
     expect(getLandingEditorPages().find((page) => page.key === "special-edition")).toMatchObject({
       surface: "Project detail",
       routeLabel: "/projects/youngbin-edition"
+    });
+    expect(getLandingEditorPages().find((page) => page.key === "projects")?.publicHref).toBe("/projects");
+    expect(getLandingEditorPages().find((page) => page.key === "archive")?.publicHref).toBe("/archive");
+  });
+
+  it("provides a parent landing page record before saving new Archive blocks", () => {
+    expect(getLandingPageRecord("archive")).toEqual({
+      page_key: "archive",
+      title: "Archive",
+      published: true,
+      sort_order: 80
+    });
+  });
+
+  it("preserves published content when saving a draft for an existing landing block", () => {
+    const input = {
+      pageKey: "home",
+      blockKey: "hero",
+      locale: "ko" as const,
+      content: { heading: "Updated" }
+    };
+
+    expect(getLandingDraftWritePayload(input, "2026-07-14T00:00:00.000Z", "block-id")).toEqual({
+      draft_content: input.content,
+      updated_at: "2026-07-14T00:00:00.000Z"
+    });
+  });
+
+  it("creates new landing drafts as unpublished", () => {
+    const input = {
+      pageKey: "home",
+      blockKey: "hero",
+      locale: "ko" as const,
+      content: { heading: "Draft" }
+    };
+
+    expect(getLandingDraftWritePayload(input, "2026-07-14T00:00:00.000Z")).toEqual({
+      page_key: "home",
+      block_key: "hero",
+      locale: "ko",
+      draft_content: input.content,
+      published_content: {},
+      published: false,
+      updated_at: "2026-07-14T00:00:00.000Z"
     });
   });
 

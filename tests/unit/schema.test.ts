@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -27,6 +27,21 @@ const ss26CatalogMigration = readFileSync(
   join(process.cwd(), "supabase/migrations/20260711091617_sync_ss26_catalog_content.sql"),
   "utf8"
 );
+const productUpdatedAtMigration = readFileSync(
+  join(process.cwd(), "supabase/migrations/20260711120411_touch_product_updated_at.sql"),
+  "utf8"
+);
+const archiveItemsMigration = readFileSync(
+  join(process.cwd(), "supabase/migrations/20260712090000_create_archive_items.sql"),
+  "utf8"
+);
+const archiveCollectionsMigrationPath = join(
+  process.cwd(),
+  "supabase/migrations/20260713103000_split_archive_collections.sql"
+);
+const archiveCollectionsMigration = existsSync(archiveCollectionsMigrationPath)
+  ? readFileSync(archiveCollectionsMigrationPath, "utf8")
+  : "";
 const resetScript = readFileSync(join(process.cwd(), "supabase/reset-oogo-content.sql"), "utf8");
 const verifyScript = readFileSync(join(process.cwd(), "supabase/verify-oogo-setup.sql"), "utf8");
 
@@ -95,10 +110,38 @@ describe("manageable content schema", () => {
     expect(ss26CatalogMigration).toContain("on conflict (product_id, locale) do update");
   });
 
+  it("automatically updates product modification timestamps", () => {
+    expect(productUpdatedAtMigration).toContain("before update on public.products");
+    expect(productUpdatedAtMigration).toContain("new.updated_at = now()");
+    expect(productUpdatedAtMigration).toContain("execute function public.touch_updated_at()");
+  });
+
+  it("creates an expandable Archive collection with legacy import and RLS", () => {
+    expect(archiveItemsMigration).toContain("create table if not exists public.archive_items");
+    expect(archiveItemsMigration).toContain("asset_id uuid references public.assets(id)");
+    expect(archiveItemsMigration).toContain("published_at timestamptz");
+    expect(archiveItemsMigration).toContain("archive_items_public_newest_idx");
+    expect(archiveItemsMigration).toContain("alter table public.archive_items enable row level security");
+    expect(archiveItemsMigration).toContain("public can read published archive items");
+    expect(archiveItemsMigration).toContain("admins and editors can manage archive items");
+    expect(archiveItemsMigration).toContain("image12Url");
+    expect(archiveItemsMigration).toContain("landing_blocks");
+    expect(archiveItemsMigration).toContain("from public.assets");
+    expect(archiveItemsMigration).toContain("archive/%");
+  });
+
+  it("separates OOGO and Youngbin archive collections without changing existing ownership", () => {
+    expect(archiveCollectionsMigration).toContain("add column if not exists collection_key");
+    expect(archiveCollectionsMigration).toContain("default 'oogo'");
+    expect(archiveCollectionsMigration).toContain("'youngbin-edition'");
+    expect(archiveCollectionsMigration).toContain("archive_items_collection_public_newest_idx");
+  });
+
   it("resets only OOGO-owned public content and storage assets", () => {
     expect(resetScript).toContain("drop table if exists public.products cascade");
     expect(resetScript).toContain("drop table if exists public.landing_blocks cascade");
     expect(resetScript).toContain("drop table if exists public.profiles cascade");
+    expect(resetScript).toContain("drop table if exists public.archive_items cascade");
     expect(resetScript).toContain("delete from storage.objects where bucket_id = 'oogo-assets'");
     expect(resetScript).not.toContain("drop schema auth");
     expect(resetScript).not.toContain("delete from auth.users");
@@ -109,6 +152,7 @@ describe("manageable content schema", () => {
     expect(verifyScript).toContain("bucket:oogo-assets");
     expect(verifyScript).toContain("admin_profiles");
     expect(verifyScript).toContain("published_landing_blocks");
+    expect(verifyScript).toContain("archive_items");
     expect(verifyScript).not.toContain("insert into");
     expect(verifyScript).not.toContain("drop table");
     expect(verifyScript).not.toContain("delete from");

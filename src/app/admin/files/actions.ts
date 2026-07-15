@@ -35,7 +35,16 @@ export async function deleteUnusedAssetAction(formData: FormData) {
     throw new Error(specialEditionError.message);
   }
 
-  if ((productImageCount ?? 0) + (specialEditionCount ?? 0) > 0) {
+  const { count: archiveItemCount, error: archiveItemError } = await supabase
+    .from("archive_items")
+    .select("asset_id", { count: "exact", head: true })
+    .eq("asset_id", id);
+
+  if (archiveItemError) {
+    throw new Error(archiveItemError.message);
+  }
+
+  if ((productImageCount ?? 0) + (specialEditionCount ?? 0) + (archiveItemCount ?? 0) > 0) {
     throw new Error("This asset is currently used and cannot be deleted.");
   }
 

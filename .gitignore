@@ -1,5 +1,6 @@
 .superpowers/
 .next/
+.next-dev/
 node_modules/
 out/
 tmp/
@@ -11,3 +12,4 @@ yarn-error.log*
 .codex-dev-server*.log
 test-results/
 playwright-report/
+*.tsbuildinfo

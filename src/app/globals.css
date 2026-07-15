@@ -1976,7 +1976,7 @@ h2 {
 
 .admin-table-row {
   display: grid;
-  grid-template-columns: 76px 1fr 1.5fr 0.8fr 0.8fr auto;
+  grid-template-columns: 76px 0.9fr 1.35fr 0.65fr 0.7fr 1fr auto;
   gap: 18px;
   align-items: center;
   border-top: 1px solid #34302b;
@@ -2003,7 +2003,8 @@ h2 {
 
 .admin-library-toolbar {
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) minmax(180px, 0.35fr) minmax(180px, 0.35fr);
+  grid-template-columns: minmax(240px, 1fr) minmax(150px, 0.35fr) minmax(160px, 0.35fr) 90px auto;
+  align-items: end;
   gap: 12px;
   margin-top: 28px;
   border: 1px solid #34302b;
@@ -2059,6 +2060,62 @@ h2 {
 .admin-product-main {
   display: grid;
   gap: 24px;
+}
+
+.admin-library-toolbar > button {
+  min-height: 42px;
+  padding: 0 18px;
+  border: 1px solid #d7bd97;
+  background: #d7bd97;
+  color: #16130f;
+  cursor: pointer;
+}
+
+.admin-table-row time {
+  color: #9d9287;
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.admin-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 18px;
+}
+
+.admin-pagination p {
+  margin: 0;
+  color: #9d9287;
+  font-size: 0.8rem;
+}
+
+.admin-pagination > div {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.admin-pagination a,
+.admin-pagination span {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #34302b;
+  color: #cfc6bb;
+  font-size: 0.78rem;
+}
+
+.admin-pagination a[aria-current="page"] {
+  border-color: #d7bd97;
+  background: #d7bd97;
+  color: #16130f;
+}
+
+.admin-pagination span {
+  color: #5d554d;
 }
 
 .admin-config-warning {
@@ -2508,6 +2565,51 @@ h2 {
   gap: 14px;
 }
 
+.landing-editor-group {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid #34302b;
+  border-radius: 8px;
+  background: #11100e;
+}
+
+.landing-editor-group-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #2d2925;
+}
+
+.landing-editor-group-heading > span {
+  color: #d8c0a0;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+}
+
+.landing-editor-group-heading h2,
+.landing-editor-group-heading p {
+  margin: 0;
+}
+
+.landing-editor-group-heading h2 {
+  color: #f4f0e8;
+  font-size: 1rem;
+  font-weight: 560;
+}
+
+.landing-editor-group-heading p {
+  margin-top: 5px;
+  color: #8f857b;
+  font-size: 0.76rem;
+}
+
+.landing-editor-group-blocks {
+  display: grid;
+  gap: 10px;
+}
+
 .landing-block-editor {
   display: grid;
   gap: 16px;
@@ -2673,6 +2775,308 @@ h2 {
   display: grid;
   place-items: center;
   border-style: dashed;
+}
+
+.admin-archive-page {
+  max-width: 1500px;
+}
+
+.archive-admin-editor {
+  display: grid;
+  gap: 18px;
+}
+
+.archive-admin-collections {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 220px));
+  gap: 8px;
+}
+
+.archive-admin-collections a {
+  border: 1px solid #36312c;
+  color: #e8e0d6;
+  padding: 12px 16px;
+  text-align: center;
+  text-decoration: none;
+}
+
+.archive-admin-collections a.is-active {
+  background: #dec39d;
+  color: #17130f;
+}
+
+.archive-admin-upload-form {
+  position: sticky;
+  top: 74px;
+  z-index: 5;
+  padding: 10px 0 16px;
+  background: #0d0c0b;
+  border-bottom: 1px solid #36312c;
+}
+
+.archive-admin-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.archive-admin-heading span {
+  color: #a99b8d;
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.archive-admin-title h1 {
+  margin: 8px 0 6px;
+}
+
+.archive-admin-heading p,
+.archive-admin-help {
+  margin: 0;
+  color: #a99b8d;
+}
+
+.archive-admin-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.archive-admin-toolbar > a,
+.archive-admin-toolbar > button,
+.archive-admin-file-picker {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px;
+  border: 1px solid #36312c;
+  background: #151311;
+  color: #f4f0e8;
+  font: inherit;
+  font-size: 0.78rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.archive-admin-toolbar > button[type="submit"] {
+  border-color: #dbc29f;
+  background: #dbc29f;
+  color: #17130f;
+}
+
+.archive-admin-counts {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-right: 6px;
+  color: #a99b8d;
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+.archive-admin-file-picker {
+  gap: 10px;
+  padding: 6px 8px 6px 14px;
+}
+
+.archive-admin-file-picker input {
+  width: 190px;
+  max-width: 22vw;
+  color: #a99b8d;
+  font-size: 0.68rem;
+}
+
+.archive-admin-file-picker input::file-selector-button {
+  margin-right: 8px;
+  padding: 7px 10px;
+  border: 0;
+  background: #2a2622;
+  color: #f4f0e8;
+  cursor: pointer;
+}
+
+.archive-admin-selection-status {
+  margin: 12px 0 0;
+  color: #c8b89e;
+  font-size: 13px;
+}
+
+.archive-admin-selection-status.is-error {
+  color: #ff8f82;
+  font-weight: 600;
+}
+
+.archive-admin-help {
+  font-size: 0.75rem;
+}
+
+.archive-admin-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.archive-admin-card {
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid #36312c;
+  background: #191714;
+}
+
+.archive-admin-preview {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  margin-bottom: 9px;
+  background-color: #0d0c0b;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.archive-admin-preview span {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 4px 6px;
+  background: rgba(12, 11, 10, 0.72);
+  color: #f1e7d7;
+  font-size: 0.65rem;
+}
+
+.archive-admin-preview small {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  padding: 4px 7px;
+  background: rgba(12, 11, 10, 0.78);
+  color: #f1e7d7;
+  font-size: 0.62rem;
+}
+
+.archive-admin-preview small.is-draft {
+  color: #dbc29f;
+}
+
+.archive-admin-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.archive-admin-card-actions form {
+  margin: 0;
+}
+
+.archive-admin-card-actions label,
+.archive-admin-card-actions button {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border: 1px solid #3d3731;
+  background: #12110f;
+  color: #d9d0c4;
+  font: inherit;
+  font-size: 0.7rem;
+  cursor: pointer;
+}
+
+.archive-admin-card-actions input[type="file"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+}
+
+.archive-admin-toolbar button:disabled,
+.archive-admin-file-picker:has(input:disabled),
+.archive-admin-card-actions button:disabled,
+.archive-admin-card-actions label:has(input:disabled) {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.archive-admin-empty {
+  min-height: 300px;
+  display: grid;
+  place-content: center;
+  gap: 8px;
+  border: 1px dashed #3b3630;
+  color: #a99b8d;
+  text-align: center;
+}
+
+.archive-admin-empty strong {
+  color: #f4f0e8;
+}
+
+.archive-admin-empty p {
+  margin: 0;
+}
+
+@media (min-width: 1700px) {
+  .archive-admin-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1120px) {
+  .archive-admin-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .archive-admin-toolbar {
+    justify-content: flex-start;
+  }
+
+  .archive-admin-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .archive-admin-upload-form {
+    position: static;
+  }
+
+  .archive-admin-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .archive-admin-file-picker input {
+    max-width: 42vw;
+  }
+}
+
+@media (max-width: 520px) {
+  .archive-admin-heading,
+  .archive-admin-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .archive-admin-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .archive-admin-counts {
+    justify-content: space-between;
+    margin: 0 0 4px;
+  }
+
+  .archive-admin-file-picker input {
+    width: 100%;
+    max-width: none;
+  }
 }
 
 .landing-file-actions {
@@ -3035,6 +3439,7 @@ h2 {
   .translation-panels,
   .landing-editor-grid,
   .admin-table-row,
+  .admin-library-toolbar,
   .admin-filter-bar,
   .asset-toolbar,
   .asset-grid,
@@ -3049,6 +3454,11 @@ h2 {
 
   .site-editor-tabs {
     grid-template-columns: 1fr;
+  }
+
+  .admin-pagination {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .admin-section-heading-with-tabs,

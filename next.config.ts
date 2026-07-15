@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 const projectRoot = dirname(fileURLToPath(import.meta.url));
 
 const nextConfig: NextConfig = {
+  distDir: process.env.NODE_ENV === "development" ? ".next-dev" : ".next",
   outputFileTracingRoot: projectRoot,
   allowedDevOrigins: ["127.0.0.1"],
   experimental: {

@@ -3,10 +3,12 @@ insert into public.landing_pages (page_key, title, published, sort_order) values
   ('home', 'Home', true, 20),
   ('brand-story', 'Brand Story', true, 30),
   ('collection', 'Collection', true, 40),
-  ('product-detail', 'Product Detail', true, 50),
-  ('special-edition', 'Special Edition', true, 60),
-  ('inquiry', 'Inquiry', true, 70),
-  ('footer', 'Footer', true, 80)
+  ('projects', 'Projects', true, 50),
+  ('product-detail', 'Product Detail', true, 60),
+  ('special-edition', 'Special Edition', true, 70),
+  ('archive', 'Archive', true, 80),
+  ('inquiry', 'Inquiry', true, 90),
+  ('footer', 'Footer', true, 100)
 on conflict (page_key) do update set
   title = excluded.title,
   published = excluded.published,

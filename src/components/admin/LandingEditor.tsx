@@ -46,6 +46,29 @@ type BlockConfig = {
   fields: FieldConfig[];
 };
 
+const specialEditionGroups = [
+  {
+    label: "Hero",
+    note: "첫 화면의 협업 소개와 핵심 이동 경로",
+    keys: ["special-hero"]
+  },
+  {
+    label: "Story & Edition",
+    note: "협업 관점, 한정판 설명과 패키지 이미지",
+    keys: ["collaboration-statement", "limited-edition"]
+  },
+  {
+    label: "Gallery",
+    note: "공개 페이지에 표시할 대표 이미지 4장",
+    keys: ["edition-gallery"]
+  },
+  {
+    label: "Photographer & Links",
+    note: "짧은 작가 프로필과 Archive, Inquiry, Projects 링크",
+    keys: ["photographer-profile", "footer-cta"]
+  }
+] as const;
+
 const commonCopyFields: FieldConfig[] = [
   { name: "eyebrow", label: "작은 제목", placeholder: "예: 2026 Collection" },
   { name: "heading", label: "메인 제목", placeholder: "섹션 제목" },
@@ -356,8 +379,7 @@ const pageBlockMap: Record<string, BlockConfig[]> = {
       fields: [
         { name: "image2Url", label: "갤러리 이미지 2 주소", placeholder: "Files의 이미지 URL", wide: true },
         { name: "image3Url", label: "갤러리 이미지 3 주소", placeholder: "Files의 이미지 URL", wide: true },
-        { name: "image4Url", label: "갤러리 이미지 4 주소", placeholder: "Files의 이미지 URL", wide: true },
-        { name: "image5Url", label: "갤러리 이미지 5 주소", placeholder: "Files의 이미지 URL", wide: true }
+        { name: "image4Url", label: "갤러리 이미지 4 주소", placeholder: "Files의 이미지 URL", wide: true }
       ]
     },
     {
@@ -735,6 +757,7 @@ export function LandingEditor({
     }
   ];
   const currentPageTitle = pageTitle(pageKey);
+  const isSpecialEdition = pageKey === "special-edition";
 
   return (
     <div className="landing-editor">
@@ -771,7 +794,7 @@ export function LandingEditor({
       <div className="landing-page-summary">
         <div>
           <span>{currentPageTitle}</span>
-          <strong>{pageBlocks.length}개 섹션 편집</strong>
+          <strong>{isSpecialEdition ? `${specialEditionGroups.length}개 챕터 편집` : `${pageBlocks.length}개 섹션 편집`}</strong>
         </div>
         <p>
           {editorPages.find((page) => page.key === pageKey)?.description ??
@@ -780,20 +803,52 @@ export function LandingEditor({
       </div>
 
       <div className="landing-block-list">
-        {pageBlocks.map((blockConfig, index) => (
-          <BlockEditor
-            key={blockConfig.key}
-            blockConfig={blockConfig}
-            row={getBlock(blocks, blockConfig.key)}
-            pageKey={pageKey}
-            locale={locale}
-            assets={assets}
-            saveAction={saveAction}
-            publishAction={publishAction}
-            initiallyOpen={index === 0}
-            canPersist={canPersist}
-          />
-        ))}
+        {isSpecialEdition
+          ? specialEditionGroups.map((group, groupIndex) => {
+              const groupBlocks = pageBlocks.filter((block) => group.keys.some((key) => key === block.key));
+
+              return (
+                <section className="landing-editor-group" data-editor-group={group.label} key={group.label}>
+                  <header className="landing-editor-group-heading">
+                    <span>{String(groupIndex + 1).padStart(2, "0")}</span>
+                    <div>
+                      <h2>{group.label}</h2>
+                      <p>{group.note}</p>
+                    </div>
+                  </header>
+                  <div className="landing-editor-group-blocks">
+                    {groupBlocks.map((blockConfig, blockIndex) => (
+                      <BlockEditor
+                        key={blockConfig.key}
+                        blockConfig={blockConfig}
+                        row={getBlock(blocks, blockConfig.key)}
+                        pageKey={pageKey}
+                        locale={locale}
+                        assets={assets}
+                        saveAction={saveAction}
+                        publishAction={publishAction}
+                        initiallyOpen={groupIndex === 0 && blockIndex === 0}
+                        canPersist={canPersist}
+                      />
+                    ))}
+                  </div>
+                </section>
+              );
+            })
+          : pageBlocks.map((blockConfig, index) => (
+              <BlockEditor
+                key={blockConfig.key}
+                blockConfig={blockConfig}
+                row={getBlock(blocks, blockConfig.key)}
+                pageKey={pageKey}
+                locale={locale}
+                assets={assets}
+                saveAction={saveAction}
+                publishAction={publishAction}
+                initiallyOpen={index === 0}
+                canPersist={canPersist}
+              />
+            ))}
       </div>
     </div>
   );

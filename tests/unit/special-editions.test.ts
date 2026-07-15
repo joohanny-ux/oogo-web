@@ -15,6 +15,12 @@ describe("special editions", () => {
     const edition = getFeaturedSpecialEdition();
 
     expect(edition.images.collaborationHero).toContain("youngbin-edition");
+    expect(edition.statement.statementEn).toBe(
+      "Photography and eyewear begin with light. Both shape what we choose to remember."
+    );
+    expect(edition.statement.bodyKo).toBe(
+      "사진가의 시선과 OOGO의 프레임이 만나 빛과 순간을 기록합니다."
+    );
     expect(edition.statement.themes).toEqual(["Light", "Gaze", "Memory"]);
     expect(edition.limited.features).toHaveLength(3);
     expect(edition.profile.archiveHref).toBe("/archive/youngbin-edition");

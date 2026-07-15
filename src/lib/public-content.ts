@@ -39,19 +39,23 @@ export async function getFeaturedProducts(locale: Locale) {
     return fallbackProducts(locale).filter((product) => product.featured);
   }
 
-  const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase
-    .from("products")
-    .select(productSelect)
-    .eq("published", true)
-    .eq("featured", true)
-    .order("sort_order", { ascending: true });
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("products")
+      .select(productSelect)
+      .eq("published", true)
+      .eq("featured", true)
+      .order("sort_order", { ascending: true });
 
-  if (error) {
-    throw new Error(error.message);
+    if (error) {
+      return fallbackProducts(locale).filter((product) => product.featured);
+    }
+
+    return ((data ?? []) as ProductRow[]).map((row) => mapProductRow(row, locale));
+  } catch {
+    return fallbackProducts(locale).filter((product) => product.featured);
   }
-
-  return ((data ?? []) as ProductRow[]).map((row) => mapProductRow(row, locale));
 }
 
 export async function getPublishedProducts(locale: Locale) {
@@ -59,18 +63,22 @@ export async function getPublishedProducts(locale: Locale) {
     return fallbackProducts(locale);
   }
 
-  const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase
-    .from("products")
-    .select(productSelect)
-    .eq("published", true)
-    .order("sort_order", { ascending: true });
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("products")
+      .select(productSelect)
+      .eq("published", true)
+      .order("sort_order", { ascending: true });
 
-  if (error) {
-    throw new Error(error.message);
+    if (error) {
+      return fallbackProducts(locale);
+    }
+
+    return ((data ?? []) as ProductRow[]).map((row) => mapProductRow(row, locale));
+  } catch {
+    return fallbackProducts(locale);
   }
-
-  return ((data ?? []) as ProductRow[]).map((row) => mapProductRow(row, locale));
 }
 
 export async function getProductBySlug(slug: string, locale: Locale) {
@@ -78,19 +86,23 @@ export async function getProductBySlug(slug: string, locale: Locale) {
     return fallbackProducts(locale).find((product) => product.slug === slug) ?? null;
   }
 
-  const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase
-    .from("products")
-    .select(productSelect)
-    .eq("published", true)
-    .eq("slug", slug)
-    .single();
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("products")
+      .select(productSelect)
+      .eq("published", true)
+      .eq("slug", slug)
+      .single();
 
-  if (error) {
-    return null;
+    if (error) {
+      return fallbackProducts(locale).find((product) => product.slug === slug) ?? null;
+    }
+
+    return mapProductRow(data as ProductRow, locale);
+  } catch {
+    return fallbackProducts(locale).find((product) => product.slug === slug) ?? null;
   }
-
-  return mapProductRow(data as ProductRow, locale);
 }
 
 export async function getLandingBlocks(locale: Locale) {
@@ -98,16 +110,16 @@ export async function getLandingBlocks(locale: Locale) {
     return [];
   }
 
-  const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase
-    .from("landing_blocks")
-    .select("page_key, block_key, locale, published_content")
-    .eq("locale", locale)
-    .eq("published", true);
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("landing_blocks")
+      .select("page_key, block_key, locale, published_content")
+      .eq("locale", locale)
+      .eq("published", true);
 
-  if (error) {
-    throw new Error(error.message);
+    return error ? [] : data ?? [];
+  } catch {
+    return [];
   }
-
-  return data ?? [];
 }

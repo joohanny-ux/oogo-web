@@ -10,6 +10,7 @@ with expected_tables(table_name) as (
     ('product_images'),
     ('landing_pages'),
     ('landing_blocks'),
+    ('archive_items'),
     ('company_settings'),
     ('company_translations'),
     ('inquiries'),
@@ -56,4 +57,10 @@ select
   'published_landing_blocks' as check_name,
   count(*)::text as status
 from public.landing_blocks
+where published = true;
+
+select
+  'published_archive_items' as check_name,
+  count(*)::text as status
+from public.archive_items
 where published = true;

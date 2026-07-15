@@ -56,7 +56,6 @@ describe("LandingEditor", () => {
     ["brand-story", ["Brand Hero", "About OOGO", "Brand Statement", "Brand Essence", "Design Philosophy", "Brand Experience", "Closing & CTA"]],
     ["collection", ["Collection Intro"]],
     ["projects", ["Projects Intro", "Featured Project", "Collaboration CTA"]],
-    ["special-edition", ["Collaboration Hero", "Light, Gaze, Memory", "Limited Edition", "Edition Gallery", "Photographer Profile", "Footer CTA"]],
     ["archive", ["Archive Intro"]],
     ["inquiry", ["Inquiry Intro", "Direct Channel", "Topic Guide", "Response Note"]],
     ["footer", ["Brand", "Navigation", "Contact & Legal"]]
@@ -77,6 +76,33 @@ describe("LandingEditor", () => {
     expect(html).toContain(`${titles.length}개 섹션 편집`);
   });
 
+  it("groups the Youngbin editor into the same four chapters as the public page", () => {
+    const html = renderToStaticMarkup(
+      <LandingEditor
+        pageKey="special-edition"
+        locale="ko"
+        blocks={[]}
+        saveAction={() => undefined}
+        publishAction={() => undefined}
+      />
+    );
+
+    for (const group of ["Hero", "Story & Edition", "Gallery", "Photographer & Links"]) {
+      expect(html).toContain(`data-editor-group="${group.replaceAll("&", "&amp;")}"`);
+    }
+    for (const key of [
+      "special-hero",
+      "collaboration-statement",
+      "limited-edition",
+      "edition-gallery",
+      "photographer-profile",
+      "footer-cta"
+    ]) {
+      expect(html).toContain(`name="blockKey" value="${key}"`);
+    }
+    expect(html).toContain("4개 챕터 편집");
+  });
+
   it("exposes only fields used by the Youngbin Edition public story", () => {
     const html = renderToStaticMarkup(
       <LandingEditor
@@ -88,9 +114,10 @@ describe("LandingEditor", () => {
       />
     );
 
-    for (const fieldName of ["statementEn", "feature1Title", "image5Url", "quoteKo", "archiveHref"]) {
+    for (const fieldName of ["statementEn", "feature1Title", "image4Url", "quoteKo", "archiveHref"]) {
       expect(html).toContain(`name="${fieldName}"`);
     }
+    expect(html).not.toContain('name="image5Url"');
     expect(html).not.toContain('name="item1Body"');
     expect(html).not.toContain('name="artistCredit"');
   });

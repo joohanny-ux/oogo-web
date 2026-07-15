@@ -34,6 +34,11 @@ type SpecialEditionUsageRow = {
   collaborator: string | null;
 };
 
+type ArchiveUsageRow = {
+  asset_id: string | null;
+  published: boolean;
+};
+
 function firstItem<T>(value: T | T[] | null | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
@@ -60,14 +65,18 @@ export async function listAssets() {
     return [];
   }
 
-  const [{ data: productImageUsage, error: productImageError }, { data: specialEditionUsage, error: specialEditionError }] =
-    await Promise.all([
+  const [
+    { data: productImageUsage, error: productImageError },
+    { data: specialEditionUsage, error: specialEditionError },
+    { data: archiveUsage, error: archiveUsageError }
+  ] = await Promise.all([
       supabase
         .from("product_images")
         .select("asset_id, role, products(model_code, product_translations(locale, name))")
         .in("asset_id", assetIds),
-      supabase.from("special_editions").select("hero_asset_id, slug, collaborator").in("hero_asset_id", assetIds)
-    ]);
+      supabase.from("special_editions").select("hero_asset_id, slug, collaborator").in("hero_asset_id", assetIds),
+      supabase.from("archive_items").select("asset_id, published").in("asset_id", assetIds)
+  ]);
 
   if (productImageError) {
     throw new Error(productImageError.message);
@@ -75,6 +84,10 @@ export async function listAssets() {
 
   if (specialEditionError) {
     throw new Error(specialEditionError.message);
+  }
+
+  if (archiveUsageError) {
+    throw new Error(archiveUsageError.message);
   }
 
   const usageByAsset = new Map<string, Array<{ label: string; detail: string }>>();
@@ -101,6 +114,17 @@ export async function listAssets() {
       detail: "Special hero"
     });
     usageByAsset.set(usage.hero_asset_id, existing);
+  }
+
+  for (const usage of (archiveUsage ?? []) as ArchiveUsageRow[]) {
+    if (!usage.asset_id) continue;
+
+    const existing = usageByAsset.get(usage.asset_id) ?? [];
+    existing.push({
+      label: "Archive gallery",
+      detail: usage.published ? "Published" : "Draft"
+    });
+    usageByAsset.set(usage.asset_id, existing);
   }
 
   return assets.map((asset) => ({

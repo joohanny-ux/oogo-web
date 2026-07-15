@@ -12,6 +12,7 @@ delete from storage.buckets where id = 'oogo-assets';
 drop table if exists public.special_edition_products cascade;
 drop table if exists public.special_edition_translations cascade;
 drop table if exists public.special_editions cascade;
+drop table if exists public.archive_items cascade;
 drop table if exists public.product_images cascade;
 drop table if exists public.product_translations cascade;
 drop table if exists public.products cascade;
