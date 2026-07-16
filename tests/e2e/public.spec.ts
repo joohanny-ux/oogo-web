@@ -25,7 +25,7 @@ test("homepage links to the featured project", async ({ page }) => {
   await page.getByRole("link", { name: "View project" }).click();
 
   await expect(page).toHaveURL(/\/projects\/youngbin-edition$/);
-  await expect(page.getByRole("heading", { name: "Youngbin Edition" })).toBeVisible();
+  await expect(page.locator("h1", { hasText: "Youngbin Edition" })).toBeVisible();
 });
 
 test("collection page links products to detail pages", async ({ page }) => {
@@ -34,17 +34,17 @@ test("collection page links products to detail pages", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Sunglasses" })).toBeVisible();
   await page.getByRole("link", { name: "황혼의 산책", exact: true }).click();
 
-  await expect(page).toHaveURL(/\/products\/og26001c2-sunset-stroll$/);
+  await expect(page).toHaveURL(/\/products\/og26001c2$/);
   await expect(page.getByRole("heading", { name: "황혼의 산책" })).toBeVisible();
 });
 
 test("product detail presents buyer-focused views and actions", async ({ page }) => {
-  await page.goto("/products/og26001c2-sunset-stroll");
+  await page.goto("/products/og26001c2");
 
   await expect(page.getByRole("heading", { name: "황혼의 산책" })).toBeVisible();
-  await expect(page.getByText("Front")).toBeVisible();
-  await expect(page.getByText("Angle")).toBeVisible();
-  await expect(page.getByText("Side")).toBeVisible();
-  await expect(page.getByText("Wearing")).toBeVisible();
+  await expect(page.locator(".product-detail-media-front")).toBeVisible();
+  await expect(page.locator(".product-detail-media-angle")).toBeVisible();
+  await expect(page.locator(".product-detail-media-side")).toBeVisible();
+  await expect(page.locator(".product-detail-media-wearing")).toBeVisible();
   await expect(page.getByRole("link", { name: "Buyer inquiry" })).toHaveAttribute("href", "/inquiry");
 });

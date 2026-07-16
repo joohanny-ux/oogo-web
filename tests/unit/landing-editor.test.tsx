@@ -2,6 +2,20 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { LandingEditor } from "@/components/admin/LandingEditor";
+import { LANDING_CONTENT_FIELDS, readLandingContentFields } from "@/lib/landing-content-fields";
+
+const pageKeys = [
+  "header",
+  "home",
+  "brand-story",
+  "collection",
+  "projects",
+  "product-detail",
+  "special-edition",
+  "archive",
+  "inquiry",
+  "footer"
+] as const;
 
 describe("LandingEditor", () => {
   it("matches the four sections rendered on the public Home page", () => {
@@ -76,7 +90,7 @@ describe("LandingEditor", () => {
     expect(html).toContain(`${titles.length}개 섹션 편집`);
   });
 
-  it("groups the Youngbin editor into the same four chapters as the public page", () => {
+  it("groups the Youngbin project and photo archive in public route order", () => {
     const html = renderToStaticMarkup(
       <LandingEditor
         pageKey="special-edition"
@@ -87,7 +101,7 @@ describe("LandingEditor", () => {
       />
     );
 
-    for (const group of ["Hero", "Story & Edition", "Gallery", "Photographer & Links"]) {
+    for (const group of ["Hero", "Story & Edition", "Gallery", "Photographer & Links", "Photo Archive"]) {
       expect(html).toContain(`data-editor-group="${group.replaceAll("&", "&amp;")}"`);
     }
     for (const key of [
@@ -96,14 +110,15 @@ describe("LandingEditor", () => {
       "limited-edition",
       "edition-gallery",
       "photographer-profile",
-      "footer-cta"
+      "footer-cta",
+      "youngbin-archive"
     ]) {
       expect(html).toContain(`name="blockKey" value="${key}"`);
     }
-    expect(html).toContain("4개 챕터 편집");
+    expect(html).toContain("5개 챕터 편집");
   });
 
-  it("exposes only fields used by the Youngbin Edition public story", () => {
+  it("exposes only fields used by the Youngbin public pages", () => {
     const html = renderToStaticMarkup(
       <LandingEditor
         pageKey="special-edition"
@@ -114,11 +129,85 @@ describe("LandingEditor", () => {
       />
     );
 
-    for (const fieldName of ["statementEn", "feature1Title", "image4Url", "quoteKo", "archiveHref"]) {
+    for (const fieldName of ["statementEn", "feature1Title", "image5Url", "quoteKo", "archiveHref", "artistCredit"]) {
       expect(html).toContain(`name="${fieldName}"`);
     }
-    expect(html).not.toContain('name="image5Url"');
     expect(html).not.toContain('name="item1Body"');
-    expect(html).not.toContain('name="artistCredit"');
+    expect(html).not.toContain('name="theme1"');
+    expect(html).not.toContain('name="feature1Body"');
+    expect(html).not.toContain('name="secondaryLabel"');
+  });
+
+  it("only renders editable content fields accepted by the save action", () => {
+    const acceptedFields = new Set<string>([
+      ...LANDING_CONTENT_FIELDS,
+      "id",
+      "pageKey",
+      "locale",
+      "blockKey",
+      "mediaType",
+      "mediaUrl",
+      "mediaFile"
+    ]);
+
+    for (const pageKey of pageKeys) {
+      const html = renderToStaticMarkup(
+        <LandingEditor
+          pageKey={pageKey}
+          locale="ko"
+          blocks={[]}
+          saveAction={() => undefined}
+          publishAction={() => undefined}
+        />
+      );
+      const renderedNames = Array.from(html.matchAll(/name="([^"]+)"/g), (match) => match[1]);
+
+      expect(renderedNames.filter((name) => !acceptedFields.has(name)), pageKey).toEqual([]);
+    }
+  });
+
+  it("opens the public preview for the selected locale", () => {
+    const html = renderToStaticMarkup(
+      <LandingEditor
+        pageKey="brand-story"
+        locale="zh"
+        blocks={[]}
+        saveAction={() => undefined}
+        publishAction={() => undefined}
+      />
+    );
+
+    expect(html).toContain('class="landing-open-public" href="/zh/brand"');
+  });
+
+  it("directs EN and CN Home media updates to the shared KO content", () => {
+    const html = renderToStaticMarkup(
+      <LandingEditor
+        pageKey="home"
+        locale="en"
+        blocks={[]}
+        saveAction={() => undefined}
+        publishAction={() => undefined}
+      />
+    );
+
+    expect(html).toContain("KO 탭에서 변경하세요.");
+    expect(html).not.toContain('name="mediaUrl"');
+  });
+
+  it("persists only fields submitted by the active public section", () => {
+    const formData = new FormData();
+    formData.set("headline", "Quietly distinct");
+    formData.set("item6Title", "FRAME");
+
+    expect(readLandingContentFields(formData)).toEqual({
+      headline: "Quietly distinct",
+      item6Title: "FRAME"
+    });
+    expect(readLandingContentFields(formData, { mediaType: "image", mediaUrl: "/hero.webp" })).toMatchObject({
+      mediaType: "image",
+      mediaUrl: "/hero.webp",
+      imageUrl: "/hero.webp"
+    });
   });
 });

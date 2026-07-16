@@ -1,6 +1,7 @@
 import React from "react";
 import { LOCALE_LABELS, LOCALES, type Locale } from "@/lib/i18n";
 import { getLandingEditorPages, landingPageOptions } from "@/lib/admin-content";
+import { withLocalePrefix } from "@/lib/locale-path";
 import { getProductCatalogHref } from "@/lib/products";
 
 type LandingBlockRow = {
@@ -42,6 +43,7 @@ type BlockConfig = {
   title: string;
   note: string;
   media?: boolean;
+  mediaSharedFromKo?: boolean;
   mediaGuidance?: string;
   fields: FieldConfig[];
 };
@@ -66,6 +68,11 @@ const specialEditionGroups = [
     label: "Photographer & Links",
     note: "짧은 작가 프로필과 Archive, Inquiry, Projects 링크",
     keys: ["photographer-profile", "footer-cta"]
+  },
+  {
+    label: "Photo Archive",
+    note: "Youngbin Edition 사진 아카이브의 상단 소개",
+    keys: ["youngbin-archive"]
   }
 ] as const;
 
@@ -83,6 +90,7 @@ const homeBlocks: BlockConfig[] = [
     title: "Hero",
     note: "공개 홈 첫 화면의 대표 이미지와 브랜드 문구",
     media: true,
+    mediaSharedFromKo: true,
     mediaGuidance:
       "Image 2400 x 1500px recommended, JPG/PNG/WebP max 8MB. Video 1920 x 1080 or 1920 x 1200, MP4/WebM max 25MB, muted loop style.",
     fields: [
@@ -106,6 +114,7 @@ const homeBlocks: BlockConfig[] = [
     title: "Projects",
     note: "공개 홈의 프로젝트 대표 이미지, 제목, 설명과 이동 링크",
     media: true,
+    mediaSharedFromKo: true,
     mediaGuidance: "Recommended 2000 x 1400px campaign image, JPG/PNG/WebP max 8MB.",
     fields: [
       { name: "eyebrow", label: "작은 제목", placeholder: "Projects" },
@@ -118,16 +127,11 @@ const homeBlocks: BlockConfig[] = [
   {
     key: "archive-preview",
     title: "Archive",
-    note: "공개 홈 마지막 갤러리의 제목, Archive 링크와 이미지 4개",
-    media: true,
-    mediaGuidance: "첫 번째 Archive 이미지입니다. Portrait or landscape JPG/PNG/WebP, max 8MB.",
+    note: "공개 홈 마지막 갤러리의 제목과 Archive 링크. 이미지는 현재 공개 페이지의 고정 이미지를 사용합니다.",
     fields: [
       { name: "eyebrow", label: "섹션 제목", placeholder: "Archive" },
       { name: "primaryLabel", label: "Archive 링크 문구", placeholder: "View archive" },
-      { name: "primaryHref", label: "Archive 링크", placeholder: "/archive" },
-      { name: "image2Url", label: "두 번째 이미지 주소", placeholder: "Files의 이미지 URL", wide: true },
-      { name: "image3Url", label: "세 번째 이미지 주소", placeholder: "Files의 이미지 URL", wide: true },
-      { name: "image4Url", label: "네 번째 이미지 주소", placeholder: "Files의 이미지 URL", wide: true }
+      { name: "primaryHref", label: "Archive 링크", placeholder: "/archive" }
     ]
   }
 ];
@@ -170,9 +174,7 @@ const pageBlockMap: Record<string, BlockConfig[]> = {
     {
       key: "story-hero",
       title: "Brand Hero",
-      note: "상단 브랜드 이름, 짧은 문장과 대표 이미지",
-      media: true,
-      mediaGuidance: "Recommended 2400 x 1400px, editorial brand image, JPG/PNG/WebP max 8MB.",
+      note: "상단 브랜드 이름과 소개 문구. 이미지는 현재 공개 페이지의 고정 이미지를 사용합니다.",
       fields: [
         { name: "eyebrow", label: "작은 제목", placeholder: "Brand Story" },
         { name: "heading", label: "브랜드 제목", placeholder: "OOGO" },
@@ -209,11 +211,11 @@ const pageBlockMap: Record<string, BlockConfig[]> = {
       note: "QUIET, HUMAN, LIGHT, SHADOW, MEMORY, FRAME 여섯 가지 가치",
       fields: [
         { name: "heading", label: "섹션 제목", wide: true },
-        { name: "intro", label: "섹션 설명", type: "textarea", wide: true },
-        ...["QUIET", "HUMAN", "LIGHT", "SHADOW", "MEMORY", "FRAME"].flatMap((title, index) => [
-          { name: `item${index + 1}Title`, label: `가치 ${index + 1} 제목`, placeholder: title },
-          { name: `item${index + 1}Body`, label: `가치 ${index + 1} 설명`, type: "textarea" as const }
-        ])
+        ...["QUIET", "HUMAN", "LIGHT", "SHADOW", "MEMORY", "FRAME"].map((title, index) => ({
+          name: `item${index + 1}Title`,
+          label: `가치 ${index + 1} 제목`,
+          placeholder: title
+        }))
       ]
     },
     {
@@ -224,10 +226,8 @@ const pageBlockMap: Record<string, BlockConfig[]> = {
       mediaGuidance: "Recommended 1600 x 1200px product detail image, JPG/PNG/WebP max 8MB.",
       fields: [
         { name: "heading", label: "섹션 제목", wide: true },
-        { name: "intro", label: "섹션 설명", type: "textarea", wide: true },
         ...["Proportion", "Balance", "Comfort", "Clarity", "Timeless Form"].flatMap((title, index) => [
           { name: `item${index + 1}Title`, label: `철학 ${index + 1} 제목`, placeholder: title },
-          { name: `item${index + 1}Body`, label: `철학 ${index + 1} 설명`, type: "textarea" as const },
           ...(index === 0 ? [] : [{ name: `image${index + 1}Url`, label: `철학 ${index + 1} 이미지 주소`, wide: true }])
         ])
       ]
@@ -240,7 +240,6 @@ const pageBlockMap: Record<string, BlockConfig[]> = {
       mediaGuidance: "Recommended 1600 x 1200px editorial image, JPG/PNG/WebP max 8MB.",
       fields: [
         { name: "heading", label: "섹션 제목", wide: true },
-        { name: "body", label: "섹션 설명", type: "textarea", wide: true },
         { name: "image2Url", label: "이미지 2 주소", wide: true },
         { name: "image3Url", label: "이미지 3 주소", wide: true },
         { name: "image4Url", label: "이미지 4 주소", wide: true },
@@ -330,26 +329,16 @@ const pageBlockMap: Record<string, BlockConfig[]> = {
         { name: "eyebrow", label: "협업 표기", placeholder: "OOGO x JIYOUNGBIN" },
         { name: "heading", label: "프로젝트 제목", placeholder: "Youngbin Edition" },
         { name: "subtitle", label: "연도 / 협업자", placeholder: "2026 · JI YOUNGBIN" },
-        { name: "body", label: "협업 소개", type: "textarea", wide: true },
-        { name: "primaryLabel", label: "문의 버튼 문구", placeholder: "Buyer inquiry" },
-        { name: "primaryHref", label: "문의 링크", placeholder: "/inquiry" },
-        { name: "secondaryLabel", label: "아카이브 버튼 문구", placeholder: "View Photo Archive" },
-        { name: "secondaryHref", label: "아카이브 링크", placeholder: "/archive/youngbin-edition" }
+        { name: "body", label: "협업 소개", type: "textarea", wide: true }
       ]
     },
     {
       key: "collaboration-statement",
       title: "Light, Gaze, Memory",
-      note: "사진과 아이웨어가 빛에서 시작된다는 협업 문장과 작가 작업 이미지 2장",
-      media: true,
-      mediaGuidance: "작가의 작업 과정 이미지 1. 가로 1600 x 1000px 전후 JPG/PNG/WebP, 최대 8MB.",
+      note: "사진과 아이웨어가 빛에서 시작된다는 협업 문장",
       fields: [
         { name: "statementEn", label: "영문 메인 문장", type: "textarea", wide: true },
-        { name: "bodyKo", label: "한글 보조 설명", type: "textarea", wide: true },
-        { name: "theme1", label: "키워드 1", placeholder: "Light" },
-        { name: "theme2", label: "키워드 2", placeholder: "Gaze" },
-        { name: "theme3", label: "키워드 3", placeholder: "Memory" },
-        { name: "image2Url", label: "작업 이미지 2 주소", placeholder: "Files의 이미지 URL", wide: true }
+        { name: "bodyKo", label: "보조 설명", type: "textarea", wide: true }
       ]
     },
     {
@@ -361,25 +350,20 @@ const pageBlockMap: Record<string, BlockConfig[]> = {
       fields: [
         { name: "eyebrow", label: "작은 제목", placeholder: "Limited Edition" },
         { name: "heading", label: "메인 제목", placeholder: "Youngbin Edition" },
-        { name: "body", label: "에디션 설명", type: "textarea", wide: true },
         { name: "feature1Title", label: "특징 1 제목", placeholder: "Limited Quantity" },
-        { name: "feature1Body", label: "특징 1 설명" },
         { name: "feature2Title", label: "특징 2 제목", placeholder: "Special Package" },
-        { name: "feature2Body", label: "특징 2 설명" },
-        { name: "feature3Title", label: "특징 3 제목", placeholder: "Campaign & Exhibition" },
-        { name: "feature3Body", label: "특징 3 설명" }
+        { name: "feature3Title", label: "특징 3 제목", placeholder: "Campaign & Exhibition" }
       ]
     },
     {
       key: "edition-gallery",
       title: "Edition Gallery",
-      note: "제품 정면, 사선, 패키지, 캠페인과 디테일 이미지를 공개 순서대로 구성",
-      media: true,
-      mediaGuidance: "갤러리 첫 이미지. 제품 또는 캠페인 JPG/PNG/WebP, 최대 8MB.",
+      note: "공개 페이지에 표시되는 갤러리 이미지 2~5를 순서대로 구성",
       fields: [
         { name: "image2Url", label: "갤러리 이미지 2 주소", placeholder: "Files의 이미지 URL", wide: true },
         { name: "image3Url", label: "갤러리 이미지 3 주소", placeholder: "Files의 이미지 URL", wide: true },
-        { name: "image4Url", label: "갤러리 이미지 4 주소", placeholder: "Files의 이미지 URL", wide: true }
+        { name: "image4Url", label: "갤러리 이미지 4 주소", placeholder: "Files의 이미지 URL", wide: true },
+        { name: "image5Url", label: "갤러리 이미지 5 주소", placeholder: "Files의 이미지 URL", wide: true }
       ]
     },
     {
@@ -408,9 +392,19 @@ const pageBlockMap: Record<string, BlockConfig[]> = {
       note: "프로젝트 상세 하단의 문의·목록 링크",
       fields: [
         { name: "primaryLabel", label: "문의 문구", placeholder: "Buyer inquiry" },
-        { name: "primaryHref", label: "문의 링크", placeholder: "/inquiry" },
-        { name: "secondaryLabel", label: "목록 문구", placeholder: "All projects" },
-        { name: "secondaryHref", label: "목록 링크", placeholder: "/projects" }
+        { name: "primaryHref", label: "문의 링크", placeholder: "/inquiry" }
+      ]
+    },
+    {
+      key: "youngbin-archive",
+      title: "Photo Archive Intro",
+      note: "Youngbin Edition 사진 아카이브 상단의 제목, 작가 표기와 프로젝트 링크",
+      fields: [
+        { name: "eyebrow", label: "작은 제목", placeholder: "Youngbin Edition" },
+        { name: "heading", label: "페이지 제목", placeholder: "Photo Archive" },
+        { name: "artistCredit", label: "작가 표기", placeholder: "Photography by Ji Youngbin" },
+        { name: "body", label: "소개", type: "textarea", wide: true },
+        { name: "projectLabel", label: "프로젝트 링크 문구", placeholder: "View project" }
       ]
     }
   ],
@@ -714,7 +708,17 @@ function BlockEditor({
                 ))}
               </div>
             </div>
-            {blockConfig.media ? <MediaPanel content={content} block={blockConfig} assets={assets} canPersist={canPersist} /> : null}
+            {blockConfig.media && (!blockConfig.mediaSharedFromKo || locale === "ko") ? (
+              <MediaPanel content={content} block={blockConfig} assets={assets} canPersist={canPersist} />
+            ) : blockConfig.mediaSharedFromKo ? (
+              <aside className="admin-asset-panel landing-media-panel">
+                <div className="admin-section-heading">
+                  <span>공통 미디어</span>
+                  <small>KO</small>
+                </div>
+                <p>이 섹션의 이미지는 모든 언어에서 한국어 버전과 공유됩니다. KO 탭에서 변경하세요.</p>
+              </aside>
+            ) : null}
           </div>
           <div className="landing-form-actions">
             <button type="submit" disabled={!canPersist}>
@@ -785,7 +789,7 @@ export function LandingEditor({
               </a>
             ))}
           </div>
-          <a className="landing-open-public" href={publicHref(pageKey)} target="_blank" rel="noreferrer">
+          <a className="landing-open-public" href={withLocalePrefix(publicHref(pageKey), locale)} target="_blank" rel="noreferrer">
             공개 페이지 보기
           </a>
         </div>

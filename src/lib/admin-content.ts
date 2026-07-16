@@ -520,31 +520,41 @@ export async function saveLandingBlockDraft(input: LandingBlockDraftInput) {
     return { ok: false, message: pageError.message };
   }
 
-  let existingId = input.id;
+  const existingBlockQuery = supabase
+    .from("landing_blocks")
+    .select("id, draft_content");
+  const { data: existingBlock, error: readError } = input.id
+    ? await existingBlockQuery.eq("id", input.id).maybeSingle()
+    : await existingBlockQuery
+        .eq("page_key", input.pageKey)
+        .eq("block_key", input.blockKey)
+        .eq("locale", input.locale)
+        .maybeSingle();
 
-  if (!existingId) {
-    const { data: existingBlock, error: readError } = await supabase
-      .from("landing_blocks")
-      .select("id")
-      .eq("page_key", input.pageKey)
-      .eq("block_key", input.blockKey)
-      .eq("locale", input.locale)
-      .maybeSingle();
-
-    if (readError) {
-      return { ok: false, message: readError.message };
-    }
-
-    existingId = existingBlock?.id;
+  if (readError) {
+    return { ok: false, message: readError.message };
   }
+
+  const existingId = existingBlock?.id;
+  const existingContent =
+    existingBlock?.draft_content && typeof existingBlock.draft_content === "object" && !Array.isArray(existingBlock.draft_content)
+      ? existingBlock.draft_content
+      : {};
+  const mergedInput = {
+    ...input,
+    content: {
+      ...existingContent,
+      ...input.content
+    }
+  };
 
   const updatedAt = new Date().toISOString();
   const { error } = existingId
     ? await supabase
         .from("landing_blocks")
-        .update(getLandingDraftWritePayload(input, updatedAt, existingId))
+        .update(getLandingDraftWritePayload(mergedInput, updatedAt, existingId))
         .eq("id", existingId)
-    : await supabase.from("landing_blocks").insert(getLandingDraftWritePayload(input, updatedAt, undefined));
+    : await supabase.from("landing_blocks").insert(getLandingDraftWritePayload(mergedInput, updatedAt, undefined));
 
   if (error) {
     return { ok: false, message: error.message };
@@ -585,6 +595,7 @@ export async function publishLandingBlock(id: string) {
   revalidatePath("/projects");
   revalidatePath("/projects/youngbin-edition");
   revalidatePath("/archive");
+  revalidatePath("/archive/youngbin-edition");
   revalidatePath("/inquiry");
   revalidatePath("/products/[slug]", "page");
   revalidatePath("/admin/landing");

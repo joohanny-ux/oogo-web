@@ -2,6 +2,7 @@
 
 import { normalizeLocale } from "@/lib/i18n";
 import { hasSupabaseEnv, publishLandingBlock, saveLandingBlockDraft } from "@/lib/admin-content";
+import { readLandingContentFields } from "@/lib/landing-content-fields";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 function isUploadFile(value: FormDataEntryValue | null): value is File {
@@ -82,90 +83,6 @@ export async function uploadLandingMediaFile(file: File, pageKey: string, blockK
   };
 }
 
-const landingContentKeys = [
-  "eyebrow",
-  "heading",
-  "line",
-  "body",
-  "primaryLabel",
-  "primaryHref",
-  "secondaryLabel",
-  "secondaryHref",
-  "posterUrl",
-  "image2Url",
-  "image3Url",
-  "image4Url",
-  "image5Url",
-  "image6Url",
-  "image7Url",
-  "image8Url",
-  "image9Url",
-  "image10Url",
-  "image11Url",
-  "image12Url",
-  "subtitle",
-  "year",
-  "item1Title",
-  "item1Body",
-  "item2Title",
-  "item2Body",
-  "item3Title",
-  "item3Body",
-  "item4Title",
-  "item4Body",
-  "topic1",
-  "topic2",
-  "topic3",
-  "topic4",
-  "response",
-  "logoLabel",
-  "logoHref",
-  "nav1Label",
-  "nav1Href",
-  "nav2Label",
-  "nav2Href",
-  "nav3Label",
-  "nav3Href",
-  "nav4Label",
-  "nav4Href",
-  "nav5Label",
-  "nav5Href",
-  "utilityLabel",
-  "utilityHref",
-  "showLocale",
-  "specTitle",
-  "buyerCta",
-  "buyerHref",
-  "relatedTitle",
-  "brandDescription",
-  "email",
-  "address",
-  "instagram",
-  "facebook",
-  "tiktok",
-  "youtube",
-  "pinterest",
-  "termsLabel",
-  "termsHref",
-  "privacyLabel",
-  "privacyHref",
-  "copyright"
-];
-
-function readLandingContent(formData: FormData, mediaType: string, mediaUrl: string) {
-  const content: Record<string, unknown> = {};
-
-  for (const key of landingContentKeys) {
-    content[key] = String(formData.get(key) ?? "");
-  }
-
-  content.mediaType = mediaType;
-  content.mediaUrl = mediaUrl;
-  content.imageUrl = mediaUrl;
-
-  return content;
-}
-
 export async function saveLandingBlockAction(formData: FormData) {
   const pageKey = String(formData.get("pageKey") ?? "home");
   const blockKey = String(formData.get("blockKey") ?? "main");
@@ -176,15 +93,20 @@ export async function saveLandingBlockAction(formData: FormData) {
     throw new Error(mediaUpload.message);
   }
 
-  const mediaType = mediaUpload?.mediaType ?? String(formData.get("mediaType") ?? "image");
-  const mediaUrl = mediaUpload?.url ?? String(formData.get("mediaUrl") ?? formData.get("imageUrl") ?? "");
+  const hasMediaControl = Boolean(mediaUpload) || formData.has("mediaType") || formData.has("mediaUrl");
+  const media = hasMediaControl
+    ? {
+        mediaType: mediaUpload?.mediaType ?? String(formData.get("mediaType") ?? "image"),
+        mediaUrl: mediaUpload?.url ?? String(formData.get("mediaUrl") ?? formData.get("imageUrl") ?? "")
+      }
+    : undefined;
 
   const result = await saveLandingBlockDraft({
     id: String(formData.get("id") || "") || undefined,
     pageKey,
     locale: normalizeLocale(String(formData.get("locale") ?? "ko")),
     blockKey,
-    content: readLandingContent(formData, mediaType, mediaUrl)
+    content: readLandingContentFields(formData, media)
   });
 
   if (!result.ok) {
