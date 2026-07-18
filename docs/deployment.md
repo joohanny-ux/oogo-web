@@ -1,6 +1,6 @@
 # OOGO Deployment Guide
 
-이 문서는 `www.oogolabs.com`에 OOGO 홈페이지를 배포하기 위한 운영 체크리스트입니다.
+이 문서는 `www.oogolaps.com`에 OOGO 홈페이지를 배포하기 위한 운영 체크리스트입니다.
 
 ## 1. Supabase
 
@@ -28,7 +28,7 @@ supabase/verify-oogo-setup.sql     # read-only 확인용
 
 ```sql
 insert into public.profiles (id, email, role)
-values ('AUTH_USER_ID', 'admin@oogolabs.com', 'admin');
+values ('AUTH_USER_ID', 'admin@oogolaps.com', 'admin');
 ```
 
 ## 2. Vercel
@@ -40,12 +40,12 @@ values ('AUTH_USER_ID', 'admin@oogolabs.com', 'admin');
 ```env
 NEXT_PUBLIC_SUPABASE_URL=Supabase Project URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY=Supabase anon public key
-NEXT_PUBLIC_SITE_URL=https://www.oogolabs.com
+NEXT_PUBLIC_SITE_URL=https://www.oogolaps.com
 SUPABASE_SERVICE_ROLE_KEY=Supabase service role key
 ```
 
 4. Build Command는 기본값 `next build`를 사용합니다.
-5. 배포 후 Vercel Domains에서 `www.oogolabs.com`을 추가합니다.
+5. 배포 후 Vercel Domains에서 `www.oogolaps.com`을 추가합니다.
 
 ## 3. DNS
 
@@ -53,9 +53,9 @@ SUPABASE_SERVICE_ROLE_KEY=Supabase service role key
 
 ## 4. First Admin Check
 
-1. `https://www.oogolabs.com`에서 공개 홈페이지를 확인합니다.
-2. `https://www.oogolabs.com/collection`에서 상품 카탈로그를 확인합니다.
-3. `https://www.oogolabs.com/admin/login`에서 로그인합니다.
+1. `https://www.oogolaps.com`에서 공개 홈페이지를 확인합니다.
+2. `https://www.oogolaps.com/collection`에서 상품 카탈로그를 확인합니다.
+3. `https://www.oogolaps.com/admin/login`에서 로그인합니다.
 4. `/admin`의 Setup Status에서 Supabase env, migrations, storage, admin auth 준비 상태를 확인합니다.
 5. `/admin/products`에서 테스트 상품을 추가하거나 seed 상품을 수정한 뒤 `Public on site`를 체크하고 저장합니다.
 6. `/collection`과 `/products/[slug]`에서 상품 반영을 확인합니다.

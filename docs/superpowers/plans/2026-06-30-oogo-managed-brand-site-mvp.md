@@ -1593,7 +1593,7 @@ Document local setup:
 
 - [ ] **Step 2: Write deployment notes**
 
-Create `docs/deployment.md` with Vercel and Supabase environment variable setup, Supabase migration instructions, and domain notes for `www.oogolabs.com`.
+Create `docs/deployment.md` with Vercel and Supabase environment variable setup, Supabase migration instructions, and domain notes for `www.oogolaps.com`.
 
 - [ ] **Step 3: Run full verification**
 

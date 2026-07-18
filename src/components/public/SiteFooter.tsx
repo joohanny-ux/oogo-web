@@ -5,11 +5,11 @@ import { getRequestLocale, withLocalePrefix } from "@/lib/public-locale";
 import { landingTextForLocale, pickLocaleCopy, publicCopy } from "@/lib/public-copy";
 
 const defaultSocialLinks = [
-  { label: "Instagram", icon: "instagram", href: "https://www.instagram.com/oogolabs" },
-  { label: "Facebook", icon: "facebook", href: "https://www.facebook.com/oogolabs" },
-  { label: "TikTok", icon: "tiktok", href: "https://www.tiktok.com/@oogolabs" },
-  { label: "YouTube", icon: "youtube", href: "https://www.youtube.com/@oogolabs" },
-  { label: "Pinterest", icon: "pinterest", href: "https://www.pinterest.com/oogolabs" }
+  { label: "Instagram", icon: "instagram", href: "https://www.instagram.com/oogolaps" },
+  { label: "Facebook", icon: "facebook", href: "https://www.facebook.com/oogolaps" },
+  { label: "TikTok", icon: "tiktok", href: "https://www.tiktok.com/@oogolaps" },
+  { label: "YouTube", icon: "youtube", href: "https://www.youtube.com/@oogolaps" },
+  { label: "Pinterest", icon: "pinterest", href: "https://www.pinterest.com/oogolaps" }
 ] as const;
 
 type SocialIconName = (typeof defaultSocialLinks)[number]["icon"];
@@ -117,7 +117,7 @@ export async function SiteFooter() {
         ))}
       </nav>
       <div className="footer-contact">
-        <span>{landingText(contact, "email", "contact@oogolabs.com")}</span>
+        <span>{landingText(contact, "email", "contact@oogolaps.com")}</span>
         <span>{pickLocaleCopy(locale, publicCopy.common.buyerRetail)}</span>
         <span>{landingTextForLocale(contact, "address", locale, publicCopy.inquiry.address)}</span>
         <nav className="footer-legal" aria-label="Legal links">

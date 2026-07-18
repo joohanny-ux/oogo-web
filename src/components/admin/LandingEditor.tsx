@@ -519,7 +519,7 @@ const pageBlockMap: Record<string, BlockConfig[]> = {
       note: "직접 연락할 이메일과 위치",
       fields: [
         { name: "eyebrow", label: "채널 제목", placeholder: "Direct channel" },
-        { name: "email", label: "Email", placeholder: "contact@oogolabs.com" },
+        { name: "email", label: "Email", placeholder: "contact@oogolaps.com" },
         { name: "address", label: "위치", placeholder: "Seoul, Korea" }
       ]
     },
@@ -570,7 +570,7 @@ const pageBlockMap: Record<string, BlockConfig[]> = {
       note: "Footer 오른쪽 연락처, SNS, 법률 링크와 저작권",
       socialLinks: true,
       fields: [
-        { name: "email", label: "Email", placeholder: "contact@oogolabs.com" },
+        { name: "email", label: "Email", placeholder: "contact@oogolaps.com" },
         { name: "address", label: "주소", placeholder: "Seoul, Korea" },
         { name: "termsLabel", label: "이용약관 문구", placeholder: "Terms & Conditions" },
         { name: "termsHref", label: "이용약관 링크", placeholder: "/terms-conditions" },
@@ -679,11 +679,11 @@ function galleryImageInputs(content: Record<string, unknown>, config: NonNullabl
 }
 
 const defaultSocialLinks: SocialLinkInput[] = [
-  { id: "social-instagram", platform: "instagram", href: "https://www.instagram.com/oogolabs", label: "Instagram", visible: true },
-  { id: "social-facebook", platform: "facebook", href: "https://www.facebook.com/oogolabs", label: "Facebook", visible: true },
-  { id: "social-tiktok", platform: "tiktok", href: "https://www.tiktok.com/@oogolabs", label: "TikTok", visible: true },
-  { id: "social-youtube", platform: "youtube", href: "https://www.youtube.com/@oogolabs", label: "YouTube", visible: true },
-  { id: "social-pinterest", platform: "pinterest", href: "https://www.pinterest.com/oogolabs", label: "Pinterest", visible: true }
+  { id: "social-instagram", platform: "instagram", href: "https://www.instagram.com/oogolaps", label: "Instagram", visible: true },
+  { id: "social-facebook", platform: "facebook", href: "https://www.facebook.com/oogolaps", label: "Facebook", visible: true },
+  { id: "social-tiktok", platform: "tiktok", href: "https://www.tiktok.com/@oogolaps", label: "TikTok", visible: true },
+  { id: "social-youtube", platform: "youtube", href: "https://www.youtube.com/@oogolaps", label: "YouTube", visible: true },
+  { id: "social-pinterest", platform: "pinterest", href: "https://www.pinterest.com/oogolaps", label: "Pinterest", visible: true }
 ];
 
 function socialLinkInputs(content: Record<string, unknown>): SocialLinkInput[] {

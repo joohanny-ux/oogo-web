@@ -26,7 +26,7 @@ npm run dev
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
-NEXT_PUBLIC_SITE_URL=https://www.oogolabs.com
+NEXT_PUBLIC_SITE_URL=https://www.oogolaps.com
 ```
 
 현재 앱은 브라우저/서버 Supabase 세션에 `NEXT_PUBLIC_SUPABASE_URL`과 `NEXT_PUBLIC_SUPABASE_ANON_KEY`를 사용합니다. `SUPABASE_SERVICE_ROLE_KEY`는 운영 자동화나 향후 서버 전용 관리 기능을 위해 예약되어 있으며, 클라이언트에 노출하면 안 됩니다.

@@ -93,9 +93,9 @@ export const privacyPolicyCopy: LegalDocument = {
     {
       title: { ko: "정보주체의 권리", en: "Rights of data subjects", zh: "信息主体的权利" },
       body: {
-        ko: "이용자는 개인정보의 열람, 정정, 삭제 및 처리 정지를 요청할 수 있습니다. 요청은 contact@oogolabs.com으로 접수하며, 본인 확인 후 관련 법령이 정한 범위에서 처리합니다.",
-        en: "Users may request access, correction, deletion, or suspension of processing. Requests can be sent to contact@oogolabs.com and will be handled within the scope of applicable law after identity verification.",
-        zh: "用户可请求查阅、更正、删除及停止处理个人信息。请将请求发送至 contact@oogolabs.com，经身份验证后按相关法律范围处理。"
+        ko: "이용자는 개인정보의 열람, 정정, 삭제 및 처리 정지를 요청할 수 있습니다. 요청은 contact@oogolaps.com으로 접수하며, 본인 확인 후 관련 법령이 정한 범위에서 처리합니다.",
+        en: "Users may request access, correction, deletion, or suspension of processing. Requests can be sent to contact@oogolaps.com and will be handled within the scope of applicable law after identity verification.",
+        zh: "用户可请求查阅、更正、删除及停止处理个人信息。请将请求发送至 contact@oogolaps.com，经身份验证后按相关法律范围处理。"
       }
     },
     {
@@ -117,9 +117,9 @@ export const privacyPolicyCopy: LegalDocument = {
     {
       title: { ko: "개인정보 문의처", en: "Privacy contact", zh: "隐私联系方式" },
       body: {
-        ko: "개인정보 처리와 권리 행사에 관한 문의는 contact@oogolabs.com으로 보내 주세요.",
-        en: "For questions about privacy processing or exercising your rights, email contact@oogolabs.com.",
-        zh: "有关个人信息处理与权利行使的问题，请发送至 contact@oogolabs.com。"
+        ko: "개인정보 처리와 권리 행사에 관한 문의는 contact@oogolaps.com으로 보내 주세요.",
+        en: "For questions about privacy processing or exercising your rights, email contact@oogolaps.com.",
+        zh: "有关个人信息处理与权利行使的问题，请发送至 contact@oogolaps.com。"
       }
     },
     {
@@ -238,9 +238,9 @@ export const termsCopy: LegalDocument = {
     {
       title: { ko: "문의처", en: "Contact", zh: "联系方式" },
       body: {
-        ko: "약관과 웹사이트 이용에 관한 문의는 contact@oogolabs.com으로 보내 주세요.",
-        en: "For questions about these terms or website use, email contact@oogolabs.com.",
-        zh: "有关本条款与网站使用的问题，请发送至 contact@oogolabs.com。"
+        ko: "약관과 웹사이트 이용에 관한 문의는 contact@oogolaps.com으로 보내 주세요.",
+        en: "For questions about these terms or website use, email contact@oogolaps.com.",
+        zh: "有关本条款与网站使用的问题，请发送至 contact@oogolaps.com。"
       }
     }
   ]

@@ -17,12 +17,12 @@ on conflict (page_key) do update set
 insert into public.company_settings (id, email, phone, kakao, instagram, facebook, tiktok, address)
 values (
   true,
-  'contact@oogolabs.com',
+  'contact@oogolaps.com',
   null,
   null,
-  'https://www.instagram.com/oogolabs',
-  'https://www.facebook.com/oogolabs',
-  'https://www.tiktok.com/@oogolabs',
+  'https://www.instagram.com/oogolaps',
+  'https://www.facebook.com/oogolaps',
+  'https://www.tiktok.com/@oogolaps',
   'Seoul, Korea'
 )
 on conflict (id) do update set
