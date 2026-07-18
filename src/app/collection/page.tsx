@@ -1,8 +1,12 @@
 import type { CSSProperties } from "react";
 import { SiteFooter } from "@/components/public/SiteFooter";
 import { SiteHeader } from "@/components/public/SiteHeader";
-import { filterProductsByCategory, normalizeCatalogCategory } from "@/lib/products";
+import { filterProductsByCategory, getProductDetailHref, normalizeCatalogCategory } from "@/lib/products";
 import { getPublishedProducts } from "@/lib/public-content";
+import { getLandingBlocks } from "@/lib/public-content";
+import { getLandingPageContent, landingText } from "@/lib/home-landing";
+import { getRequestLocale } from "@/lib/public-locale";
+import { landingTextForLocale, publicCopy } from "@/lib/public-copy";
 
 export default async function CollectionPage({
   searchParams
@@ -10,8 +14,10 @@ export default async function CollectionPage({
   searchParams: Promise<{ category?: string }>;
 }) {
   const { category } = await searchParams;
+  const locale = await getRequestLocale();
   const activeCategory = normalizeCatalogCategory(category);
-  const products = await getPublishedProducts("ko");
+  const [products, blocks] = await Promise.all([getPublishedProducts(locale), getLandingBlocks(locale)]);
+  const intro = getLandingPageContent(blocks, "collection")["collection-hero"];
   const visibleProducts = filterProductsByCategory(products, activeCategory);
   const displayProducts = Array.from({ length: Math.max(visibleProducts.length, 12) }, (_, index) => {
     const product = visibleProducts[index % Math.max(visibleProducts.length, 1)];
@@ -32,9 +38,9 @@ export default async function CollectionPage({
       <SiteHeader />
       <main className="collection-page">
         <section className="collection-page-intro">
-          <p className="eyebrow">Collection</p>
-          <h1>Sunglasses</h1>
-          <p>2026 OOGO Collection</p>
+          <p className="eyebrow">{landingTextForLocale(intro, "eyebrow", locale, publicCopy.collection.eyebrow)}</p>
+          <h1>{landingTextForLocale(intro, "heading", locale, publicCopy.collection.heading)}</h1>
+          <p>{landingTextForLocale(intro, "body", locale, publicCopy.collection.body)}</p>
         </section>
         <section className="collection-list-grid" aria-label="OOGO collection products">
           {displayProducts.map((product) => {
@@ -45,14 +51,14 @@ export default async function CollectionPage({
               <article className="collection-list-card" key={product.displayKey}>
                 <a
                   className="collection-list-image"
-                  href={`/products/${product.slug}`}
+                  href={getProductDetailHref(product.slug, locale)}
                   style={{
                     backgroundImage: `url("${frontImage}")`,
                     "--hover-image": `url("${angleImage}")`
                   } as CSSProperties & Record<"--hover-image", string>}
                   aria-label={`${product.displayName} detail`}
                 />
-                <a className="collection-list-name" href={`/products/${product.slug}`}>
+                <a className="collection-list-name" href={getProductDetailHref(product.slug, locale)}>
                   {product.displayName}
                 </a>
               </article>

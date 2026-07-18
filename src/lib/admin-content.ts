@@ -1,111 +1,255 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { Locale } from "@/lib/i18n";
+import { getProductCatalogHref, getProductDetailHref, parseProductLensText } from "@/lib/products";
+import type { AdminProductListParams } from "@/lib/admin-product-list";
+import { getProductImageSlots, type ProductImageInput } from "@/lib/product-images";
 
 export const landingPageOptions = [
   { key: "header", label: "Header" },
   { key: "home", label: "Home" },
   { key: "brand-story", label: "Brand Story" },
   { key: "collection", label: "Collection" },
+  { key: "projects", label: "Projects" },
   { key: "product-detail", label: "Product Detail" },
   { key: "special-edition", label: "Special Edition" },
+  { key: "archive", label: "Archive" },
   { key: "inquiry", label: "Inquiry" },
   { key: "footer", label: "Footer" }
 ] as const;
 
-export type ProductImageRole = "angle" | "wearing" | "front" | "side";
+export function getLandingPageRecord(pageKey: string) {
+  const index = landingPageOptions.findIndex((option) => option.key === pageKey);
+  const option = landingPageOptions[index];
 
-export type ProductImageInput = {
-  role: ProductImageRole;
-  url: string;
-  bucket?: string;
-  path?: string;
-};
+  return {
+    page_key: pageKey,
+    title: option?.label ?? pageKey,
+    published: true,
+    sort_order: (index >= 0 ? index + 1 : landingPageOptions.length + 1) * 10
+  };
+}
 
-export function getProductImageSlots(): Array<{
-  role: ProductImageRole;
+const sampleProductSlug = "og26001c2";
+
+export function getLandingEditorPages(): Array<{
+  key: (typeof landingPageOptions)[number]["key"];
   label: string;
-  note: string;
-  guidance: string;
+  publicHref: string;
+  routeLabel: string;
+  surface: string;
+  description: string;
 }> {
   return [
     {
-      role: "angle",
-      label: "Angle / Main",
-      note: "Main product card and modal image",
-      guidance: "Recommended 1600 x 1200px, 4:3, JPG/PNG/WebP, max 5MB"
+      key: "header",
+      label: "Header",
+      publicHref: "/",
+      routeLabel: "Global",
+      surface: "Site chrome",
+      description: "로고, 메인 메뉴, 언어 선택과 주요 링크를 관리합니다."
     },
     {
-      role: "wearing",
-      label: "Wearing",
-      note: "Face or lifestyle wearing impression",
-      guidance: "Recommended 1600 x 2000px, 4:5 portrait, JPG/PNG/WebP, max 5MB"
+      key: "home",
+      label: "Home",
+      publicHref: "/",
+      routeLabel: "/",
+      surface: "Homepage",
+      description: "Hero, Collection, Projects, Archive 네 영역을 공개 홈 순서대로 관리합니다."
     },
     {
-      role: "front",
-      label: "Front balance",
-      note: "Straight front view",
-      guidance: "Recommended 1400 x 900px, product centered, JPG/PNG/WebP, max 5MB"
+      key: "brand-story",
+      label: "Brand Story",
+      publicHref: "/brand",
+      routeLabel: "/brand",
+      surface: "Brand page",
+      description: "브랜드 소개, 선언, 핵심 가치, 디자인 철학, 경험 이미지와 CTA를 관리합니다."
     },
     {
-      role: "side",
-      label: "Side profile",
-      note: "Temple and side silhouette",
-      guidance: "Recommended 1400 x 900px, product centered, JPG/PNG/WebP, max 5MB"
+      key: "collection",
+      label: "Collection",
+      publicHref: getProductCatalogHref(),
+      routeLabel: getProductCatalogHref(),
+      surface: "Collection page",
+      description: "카탈로그 소개, 상품 목록 안내와 Collection CTA를 관리합니다."
+    },
+    {
+      key: "projects",
+      label: "Projects",
+      publicHref: "/projects",
+      routeLabel: "/projects",
+      surface: "Projects page",
+      description: "Projects 소개, 대표 프로젝트와 협업 CTA를 관리합니다."
+    },
+    {
+      key: "product-detail",
+      label: "Product Detail",
+      publicHref: getProductDetailHref(sampleProductSlug),
+      routeLabel: "/products/[slug]",
+      surface: "Product detail",
+      description: "상품 상세 공통 라벨, Buyer CTA와 관련 문구를 관리합니다."
+    },
+    {
+      key: "special-edition",
+      label: "Special",
+      publicHref: "/projects/youngbin-edition",
+      routeLabel: "/projects/youngbin-edition",
+      surface: "Project detail",
+      description: "프로젝트 Hero, 캠페인 이야기와 협업 안내를 관리합니다."
+    },
+    {
+      key: "archive",
+      label: "Archive",
+      publicHref: "/archive",
+      routeLabel: "/archive",
+      surface: "Archive page",
+      description: "Archive 상단 소개 문구를 관리합니다. 갤러리 이미지는 왼쪽 Archive 메뉴에서 관리합니다."
+    },
+    {
+      key: "inquiry",
+      label: "Inquiry",
+      publicHref: "/inquiry",
+      routeLabel: "/inquiry",
+      surface: "Inquiry page",
+      description: "문의 소개, 유형 안내와 입력 도움말을 관리합니다."
+    },
+    {
+      key: "footer",
+      label: "Footer",
+      publicHref: "/",
+      routeLabel: "Global",
+      surface: "Site footer",
+      description: "브랜드 문구, 연락처, SNS와 법적 고지 링크를 관리합니다."
     }
   ];
-}
-
-export function parseProductImageInputs(values: Partial<Record<ProductImageRole, string>>): ProductImageInput[] {
-  return getProductImageSlots()
-    .map((slot) => ({
-      role: slot.role,
-      url: values[slot.role]?.trim() ?? ""
-    }))
-    .filter((image) => image.url.length > 0);
 }
 
 export type AdminProductInput = {
   id?: string;
   modelCode: string;
   slug: string;
-  size: string;
-  frameMaterial: string;
-  lensMaterial: string;
-  lensFeaturesText: string;
   featured: boolean;
   published: boolean;
   images: ProductImageInput[];
-  translations: Record<Locale, { name: string; colorway: string; description: string }>;
+  translations: Record<
+    Locale,
+    {
+      name: string;
+      frame: string;
+      lens: string;
+      frameSize: string;
+      frameSizeNote: string;
+      color: string;
+    }
+  >;
 };
 
-export function parseLensFeatures(value: string) {
-  return value
-    .split(/\r?\n/)
-    .map((item) => item.trim())
-    .filter(Boolean);
-}
-
-function hasSupabaseEnv() {
+export function hasSupabaseEnv() {
   return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 }
 
-export async function getAdminProducts() {
+export async function getAdminProducts(params: AdminProductListParams) {
   if (!hasSupabaseEnv()) {
-    return [];
+    return { products: [], count: 0 };
   }
 
   const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase
+  let matchingIds: string[] | null = null;
+
+  if (params.search) {
+    const pattern = `%${params.search}%`;
+    const [slugMatches, modelMatches, translationMatches] = await Promise.all([
+      supabase.from("products").select("id").ilike("slug", pattern),
+      supabase.from("products").select("id").ilike("model_code", pattern),
+      supabase.from("product_translations").select("product_id").ilike("name", pattern)
+    ]);
+    const searchError = slugMatches.error ?? modelMatches.error ?? translationMatches.error;
+
+    if (searchError) {
+      throw new Error(searchError.message);
+    }
+
+    matchingIds = Array.from(
+      new Set([
+        ...(slugMatches.data ?? []).map((item) => item.id),
+        ...(modelMatches.data ?? []).map((item) => item.id),
+        ...(translationMatches.data ?? []).map((item) => item.product_id)
+      ])
+    );
+
+    if (matchingIds.length === 0) {
+      return { products: [], count: 0 };
+    }
+  }
+
+  let query = supabase
     .from("products")
-    .select("id, slug, model_code, published, featured, sort_order, product_translations(locale, name), product_images(role, assets(public_url))")
-    .order("sort_order", { ascending: true });
+    .select(
+      "id, slug, model_code, published, featured, sort_order, updated_at, product_translations(locale, name), product_images(role, assets(public_url))",
+      { count: "exact" }
+    );
+
+  if (matchingIds) {
+    query = query.in("id", matchingIds);
+  }
+
+  if (params.visibility !== "all") {
+    query = query.eq("published", params.visibility === "public");
+  }
+
+  if (params.sort === "order") {
+    query = query.order("sort_order", { ascending: true });
+  } else if (params.sort === "model") {
+    query = query.order("model_code", { ascending: true });
+  } else {
+    query = query.order("updated_at", { ascending: false });
+  }
+
+  const offset = (params.page - 1) * params.pageSize;
+  const { data, error, count } = await query
+    .order("model_code", { ascending: true })
+    .range(offset, offset + params.pageSize - 1);
 
   if (error) {
     throw new Error(error.message);
   }
 
-  return data ?? [];
+  return { products: data ?? [], count: count ?? 0 };
+}
+
+export type AdminDashboardSummary = {
+  products: number;
+  publishedProducts: number;
+  openInquiries: number;
+  landingDrafts: number;
+};
+
+export async function getAdminDashboardSummary(): Promise<AdminDashboardSummary> {
+  if (!hasSupabaseEnv()) {
+    return { products: 0, publishedProducts: 0, openInquiries: 0, landingDrafts: 0 };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const [productsResult, publishedResult, inquiriesResult, landingResult] = await Promise.all([
+    supabase.from("products").select("id", { count: "exact", head: true }),
+    supabase.from("products").select("id", { count: "exact", head: true }).eq("published", true),
+    supabase.from("inquiries").select("id", { count: "exact", head: true }).neq("status", "closed"),
+    supabase.from("landing_blocks").select("draft_content, published_content")
+  ]);
+
+  const error = productsResult.error ?? publishedResult.error ?? inquiriesResult.error ?? landingResult.error;
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return {
+    products: productsResult.count ?? 0,
+    publishedProducts: publishedResult.count ?? 0,
+    openInquiries: inquiriesResult.count ?? 0,
+    landingDrafts: (landingResult.data ?? []).filter(
+      (block) => JSON.stringify(block.draft_content ?? {}) !== JSON.stringify(block.published_content ?? {})
+    ).length
+  };
 }
 
 export async function getAdminProduct(id: string) {
@@ -117,7 +261,7 @@ export async function getAdminProduct(id: string) {
   const { data, error } = await supabase
     .from("products")
     .select(
-      "id, slug, model_code, size, frame_material, lens_material, lens_features, published, featured, product_translations(locale, name, colorway, description), product_images(role, assets(id, public_url, path, alt))"
+      "id, slug, model_code, size, reference_color_name, frame_material, lens_material, lens_features, published, featured, product_translations(locale, name, colorway, description, frame_size, size_note, frame_material, lens_material, lens_features), product_images(role, assets(id, public_url, path, alt))"
     )
     .eq("id", id)
     .single();
@@ -136,6 +280,7 @@ export async function saveProduct(input: AdminProductInput) {
 
   const supabase = await createSupabaseServerClient();
   let productId = input.id;
+  const koreanLens = parseProductLensText(input.translations.ko.lens);
 
   if (input.slug) {
     const { data: productWithSlug, error: slugReadError } = await supabase
@@ -161,12 +306,14 @@ export async function saveProduct(input: AdminProductInput) {
     id: productId,
     slug: input.slug,
     model_code: input.modelCode,
-    size: input.size || null,
-    frame_material: input.frameMaterial || null,
-    lens_material: input.lensMaterial || null,
-    lens_features: parseLensFeatures(input.lensFeaturesText),
+    size: input.translations.ko.frameSize || null,
+    reference_color_name: input.translations.ko.color || null,
+    frame_material: input.translations.ko.frame || null,
+    lens_material: koreanLens.material || null,
+    lens_features: koreanLens.features,
     featured: input.featured,
-    published: input.published
+    published: input.published,
+    updated_at: new Date().toISOString()
   };
 
   const { data: product, error: productError } = await supabase
@@ -179,13 +326,21 @@ export async function saveProduct(input: AdminProductInput) {
     return { ok: false, message: productError.message };
   }
 
-  const translationRows = (Object.keys(input.translations) as Locale[]).map((locale) => ({
-    product_id: product.id,
-    locale,
-    name: input.translations[locale].name,
-    colorway: input.translations[locale].colorway || null,
-    description: input.translations[locale].description || null
-  }));
+  const translationRows = (Object.keys(input.translations) as Locale[]).map((locale) => {
+    const lens = parseProductLensText(input.translations[locale].lens);
+
+    return {
+      product_id: product.id,
+      locale,
+      name: input.translations[locale].name,
+      frame_size: input.translations[locale].frameSize || null,
+      size_note: input.translations[locale].frameSizeNote || null,
+      colorway: input.translations[locale].color || null,
+      frame_material: input.translations[locale].frame || null,
+      lens_material: lens.material || null,
+      lens_features: lens.features
+    };
+  });
 
   const { error: translationError } = await supabase.from("product_translations").upsert(translationRows);
   if (translationError) {
@@ -198,7 +353,8 @@ export async function saveProduct(input: AdminProductInput) {
   }
 
   revalidatePath("/admin/products");
-  revalidatePath("/products");
+  revalidatePath(getProductCatalogHref());
+  revalidatePath(getProductDetailHref(input.slug));
   return { ok: true, message: "Product saved." };
 }
 
@@ -269,14 +425,17 @@ export async function setProductPublished(id: string, published: boolean) {
   }
 
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.from("products").update({ published }).eq("id", id);
+  const { error } = await supabase
+    .from("products")
+    .update({ published, updated_at: new Date().toISOString() })
+    .eq("id", id);
 
   if (error) {
     return { ok: false, message: error.message };
   }
 
   revalidatePath("/admin/products");
-  revalidatePath("/products");
+  revalidatePath(getProductCatalogHref());
   return { ok: true, message: "Product visibility updated." };
 }
 
@@ -300,33 +459,127 @@ export async function getLandingBlocksForPage(pageKey: string, locale: Locale) {
   return data ?? [];
 }
 
-export async function saveLandingBlockDraft(input: {
+export type LandingBlockDraftInput = {
   id?: string;
   pageKey: string;
   blockKey: string;
   locale: Locale;
   content: Record<string, unknown>;
-}) {
+};
+
+export function getLandingDraftWritePayload(
+  input: LandingBlockDraftInput,
+  updatedAt: string,
+  existingId: string
+): {
+  draft_content: Record<string, unknown>;
+  updated_at: string;
+};
+export function getLandingDraftWritePayload(
+  input: LandingBlockDraftInput,
+  updatedAt: string,
+  existingId?: undefined
+): {
+  page_key: string;
+  block_key: string;
+  locale: Locale;
+  draft_content: Record<string, unknown>;
+  published_content: Record<string, never>;
+  published: boolean;
+  updated_at: string;
+};
+export function getLandingDraftWritePayload(
+  input: LandingBlockDraftInput,
+  updatedAt: string,
+  existingId?: string
+) {
+  if (existingId) {
+    return {
+      draft_content: input.content,
+      updated_at: updatedAt
+    };
+  }
+
+  return {
+    page_key: input.pageKey,
+    block_key: input.blockKey,
+    locale: input.locale,
+    draft_content: input.content,
+    published_content: {},
+    published: false,
+    updated_at: updatedAt
+  };
+}
+
+export async function saveLandingBlockDraft(input: LandingBlockDraftInput) {
   if (!hasSupabaseEnv()) {
     return { ok: false, message: "Supabase environment variables are not configured." };
   }
 
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.from("landing_blocks").upsert({
-    id: input.id,
-    page_key: input.pageKey,
-    block_key: input.blockKey,
-    locale: input.locale,
-    draft_content: input.content,
-    published: false
-  });
+  const { error: pageError } = await supabase
+    .from("landing_pages")
+    .upsert(getLandingPageRecord(input.pageKey), { onConflict: "page_key" });
 
-  if (error) {
-    return { ok: false, message: error.message };
+  if (pageError) {
+    return { ok: false, message: pageError.message };
+  }
+
+  const existingBlockQuery = supabase
+    .from("landing_blocks")
+    .select("id, draft_content");
+  const { data: existingBlock, error: readError } = input.id
+    ? await existingBlockQuery.eq("id", input.id).maybeSingle()
+    : await existingBlockQuery
+        .eq("page_key", input.pageKey)
+        .eq("block_key", input.blockKey)
+        .eq("locale", input.locale)
+        .maybeSingle();
+
+  if (readError) {
+    return { ok: false, message: readError.message };
+  }
+
+  const existingId = existingBlock?.id;
+  const existingContent =
+    existingBlock?.draft_content && typeof existingBlock.draft_content === "object" && !Array.isArray(existingBlock.draft_content)
+      ? existingBlock.draft_content
+      : {};
+  const mergedInput = {
+    ...input,
+    content: {
+      ...existingContent,
+      ...input.content
+    }
+  };
+
+  const updatedAt = new Date().toISOString();
+  let savedId = existingId;
+
+  if (existingId) {
+    const { error } = await supabase
+      .from("landing_blocks")
+      .update(getLandingDraftWritePayload(mergedInput, updatedAt, existingId))
+      .eq("id", existingId);
+
+    if (error) {
+      return { ok: false, message: error.message };
+    }
+  } else {
+    const { data, error } = await supabase
+      .from("landing_blocks")
+      .insert(getLandingDraftWritePayload(mergedInput, updatedAt, undefined))
+      .select("id")
+      .single();
+
+    if (error) {
+      return { ok: false, message: error.message };
+    }
+    savedId = data.id;
   }
 
   revalidatePath("/admin/landing");
-  return { ok: true, message: "Draft saved." };
+  return { ok: true, id: savedId!, message: "Draft saved." };
 }
 
 export async function publishLandingBlock(id: string) {
@@ -355,7 +608,31 @@ export async function publishLandingBlock(id: string) {
   }
 
   revalidatePath("/");
-  revalidatePath("/products");
+  revalidatePath("/en");
+  revalidatePath("/zh");
+  revalidatePath(getProductCatalogHref());
+  revalidatePath("/en/collection");
+  revalidatePath("/zh/collection");
+  revalidatePath("/brand");
+  revalidatePath("/en/brand");
+  revalidatePath("/zh/brand");
+  revalidatePath("/collection");
+  revalidatePath("/projects");
+  revalidatePath("/en/projects");
+  revalidatePath("/zh/projects");
+  revalidatePath("/projects/youngbin-edition");
+  revalidatePath("/en/projects/youngbin-edition");
+  revalidatePath("/zh/projects/youngbin-edition");
+  revalidatePath("/archive");
+  revalidatePath("/en/archive");
+  revalidatePath("/zh/archive");
+  revalidatePath("/archive/youngbin-edition");
+  revalidatePath("/en/archive/youngbin-edition");
+  revalidatePath("/zh/archive/youngbin-edition");
+  revalidatePath("/inquiry");
+  revalidatePath("/en/inquiry");
+  revalidatePath("/zh/inquiry");
+  revalidatePath("/products/[slug]", "page");
   revalidatePath("/admin/landing");
   return { ok: true, message: "Block published." };
 }

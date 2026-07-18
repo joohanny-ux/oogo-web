@@ -5,8 +5,10 @@ export const landingPageKeys = [
   "home",
   "brand-story",
   "collection",
+  "projects",
   "product-detail",
   "special-edition",
+  "archive",
   "inquiry",
   "footer"
 ] as const;

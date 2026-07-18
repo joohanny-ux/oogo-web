@@ -1,13 +1,17 @@
-import type { CSSProperties } from "react";
+import React, { type CSSProperties } from "react";
 import { notFound } from "next/navigation";
 import { SiteFooter } from "@/components/public/SiteFooter";
 import { SiteHeader } from "@/components/public/SiteHeader";
 import { getProductDetailSections } from "@/lib/products";
-import { getProductBySlug } from "@/lib/public-content";
+import { getLandingBlocks, getProductBySlug } from "@/lib/public-content";
+import { getLandingPageContent, landingText } from "@/lib/home-landing";
+import { getRequestLocale, withLocalePrefix } from "@/lib/public-locale";
+import { landingTextForLocale, publicCopy } from "@/lib/public-copy";
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const product = await getProductBySlug(slug, "ko");
+  const locale = await getRequestLocale();
+  const [product, blocks] = await Promise.all([getProductBySlug(slug, locale), getLandingBlocks(locale)]);
 
   if (!product) {
     notFound();
@@ -17,6 +21,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const chineseName = product.translations?.zh?.name;
   const translatedNames = [englishName, chineseName].filter(Boolean).join(" / ");
   const detailSections = getProductDetailSections(product);
+  const template = getLandingPageContent(blocks, "product-detail")["detail-template"];
 
   const imageStyle = (url?: string, fit: CSSProperties["backgroundSize"] = "contain") =>
     ({
@@ -31,21 +36,13 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       <SiteHeader />
       <main className="product-detail-page">
         <section className="product-detail-gallery" aria-label={`${product.name} product views`}>
-          <figure className="product-detail-media product-detail-media-front" style={imageStyle(product.images?.front)}>
-            <figcaption>Front</figcaption>
-          </figure>
-          <figure className="product-detail-media product-detail-media-angle" style={imageStyle(product.images?.angle)}>
-            <figcaption>Angle</figcaption>
-          </figure>
-          <figure className="product-detail-media product-detail-media-side" style={imageStyle(product.images?.side)}>
-            <figcaption>Side</figcaption>
-          </figure>
+          <figure className="product-detail-media product-detail-media-front" style={imageStyle(product.images?.front)} />
+          <figure className="product-detail-media product-detail-media-angle" style={imageStyle(product.images?.angle)} />
+          <figure className="product-detail-media product-detail-media-side" style={imageStyle(product.images?.side)} />
           <figure
             className="product-detail-media product-detail-media-wearing"
             style={imageStyle(product.images?.wearing || "/images/oogo-gallery.png", "cover")}
-          >
-            <figcaption>Wearing</figcaption>
-          </figure>
+          />
         </section>
         <aside className="product-detail-copy">
           <p className="product-code-pill">{product.modelCode}</p>
@@ -65,7 +62,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           </div>
 
           <div className="detail-actions detail-actions-single">
-            <a href="/inquiry">Buyer inquiry</a>
+            <a href={withLocalePrefix(landingText(template, "buyerHref", "/inquiry"), locale)}>
+              {landingTextForLocale(template, "buyerCta", locale, publicCopy.product.buyerCta)}
+            </a>
           </div>
         </aside>
       </main>

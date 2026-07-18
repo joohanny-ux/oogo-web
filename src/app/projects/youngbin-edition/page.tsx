@@ -3,6 +3,10 @@ import { notFound } from "next/navigation";
 import { SiteFooter } from "@/components/public/SiteFooter";
 import { SiteHeader } from "@/components/public/SiteHeader";
 import { getSpecialEditionBySlug } from "@/lib/special-editions";
+import { landingMediaUrl, landingText } from "@/lib/home-landing";
+import { getLandingPageContentForLocale } from "@/lib/public-content";
+import { getRequestLocale, withLocalePrefix } from "@/lib/public-locale";
+import { landingTextForLocale, pickLocaleCopy, publicCopy } from "@/lib/public-copy";
 
 const imageStyle = (url: string, fit: CSSProperties["backgroundSize"] = "cover") =>
   ({
@@ -12,61 +16,165 @@ const imageStyle = (url: string, fit: CSSProperties["backgroundSize"] = "cover")
     backgroundSize: fit
   }) satisfies CSSProperties;
 
-export default function YoungbinEditionPage() {
+export default async function YoungbinEditionPage() {
   const edition = getSpecialEditionBySlug("youngbin-edition");
 
   if (!edition) {
     notFound();
   }
 
+  const locale = await getRequestLocale();
+  const photoArchiveHref = withLocalePrefix("/archive/youngbin-edition", locale);
+  const content = await getLandingPageContentForLocale("special-edition", locale);
+  const hero = content["special-hero"];
+  const statement = content["collaboration-statement"];
+  const limited = content["limited-edition"];
+  const galleryBlock = content["edition-gallery"];
+  const profile = content["photographer-profile"];
+  const footerCta = content["footer-cta"];
+  const limitedFeatures = edition.limited.features.map((feature, index) => ({
+    title: landingText(limited, `feature${index + 1}Title`, feature.title),
+    body: landingTextForLocale(
+      limited,
+      `feature${index + 1}Body`,
+      locale,
+      publicCopy.youngbin.featureBodies[index] ?? {
+        ko: feature.body,
+        en: feature.body,
+        zh: feature.body
+      }
+    )
+  }));
+  const gallery = edition.gallery
+    .map((image, index) => ({
+      ...image,
+      src:
+        index === 0
+          ? landingMediaUrl(galleryBlock, image.src)
+          : landingText(galleryBlock, `image${index + 1}Url`, image.src)
+    }))
+    .filter((image, index) => image.src.length > 0 && index > 0)
+    .slice(0, 4);
+  const quote = landingTextForLocale(
+    profile,
+    locale === "ko" ? "quoteKo" : "quoteEn",
+    locale,
+    publicCopy.youngbin.quote
+  );
+
   return (
     <>
       <SiteHeader />
-      <main className="project-detail-page">
-        <section className="project-detail-hero" aria-label={`${edition.title} overview`}>
-          <figure className="project-detail-hero-media" style={imageStyle(edition.images.hero)}>
-            <figcaption>{edition.title}</figcaption>
-          </figure>
-          <div className="project-detail-hero-copy">
-            <p className="eyebrow">Special Edition</p>
-            <h1>{edition.title}</h1>
-            <p className="project-detail-meta">{edition.year} · {edition.collaborator}</p>
-            <p className="project-detail-lead">{edition.lead}</p>
-            <a className="editorial-cta project-detail-cta" href="/inquiry">
-              {edition.cta}
-            </a>
+      <main className="project-detail-page youngbin-project-page">
+        <section
+          className="youngbin-project-hero"
+          style={imageStyle(landingMediaUrl(hero, edition.images.collaborationHero))}
+          aria-label={`${edition.title} collaboration`}
+        >
+          <div className="youngbin-project-hero-copy">
+            <p className="eyebrow">{landingText(hero, "eyebrow", "OOGO x JI YOUNGBIN")}</p>
+            <h1>{landingText(hero, "heading", edition.title)}</h1>
+            <p className="youngbin-project-meta">
+              {landingText(hero, "subtitle", `${edition.year} · ${edition.collaborator}`)}
+            </p>
+            <p className="youngbin-project-lead">
+              {landingTextForLocale(hero, "body", locale, {
+                ko: edition.story,
+                en: edition.story,
+                zh: edition.story
+              })}
+            </p>
           </div>
         </section>
 
-        <section className="project-editorial" aria-label={`${edition.title} editorial`}>
-          {edition.editorial.map((block, index) => {
-            if (block.kind === "text") {
-              return (
-                <div className="project-editorial-text" key={`text-${index}`}>
-                  <p>{block.body}</p>
-                </div>
-              );
-            }
-
-            return (
-              <figure
-                className={`project-editorial-media project-editorial-media-${block.span ?? "half"} project-editorial-media-${block.key}`}
-                key={`${block.key}-${index}`}
-                style={imageStyle(edition.images[block.key], block.fit ?? "cover")}
-              >
-                <figcaption>{block.label}</figcaption>
-              </figure>
-            );
-          })}
+        <section className="youngbin-project-story-edition" aria-labelledby="youngbin-story-title">
+          <div className="youngbin-project-story-copy">
+            <p className="eyebrow">{pickLocaleCopy(locale, publicCopy.youngbin.collaborationStory)}</p>
+            <h2 id="youngbin-story-title">
+              {landingText(statement, "statementEn", edition.statement.statementEn)}
+            </h2>
+            <p className="youngbin-project-story-body">
+              {landingTextForLocale(statement, "bodyKo", locale, publicCopy.youngbin.storyBody)}
+            </p>
+            <div className="youngbin-project-edition-intro">
+              <p className="eyebrow">{landingText(limited, "eyebrow", edition.limited.eyebrow)}</p>
+              <h3>{landingText(limited, "heading", edition.limited.heading)}</h3>
+              <p className="youngbin-project-edition-meta">
+                {limitedFeatures.map((feature) => feature.title).join(" · ")}
+              </p>
+            </div>
+          </div>
+          <div
+            className="youngbin-project-story-media"
+            style={imageStyle(landingMediaUrl(limited, edition.images.limitedEdition))}
+            role="img"
+            aria-label="Youngbin Edition package and frame"
+          />
         </section>
 
-        <section className="project-detail-footer-cta">
-          <a className="editorial-cta project-detail-cta" href="/inquiry">
-            {edition.cta}
-          </a>
-          <a className="project-back-link" href="/projects">
-            All projects
-          </a>
+        <section className="youngbin-project-gallery" aria-labelledby="youngbin-gallery-title">
+          <header className="youngbin-project-section-heading">
+            <div>
+              <p className="eyebrow">
+                {landingTextForLocale(galleryBlock, "eyebrow", locale, publicCopy.youngbin.campaignProduct)}
+              </p>
+              <h2 id="youngbin-gallery-title">
+                {landingTextForLocale(galleryBlock, "heading", locale, publicCopy.youngbin.editionGallery)}
+              </h2>
+            </div>
+          </header>
+          <div className="youngbin-project-gallery-grid">
+            {gallery.map((image, index) => (
+              <div
+                className={`youngbin-project-gallery-item youngbin-project-gallery-item-${index + 1}`}
+                key={image.key}
+                style={imageStyle(image.src, image.fit)}
+                role="img"
+                aria-label={`${edition.title} gallery image ${index + 1}`}
+              />
+            ))}
+          </div>
+        </section>
+
+        <section className="youngbin-project-profile" aria-labelledby="youngbin-profile-title">
+          <div
+            className="youngbin-project-profile-media"
+            style={imageStyle(landingMediaUrl(profile, edition.images.photographerProfile))}
+            role="img"
+            aria-label={edition.profile.name}
+          />
+          <div className="youngbin-project-profile-copy">
+            <p className="eyebrow">{landingText(profile, "eyebrow", edition.profile.eyebrow)}</p>
+            <h2 id="youngbin-profile-title">{landingText(profile, "name", edition.profile.name)}</h2>
+            <p className="youngbin-project-profile-role">{landingText(profile, "role", edition.profile.role)}</p>
+            <blockquote>
+              <strong>{quote}</strong>
+              {locale === "ko" ? <span>{landingText(profile, "quoteEn", edition.profile.quoteEn)}</span> : null}
+            </blockquote>
+            <p>{landingTextForLocale(profile, "body", locale, publicCopy.youngbin.profileBody)}</p>
+            <ul>
+              {edition.profile.credentials.map((credential, index) => (
+                <li key={credential}>{landingText(profile, `credential${index + 1}`, credential)}</li>
+              ))}
+            </ul>
+            <div className="youngbin-project-profile-actions">
+              <a
+                className="youngbin-project-button youngbin-project-button-dark"
+                href={withLocalePrefix(
+                  landingText(profile, "archiveHref", edition.profile.archiveHref || photoArchiveHref),
+                  locale
+                )}
+              >
+                {landingTextForLocale(profile, "archiveLabel", locale, publicCopy.youngbin.archiveLabel)}
+              </a>
+              <a
+                className="youngbin-project-text-link"
+                href={withLocalePrefix(landingText(footerCta, "primaryHref", "/inquiry"), locale)}
+              >
+                {landingTextForLocale(footerCta, "primaryLabel", locale, publicCopy.youngbin.buyerInquiry)}
+              </a>
+            </div>
+          </div>
         </section>
       </main>
       <SiteFooter />

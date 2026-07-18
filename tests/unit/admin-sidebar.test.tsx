@@ -10,9 +10,13 @@ describe("AdminSidebar", () => {
     expect(html).toContain("Dashboard");
     expect(html).toContain("Products");
     expect(html).toContain("Landing Page");
+    expect(html).toContain('href="/admin/archive"');
+    expect(html).toContain("Archive");
     expect(html).toContain("Files");
     expect(html).toContain("Inquiries");
     expect(html).toContain("Company &amp; Brand");
     expect(html).toContain("Users &amp; Roles");
+    expect(html).toContain("Log out");
+    expect(html).toContain('aria-label="System navigation"');
   });
 });

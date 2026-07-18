@@ -1,4 +1,10 @@
-const socialLinks = [
+import { getProductCatalogHref } from "@/lib/products";
+import { landingMediaUrl, landingText } from "@/lib/home-landing";
+import { getLandingPageContentForLocale } from "@/lib/public-content";
+import { getRequestLocale, withLocalePrefix } from "@/lib/public-locale";
+import { landingTextForLocale, pickLocaleCopy, publicCopy } from "@/lib/public-copy";
+
+const defaultSocialLinks = [
   { label: "Instagram", icon: "instagram", href: "https://www.instagram.com/oogolabs" },
   { label: "Facebook", icon: "facebook", href: "https://www.facebook.com/oogolabs" },
   { label: "TikTok", icon: "tiktok", href: "https://www.tiktok.com/@oogolabs" },
@@ -6,7 +12,37 @@ const socialLinks = [
   { label: "Pinterest", icon: "pinterest", href: "https://www.pinterest.com/oogolabs" }
 ] as const;
 
-type SocialIconName = (typeof socialLinks)[number]["icon"];
+type SocialIconName = (typeof defaultSocialLinks)[number]["icon"];
+
+function isSocialIconName(value: string): value is SocialIconName {
+  return defaultSocialLinks.some((link) => link.icon === value);
+}
+
+export function resolveSocialLinks(content?: Record<string, unknown>) {
+  if (Array.isArray(content?.socialLinks)) {
+    return content.socialLinks.flatMap((value) => {
+      if (!value || typeof value !== "object" || Array.isArray(value)) return [];
+
+      const link = value as Record<string, unknown>;
+      const icon = typeof link.platform === "string" ? link.platform : "";
+      const href = typeof link.href === "string" ? link.href.trim() : "";
+      if (!isSocialIconName(icon) || !href || link.visible === false) return [];
+
+      return [
+        {
+          label: typeof link.label === "string" && link.label.trim() ? link.label.trim() : icon,
+          icon,
+          href
+        }
+      ];
+    });
+  }
+
+  return defaultSocialLinks.map((link) => ({
+    ...link,
+    href: landingText(content ?? {}, link.icon, link.href)
+  }));
+}
 
 function SocialIcon({ icon }: { icon: SocialIconName }) {
   if (icon === "instagram") {
@@ -52,36 +88,54 @@ function SocialIcon({ icon }: { icon: SocialIconName }) {
   );
 }
 
-export function SiteFooter() {
+export async function SiteFooter() {
+  const locale = await getRequestLocale();
+  const content = await getLandingPageContentForLocale("footer", locale);
+  const brand = content.brand;
+  const navigation = content.navigation;
+  const contact = content["contact-legal"];
+  const navLinks = [
+    ["nav1Label", "nav1Href", publicCopy.nav.collection, getProductCatalogHref(undefined, locale)],
+    ["nav2Label", "nav2Href", publicCopy.nav.projects, withLocalePrefix("/projects", locale)],
+    ["nav3Label", "nav3Href", publicCopy.nav.archive, withLocalePrefix("/archive", locale)],
+    ["nav4Label", "nav4Href", publicCopy.nav.inquiry, withLocalePrefix("/inquiry", locale)],
+    ["nav5Label", "nav5Href", publicCopy.common.brandStory, withLocalePrefix("/brand", locale)]
+  ] as const;
+  const resolvedSocialLinks = resolveSocialLinks(contact);
+
   return (
     <footer className="site-footer">
       <div>
-        <img className="footer-logo" src="/images/oogo-logo-white.png" alt="OOGO" />
-        <p>Frames for light, face, and quiet attitude.</p>
+        <img className="footer-logo" src={landingMediaUrl(brand, "/images/oogo-logo-white.png")} alt="OOGO" />
+        <p>{landingTextForLocale(brand, "brandDescription", locale, publicCopy.home.footerBrand)}</p>
       </div>
       <nav aria-label="Footer navigation">
-        <a href="/collection">Collection</a>
-        <a href="/projects">Projects</a>
-        <a href="/archive">Archive</a>
-        <a href="/inquiry">Inquiry</a>
-        <a href="/brand">Brand Story</a>
+        {navLinks.map(([labelKey, hrefKey, fallbackCopy, fallbackHref]) => (
+          <a href={withLocalePrefix(landingText(navigation, hrefKey, fallbackHref), locale)} key={labelKey}>
+            {landingTextForLocale(navigation, labelKey, locale, fallbackCopy)}
+          </a>
+        ))}
       </nav>
       <div className="footer-contact">
-        <span>contact@oogolabs.com</span>
-        <span>Buyer / Retail / Collaboration</span>
-        <span>Seoul, Korea</span>
+        <span>{landingText(contact, "email", "contact@oogolabs.com")}</span>
+        <span>{pickLocaleCopy(locale, publicCopy.common.buyerRetail)}</span>
+        <span>{landingTextForLocale(contact, "address", locale, publicCopy.inquiry.address)}</span>
         <nav className="footer-legal" aria-label="Legal links">
-          <a href="/terms-conditions">Terms &amp; Conditions</a>
-          <a href="/privacy-policy">Privacy Policy</a>
+          <a href={withLocalePrefix(landingText(contact, "termsHref", "/terms-conditions"), locale)}>
+            {landingTextForLocale(contact, "termsLabel", locale, publicCopy.common.terms)}
+          </a>
+          <a href={withLocalePrefix(landingText(contact, "privacyHref", "/privacy-policy"), locale)}>
+            {landingTextForLocale(contact, "privacyLabel", locale, publicCopy.common.privacy)}
+          </a>
         </nav>
         <div className="footer-socials" aria-label="Social links">
-          {socialLinks.map((link) => (
+          {resolvedSocialLinks.map((link) => (
             <a key={link.label} href={link.href} target="_blank" rel="noreferrer" aria-label={link.label}>
               <SocialIcon icon={link.icon} />
             </a>
           ))}
         </div>
-        <p className="copyright">© 2026 OOGO. All rights reserved.</p>
+        <p className="copyright">{landingTextForLocale(contact, "copyright", locale, publicCopy.common.copyright)}</p>
       </div>
     </footer>
   );

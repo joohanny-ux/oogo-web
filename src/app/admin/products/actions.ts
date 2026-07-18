@@ -3,19 +3,21 @@
 import { redirect } from "next/navigation";
 import { LOCALES, type Locale } from "@/lib/i18n";
 import {
-  getProductImageSlots,
-  parseProductImageInputs,
+  hasSupabaseEnv,
   saveProduct,
-  type AdminProductInput,
-  type ProductImageRole
+  type AdminProductInput
 } from "@/lib/admin-content";
+import { getProductImageSlots, parseProductImageInputs, type ProductImageRole } from "@/lib/product-images";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 function readTranslation(formData: FormData, locale: Locale) {
   return {
     name: String(formData.get(`${locale}.name`) ?? ""),
-    colorway: String(formData.get(`${locale}.colorway`) ?? ""),
-    description: String(formData.get(`${locale}.description`) ?? "")
+    frame: String(formData.get(`${locale}.frame`) ?? ""),
+    lens: String(formData.get(`${locale}.lens`) ?? ""),
+    frameSize: String(formData.get(`${locale}.frameSize`) ?? ""),
+    frameSizeNote: String(formData.get(`${locale}.frameSizeNote`) ?? ""),
+    color: String(formData.get(`${locale}.color`) ?? "")
   };
 }
 
@@ -32,6 +34,13 @@ function safePathPart(value: string) {
 }
 
 async function uploadProductImageFile(file: File, role: ProductImageRole, slug: string, modelCode: string) {
+  if (!hasSupabaseEnv()) {
+    return {
+      ok: false as const,
+      message: "Supabase environment variables are not configured. Connect Supabase before uploading product images."
+    };
+  }
+
   if (file.size > 5 * 1024 * 1024) {
     return { ok: false as const, message: `${role} image is over 5MB.` };
   }
@@ -99,10 +108,6 @@ export async function saveProductAction(formData: FormData) {
     id: String(formData.get("id") || "") || undefined,
     modelCode,
     slug,
-    size: String(formData.get("size") ?? ""),
-    frameMaterial: String(formData.get("frameMaterial") ?? ""),
-    lensMaterial: String(formData.get("lensMaterial") ?? ""),
-    lensFeaturesText: String(formData.get("lensFeaturesText") ?? ""),
     featured: formData.get("featured") === "on",
     published: formData.get("published") === "on",
     images,
