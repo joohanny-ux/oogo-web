@@ -15,6 +15,11 @@ describe("public product detail page", () => {
   it("does not display image role labels inside the gallery", () => {
     expect(productDetailPage).not.toContain("<figcaption>");
   });
+
+  it("uses product wearing images from the product editor only", () => {
+    expect(productDetailPage).toContain('product.images?.wearing || "/images/oogo-gallery.png"');
+    expect(productDetailPage).not.toContain("landingMediaUrl(template");
+  });
 });
 
 describe("Youngbin Edition project page", () => {

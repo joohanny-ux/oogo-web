@@ -76,16 +76,30 @@ export function HomeHeroSlider({ slides, autoplay, intervalMs, locale = "ko" }: 
     >
       <div className="home-hero-track" style={{ transform: `translate3d(-${activeIndex * 100}%, 0, 0)` }}>
         {slides.map((slide, index) => {
-          const style: HeroSlideStyle = { "--hero-slide-image": `url("${slide.mediaUrl}")` };
+          const backgroundUrl = slide.mediaType === "video" ? slide.posterUrl || "/images/oogo-hero.png" : slide.mediaUrl;
+          const style: HeroSlideStyle = { "--hero-slide-image": `url("${backgroundUrl}")` };
 
           return (
             <article
-              className="home-hero-slide"
+              className={`home-hero-slide${slide.mediaType === "video" ? " is-video" : ""}`}
               style={style}
               key={slide.id}
               aria-hidden={index !== activeIndex}
               aria-label={slide.alt}
             >
+              {slide.mediaType === "video" && index === activeIndex ? (
+                <video
+                  className="home-hero-video"
+                  src={slide.mediaUrl}
+                  poster={slide.posterUrl || undefined}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="auto"
+                  aria-hidden="true"
+                />
+              ) : null}
               <div className="hero-copy">
                 <p className="eyebrow">{slide.eyebrow}</p>
                 <h1>{slide.heading}</h1>

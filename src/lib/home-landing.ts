@@ -5,7 +5,9 @@ export type LandingContent = Record<string, unknown>;
 
 export type HomeHeroSlide = {
   id: string;
+  mediaType: "image" | "video";
   mediaUrl: string;
+  posterUrl: string;
   alt: string;
   eyebrow: string;
   heading: string;
@@ -50,12 +52,23 @@ function isLandingContent(value: unknown): value is LandingContent {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-const HOME_MEDIA_KEYS = ["mediaUrl", "imageUrl", "image2Url", "image3Url", "image4Url"] as const;
+const LANDING_MEDIA_KEYS = [
+  "mediaType",
+  "mediaUrl",
+  "imageUrl",
+  "posterUrl",
+  "image1Url",
+  "image2Url",
+  "image3Url",
+  "image4Url",
+  "image5Url",
+  "image6Url"
+] as const;
 
 function copyLandingMediaFields(target: LandingContent, source: LandingContent): LandingContent {
   const next: LandingContent = { ...target };
 
-  for (const key of HOME_MEDIA_KEYS) {
+  for (const key of LANDING_MEDIA_KEYS) {
     const value = source[key];
     if (typeof value === "string" && value.trim()) {
       next[key] = value.trim();
@@ -74,16 +87,24 @@ function copyLandingMediaFields(target: LandingContent, source: LandingContent):
     });
   }
 
+  if (typeof source.autoplay === "boolean" || source.autoplay === "true" || source.autoplay === "false") {
+    next.autoplay = source.autoplay;
+  }
+
+  if (source.intervalMs !== undefined && source.intervalMs !== null && `${source.intervalMs}`.trim() !== "") {
+    next.intervalMs = source.intervalMs;
+  }
+
   return next;
 }
 
-/** EN/CN Home은 문구만 유지하고, 최신 공개 이미지는 KO Home 미디어를 공유한다. */
-export function applyHomeMediaFromSource(
+/** EN/CN은 문구만 유지하고, 공개 이미지는 KO 미디어를 공유한다. */
+export function applyLandingMediaFromSource(
   content: Record<string, LandingContent>,
   mediaSource: Record<string, LandingContent>
 ) {
-  const blockKeys = ["hero", "collection-preview", "special-preview", "archive-preview"] as const;
   const next = { ...content };
+  const blockKeys = new Set([...Object.keys(content), ...Object.keys(mediaSource)]);
 
   for (const key of blockKeys) {
     const sourceBlock = mediaSource[key];
@@ -92,6 +113,14 @@ export function applyHomeMediaFromSource(
   }
 
   return next;
+}
+
+/** @deprecated Prefer applyLandingMediaFromSource for any page. */
+export function applyHomeMediaFromSource(
+  content: Record<string, LandingContent>,
+  mediaSource: Record<string, LandingContent>
+) {
+  return applyLandingMediaFromSource(content, mediaSource);
 }
 
 export function getHomeHeroSettings(content: LandingContent = {}, locale: Locale = "ko"): HomeHeroSettings {
@@ -112,7 +141,9 @@ export function getHomeHeroSettings(content: LandingContent = {}, locale: Locale
 
       return {
         id: landingText(slide, "id", `hero-${index + 1}`),
+        mediaType: landingText(slide, "mediaType", "image") === "video" ? ("video" as const) : ("image" as const),
         mediaUrl: landingMediaUrl(slide, ""),
+        posterUrl: landingText(slide, "posterUrl", ""),
         alt: resolveLocaleText(typeof slide.alt === "string" ? slide.alt : undefined, locale, {
           ko: heading,
           en: heading,
@@ -142,7 +173,9 @@ export function getHomeHeroSettings(content: LandingContent = {}, locale: Locale
         : [
             {
               id: "hero-1",
+              mediaType: landingText(content, "mediaType", "image") === "video" ? "video" : "image",
               mediaUrl: landingMediaUrl(content, "/images/oogo-hero.png"),
+              posterUrl: landingText(content, "posterUrl", ""),
               alt: landingTextForLocale(content, "alt", locale, {
                 ko: globalHeading,
                 en: globalHeading,

@@ -16,5 +16,7 @@ describe("AdminSidebar", () => {
     expect(html).toContain("Inquiries");
     expect(html).toContain("Company &amp; Brand");
     expect(html).toContain("Users &amp; Roles");
+    expect(html).toContain("Log out");
+    expect(html).toContain('aria-label="System navigation"');
   });
 });

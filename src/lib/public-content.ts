@@ -1,4 +1,5 @@
 import type { Locale } from "@/lib/i18n";
+import { applyLandingMediaFromSource, getLandingPageContent, type LandingContent } from "@/lib/home-landing";
 import { mapProductRow, type ProductImages, type ProductRow, type PublicProduct } from "@/lib/products";
 import { initialProducts } from "@/lib/seed-data";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -122,4 +123,15 @@ export async function getLandingBlocks(locale: Locale) {
   } catch {
     return [];
   }
+}
+
+/** Locale copy with KO shared media for EN/ZH public pages. */
+export async function getLandingPageContentForLocale(pageKey: string, locale: Locale): Promise<Record<string, LandingContent>> {
+  const localeContent = getLandingPageContent(await getLandingBlocks(locale), pageKey);
+  if (locale === "ko") {
+    return localeContent;
+  }
+
+  const koContent = getLandingPageContent(await getLandingBlocks("ko"), pageKey);
+  return applyLandingMediaFromSource(localeContent, koContent);
 }

@@ -2,8 +2,8 @@ import React from "react";
 import { SiteHeaderFrame } from "@/components/public/SiteHeaderFrame";
 import { LOCALE_LABELS, LOCALES, type Locale } from "@/lib/i18n";
 import { getProductCatalogHref } from "@/lib/products";
-import { getLandingPageContent, landingMediaUrl, landingText } from "@/lib/home-landing";
-import { getLandingBlocks } from "@/lib/public-content";
+import { landingMediaUrl, landingText } from "@/lib/home-landing";
+import { getLandingPageContentForLocale } from "@/lib/public-content";
 import {
   getRequestLocale,
   getRequestPathname,
@@ -39,8 +39,9 @@ const fallbackNav = [
 export async function SiteHeader({ content, overlay = false }: { content?: HeaderContent; overlay?: boolean }) {
   const locale = await getRequestLocale();
   const pathname = await getRequestPathname();
-  const blocks = content ? [] : await getLandingBlocks(locale);
-  const saved = getLandingPageContent(blocks, "header").main;
+  const saved = content
+    ? null
+    : (await getLandingPageContentForLocale("header", locale)).main;
   const navCopy = publicCopy.nav;
   const resolvedContent = content ?? {
     logoText: landingText(saved, "logoText", landingText(saved, "logoLabel", "OOGO")),

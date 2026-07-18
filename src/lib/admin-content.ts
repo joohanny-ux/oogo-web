@@ -221,21 +221,23 @@ export type AdminDashboardSummary = {
   products: number;
   publishedProducts: number;
   openInquiries: number;
+  landingDrafts: number;
 };
 
 export async function getAdminDashboardSummary(): Promise<AdminDashboardSummary> {
   if (!hasSupabaseEnv()) {
-    return { products: 0, publishedProducts: 0, openInquiries: 0 };
+    return { products: 0, publishedProducts: 0, openInquiries: 0, landingDrafts: 0 };
   }
 
   const supabase = await createSupabaseServerClient();
-  const [productsResult, publishedResult, inquiriesResult] = await Promise.all([
+  const [productsResult, publishedResult, inquiriesResult, landingResult] = await Promise.all([
     supabase.from("products").select("id", { count: "exact", head: true }),
     supabase.from("products").select("id", { count: "exact", head: true }).eq("published", true),
-    supabase.from("inquiries").select("id", { count: "exact", head: true }).neq("status", "closed")
+    supabase.from("inquiries").select("id", { count: "exact", head: true }).neq("status", "closed"),
+    supabase.from("landing_blocks").select("draft_content, published_content")
   ]);
 
-  const error = productsResult.error ?? publishedResult.error ?? inquiriesResult.error;
+  const error = productsResult.error ?? publishedResult.error ?? inquiriesResult.error ?? landingResult.error;
   if (error) {
     throw new Error(error.message);
   }
@@ -243,7 +245,10 @@ export async function getAdminDashboardSummary(): Promise<AdminDashboardSummary>
   return {
     products: productsResult.count ?? 0,
     publishedProducts: publishedResult.count ?? 0,
-    openInquiries: inquiriesResult.count ?? 0
+    openInquiries: inquiriesResult.count ?? 0,
+    landingDrafts: (landingResult.data ?? []).filter(
+      (block) => JSON.stringify(block.draft_content ?? {}) !== JSON.stringify(block.published_content ?? {})
+    ).length
   };
 }
 
@@ -549,19 +554,32 @@ export async function saveLandingBlockDraft(input: LandingBlockDraftInput) {
   };
 
   const updatedAt = new Date().toISOString();
-  const { error } = existingId
-    ? await supabase
-        .from("landing_blocks")
-        .update(getLandingDraftWritePayload(mergedInput, updatedAt, existingId))
-        .eq("id", existingId)
-    : await supabase.from("landing_blocks").insert(getLandingDraftWritePayload(mergedInput, updatedAt, undefined));
+  let savedId = existingId;
 
-  if (error) {
-    return { ok: false, message: error.message };
+  if (existingId) {
+    const { error } = await supabase
+      .from("landing_blocks")
+      .update(getLandingDraftWritePayload(mergedInput, updatedAt, existingId))
+      .eq("id", existingId);
+
+    if (error) {
+      return { ok: false, message: error.message };
+    }
+  } else {
+    const { data, error } = await supabase
+      .from("landing_blocks")
+      .insert(getLandingDraftWritePayload(mergedInput, updatedAt, undefined))
+      .select("id")
+      .single();
+
+    if (error) {
+      return { ok: false, message: error.message };
+    }
+    savedId = data.id;
   }
 
   revalidatePath("/admin/landing");
-  return { ok: true, message: "Draft saved." };
+  return { ok: true, id: savedId!, message: "Draft saved." };
 }
 
 export async function publishLandingBlock(id: string) {
@@ -590,13 +608,30 @@ export async function publishLandingBlock(id: string) {
   }
 
   revalidatePath("/");
+  revalidatePath("/en");
+  revalidatePath("/zh");
   revalidatePath(getProductCatalogHref());
+  revalidatePath("/en/collection");
+  revalidatePath("/zh/collection");
   revalidatePath("/brand");
+  revalidatePath("/en/brand");
+  revalidatePath("/zh/brand");
+  revalidatePath("/collection");
   revalidatePath("/projects");
+  revalidatePath("/en/projects");
+  revalidatePath("/zh/projects");
   revalidatePath("/projects/youngbin-edition");
+  revalidatePath("/en/projects/youngbin-edition");
+  revalidatePath("/zh/projects/youngbin-edition");
   revalidatePath("/archive");
+  revalidatePath("/en/archive");
+  revalidatePath("/zh/archive");
   revalidatePath("/archive/youngbin-edition");
+  revalidatePath("/en/archive/youngbin-edition");
+  revalidatePath("/zh/archive/youngbin-edition");
   revalidatePath("/inquiry");
+  revalidatePath("/en/inquiry");
+  revalidatePath("/zh/inquiry");
   revalidatePath("/products/[slug]", "page");
   revalidatePath("/admin/landing");
   return { ok: true, message: "Block published." };

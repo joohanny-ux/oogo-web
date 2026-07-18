@@ -37,6 +37,8 @@ describe("Youngbin Edition project page", () => {
     });
 
     expect(source).toContain(".slice(0, 4)");
+    expect(source).toContain('landingTextForLocale(galleryBlock, "eyebrow"');
+    expect(source).toContain('landingTextForLocale(galleryBlock, "heading"');
     expect(source).not.toContain('<section className="youngbin-project-statement"');
     expect(source).not.toContain('<section className="youngbin-project-limited"');
     expect(source).not.toContain('<section className="youngbin-project-footer-cta"');

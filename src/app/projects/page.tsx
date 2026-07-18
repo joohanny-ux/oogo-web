@@ -2,14 +2,14 @@ import type { CSSProperties } from "react";
 import { SiteFooter } from "@/components/public/SiteFooter";
 import { SiteHeader } from "@/components/public/SiteHeader";
 import { specialEditions } from "@/lib/special-editions";
-import { getLandingPageContent, landingMediaUrl, landingText } from "@/lib/home-landing";
-import { getLandingBlocks } from "@/lib/public-content";
+import { landingMediaUrl, landingText } from "@/lib/home-landing";
+import { getLandingPageContentForLocale } from "@/lib/public-content";
 import { getRequestLocale, withLocalePrefix } from "@/lib/public-locale";
 import { landingTextForLocale, publicCopy } from "@/lib/public-copy";
 
 export default async function ProjectsPage() {
   const locale = await getRequestLocale();
-  const content = getLandingPageContent(await getLandingBlocks(locale), "projects");
+  const content = await getLandingPageContentForLocale("projects", locale);
   const intro = content.intro;
   const featured = content["featured-project"];
   const collaboration = content["collaboration-cta"];

@@ -3,8 +3,8 @@ import { notFound } from "next/navigation";
 import { SiteFooter } from "@/components/public/SiteFooter";
 import { SiteHeader } from "@/components/public/SiteHeader";
 import { getSpecialEditionBySlug } from "@/lib/special-editions";
-import { getLandingPageContent, landingMediaUrl, landingText } from "@/lib/home-landing";
-import { getLandingBlocks } from "@/lib/public-content";
+import { landingMediaUrl, landingText } from "@/lib/home-landing";
+import { getLandingPageContentForLocale } from "@/lib/public-content";
 import { getRequestLocale, withLocalePrefix } from "@/lib/public-locale";
 import { landingTextForLocale, pickLocaleCopy, publicCopy } from "@/lib/public-copy";
 
@@ -25,7 +25,7 @@ export default async function YoungbinEditionPage() {
 
   const locale = await getRequestLocale();
   const photoArchiveHref = withLocalePrefix("/archive/youngbin-edition", locale);
-  const content = getLandingPageContent(await getLandingBlocks(locale), "special-edition");
+  const content = await getLandingPageContentForLocale("special-edition", locale);
   const hero = content["special-hero"];
   const statement = content["collaboration-statement"];
   const limited = content["limited-edition"];
@@ -115,8 +115,12 @@ export default async function YoungbinEditionPage() {
         <section className="youngbin-project-gallery" aria-labelledby="youngbin-gallery-title">
           <header className="youngbin-project-section-heading">
             <div>
-              <p className="eyebrow">{pickLocaleCopy(locale, publicCopy.youngbin.campaignProduct)}</p>
-              <h2 id="youngbin-gallery-title">{pickLocaleCopy(locale, publicCopy.youngbin.editionGallery)}</h2>
+              <p className="eyebrow">
+                {landingTextForLocale(galleryBlock, "eyebrow", locale, publicCopy.youngbin.campaignProduct)}
+              </p>
+              <h2 id="youngbin-gallery-title">
+                {landingTextForLocale(galleryBlock, "heading", locale, publicCopy.youngbin.editionGallery)}
+              </h2>
             </div>
           </header>
           <div className="youngbin-project-gallery-grid">

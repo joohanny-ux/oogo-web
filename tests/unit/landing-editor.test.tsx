@@ -1,8 +1,14 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { LandingEditor } from "@/components/admin/LandingEditor";
-import { LANDING_CONTENT_FIELDS, readLandingContentFields } from "@/lib/landing-content-fields";
+import { getLandingEditorFieldContract, LandingEditor } from "@/components/admin/LandingEditor";
+import { getLandingEditorDefaultContent } from "@/lib/landing-editor-defaults";
+import {
+  LANDING_CONTENT_FIELDS,
+  readHeroSlidesFields,
+  readLandingContentFields,
+  readSocialLinksFields
+} from "@/lib/landing-content-fields";
 
 const pageKeys = [
   "header",
@@ -147,7 +153,8 @@ describe("LandingEditor", () => {
       "blockKey",
       "mediaType",
       "mediaUrl",
-      "mediaFile"
+      "mediaFile",
+      "socialLinksManaged"
     ]);
 
     for (const pageKey of pageKeys) {
@@ -162,7 +169,31 @@ describe("LandingEditor", () => {
       );
       const renderedNames = Array.from(html.matchAll(/name="([^"]+)"/g), (match) => match[1]);
 
-      expect(renderedNames.filter((name) => !acceptedFields.has(name)), pageKey).toEqual([]);
+      expect(
+        renderedNames.filter(
+          (name) =>
+            !acceptedFields.has(name) &&
+            !name.startsWith("landing-") &&
+            !/^image[1-6]File$/.test(name) &&
+            !/^slide[1-5](Id|Eyebrow|Heading|Line|MediaType|MediaUrl|PosterUrl|Alt|File)$/.test(name) &&
+            !/^social[1-8](Id|Platform|Href|Label|Visible)$/.test(name)
+        ),
+        pageKey
+      ).toEqual([]);
+    }
+  });
+
+  it("provides a public fallback value for every editable text field in every locale", () => {
+    for (const locale of ["ko", "en", "zh"] as const) {
+      for (const pageKey of pageKeys) {
+        for (const block of getLandingEditorFieldContract(pageKey)) {
+          const defaults = getLandingEditorDefaultContent(pageKey, block.blockKey, locale);
+
+          for (const fieldName of block.fieldNames) {
+            expect(defaults[fieldName], `${locale}:${pageKey}.${block.blockKey}.${fieldName}`).toBeTruthy();
+          }
+        }
+      }
     }
   });
 
@@ -180,19 +211,157 @@ describe("LandingEditor", () => {
     expect(html).toContain('class="landing-open-public" href="/zh/brand"');
   });
 
-  it("directs EN and CN Home media updates to the shared KO content", () => {
+  it("uses a page dropdown and starts with one collapsed accordion group", () => {
     const html = renderToStaticMarkup(
       <LandingEditor
         pageKey="home"
-        locale="en"
+        locale="ko"
         blocks={[]}
         saveAction={() => undefined}
         publishAction={() => undefined}
       />
     );
 
-    expect(html).toContain("KO 탭에서 변경하세요.");
-    expect(html).not.toContain('name="mediaUrl"');
+    expect(html).toContain('aria-label="편집할 랜딩 페이지"');
+    expect(html.match(/name="landing-home"/g)).toHaveLength(4);
+    expect(html).not.toContain("<details open");
+    expect(html).toContain("저장 후 전체 게시");
+  });
+
+  it("keeps the saved section open after a draft save redirect", () => {
+    const html = renderToStaticMarkup(
+      <LandingEditor
+        pageKey="home"
+        locale="ko"
+        blocks={[]}
+        openBlockKey="hero"
+        saveAction={() => undefined}
+        publishAction={() => undefined}
+      />
+    );
+
+    expect(html).toContain('id="landing-block-hero"');
+    expect(html).toContain('name="landing-home"');
+    // Open state is applied after mount to avoid hydration mismatches.
+    expect(html).not.toMatch(/<details name="landing-home" open(?:=|"")?>/);
+  });
+
+  it("renders and serializes editable Footer social links", () => {
+    const html = renderToStaticMarkup(
+      <LandingEditor
+        pageKey="footer"
+        locale="ko"
+        blocks={[]}
+        saveAction={() => undefined}
+        publishAction={() => undefined}
+      />
+    );
+
+    expect(html).toContain("소셜 링크 추가");
+    expect(html).toContain('name="social1Platform"');
+    expect(html).toContain('name="social5Href"');
+    expect(html).not.toContain('name="instagram"');
+
+    const formData = new FormData();
+    formData.set("social1Id", "instagram-main");
+    formData.set("social1Platform", "instagram");
+    formData.set("social1Href", "https://instagram.com/oogo");
+    formData.set("social1Label", "OOGO Instagram");
+    formData.set("social1Visible", "true");
+    formData.set("social2Platform", "youtube");
+    formData.set("social2Href", "https://youtube.com/@oogo");
+
+    expect(readSocialLinksFields(formData)).toEqual([
+      {
+        id: "instagram-main",
+        platform: "instagram",
+        href: "https://instagram.com/oogo",
+        label: "OOGO Instagram",
+        visible: true
+      },
+      {
+        id: "social-2",
+        platform: "youtube",
+        href: "https://youtube.com/@oogo",
+        label: "",
+        visible: false
+      }
+    ]);
+  });
+
+  it("directs EN and CN media updates to the shared KO content across pages", () => {
+    for (const pageKey of ["home", "brand-story", "header", "footer", "projects", "special-edition"] as const) {
+      const html = renderToStaticMarkup(
+        <LandingEditor
+          pageKey={pageKey}
+          locale="en"
+          blocks={[]}
+          saveAction={() => undefined}
+          publishAction={() => undefined}
+        />
+      );
+
+      expect(html, pageKey).toContain("KO 탭에서 변경하세요.");
+      expect(html, pageKey).not.toContain('name="mediaFile"');
+    }
+  });
+
+  it("renders four editable Home Archive image uploads for KO", () => {
+    const html = renderToStaticMarkup(
+      <LandingEditor
+        pageKey="home"
+        locale="ko"
+        blocks={[]}
+        saveAction={() => undefined}
+        publishAction={() => undefined}
+      />
+    );
+
+    expect(html.match(/class="image-gallery-editor-card"/g)).toHaveLength(4);
+    expect(html).toContain('name="image1Url"');
+    expect(html).toContain('name="image4Url"');
+    expect(html).toContain('name="image1File"');
+    expect(html).toContain('name="image4File"');
+    expect(html).toContain("/images/home-archive/OG26001C2_07.png");
+  });
+
+  it("matches all Brand image slots with upload controls", () => {
+    const html = renderToStaticMarkup(
+      <LandingEditor
+        pageKey="brand-story"
+        locale="ko"
+        blocks={[]}
+        saveAction={() => undefined}
+        publishAction={() => undefined}
+      />
+    );
+
+    expect(html).toContain("Brand Hero");
+    expect(html).toContain("Brand Statement");
+    expect(html).toContain("Design Philosophy 이미지");
+    expect(html).toContain("Brand Experience 이미지");
+    expect(html.match(/class="image-gallery-editor-card"/g)).toHaveLength(11);
+    expect(html).toContain('name="image5File"');
+    expect(html).toContain('name="image6File"');
+    expect(html.match(/name="mediaFile"/g)).toHaveLength(3);
+    expect(html).toContain('name="item1Body"');
+    expect(html).toContain('name="item6Body"');
+  });
+
+  it("renders four uploadable Youngbin Edition gallery images", () => {
+    const html = renderToStaticMarkup(
+      <LandingEditor
+        pageKey="special-edition"
+        locale="ko"
+        blocks={[]}
+        saveAction={() => undefined}
+        publishAction={() => undefined}
+      />
+    );
+
+    expect(html).toContain("Edition Gallery 이미지");
+    expect(html).toContain('name="image2File"');
+    expect(html).toContain('name="image5File"');
   });
 
   it("persists only fields submitted by the active public section", () => {
@@ -209,5 +378,66 @@ describe("LandingEditor", () => {
       mediaUrl: "/hero.webp",
       imageUrl: "/hero.webp"
     });
+  });
+
+  it("renders and serializes up to five Home Hero image or video slides", () => {
+    const slides = Array.from({ length: 5 }, (_, index) => ({
+      id: `hero-${index + 1}`,
+      mediaType: index === 1 ? "video" : "image",
+      mediaUrl: index === 1 ? "/hero-2.mp4" : `/hero-${index + 1}.webp`,
+      posterUrl: index === 1 ? "/hero-2-poster.webp" : "",
+      alt: `Hero ${index + 1}`
+    }));
+    const html = renderToStaticMarkup(
+      <LandingEditor
+        pageKey="home"
+        locale="ko"
+        blocks={[
+          {
+            id: "hero-block",
+            block_key: "hero",
+            draft_content: { slides },
+            published_content: {},
+            published: false
+          }
+        ]}
+        saveAction={() => undefined}
+        publishAction={() => undefined}
+      />
+    );
+
+    expect(html.match(/class="hero-slide-editor-card"/g)).toHaveLength(5);
+    expect(html).toContain('name="slide2MediaType"');
+    expect(html).toContain('value="video" selected=""');
+    expect(html).toContain("Slideshow autoplay");
+    expect(html).toContain("Interval (sec)");
+    expect(html).toContain('name="autoplay"');
+    expect(html).toContain('name="intervalMs"');
+    expect(html).not.toContain("슬라이드 추가");
+
+    const formData = new FormData();
+    formData.set("autoplay", "false");
+    formData.set("intervalMs", "3000");
+    formData.set("slide1Id", "hero-1");
+    formData.set("slide1MediaType", "image");
+    formData.set("slide1MediaUrl", "/hero-1.webp");
+    formData.set("slide2Id", "hero-2");
+    formData.set("slide2MediaType", "video");
+    formData.set("slide2MediaUrl", "/hero-2.mp4");
+    formData.set("slide2PosterUrl", "/hero-2-poster.webp");
+
+    expect(readLandingContentFields(formData)).toMatchObject({
+      autoplay: "false",
+      intervalMs: "3000"
+    });
+    expect(readHeroSlidesFields(formData)).toEqual([
+      expect.objectContaining({ id: "hero-1", mediaType: "image", mediaUrl: "/hero-1.webp" }),
+      expect.objectContaining({
+        id: "hero-2",
+        mediaType: "video",
+        mediaUrl: "/hero-2.mp4",
+        posterUrl: "/hero-2-poster.webp"
+      })
+    ]);
   });
 });

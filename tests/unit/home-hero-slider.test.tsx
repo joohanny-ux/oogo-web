@@ -7,7 +7,9 @@ import type { HomeHeroSlide } from "@/lib/home-landing";
 function createSlide(index: number): HomeHeroSlide {
   return {
     id: `hero-${index}`,
+    mediaType: "image",
     mediaUrl: `/hero-${index}.webp`,
+    posterUrl: "",
     alt: `OOGO campaign ${index}`,
     eyebrow: "OOGO 2026",
     heading: `OOGO ${index}`,
@@ -43,5 +45,22 @@ describe("HomeHeroSlider", () => {
   it("wraps slide navigation at both ends", () => {
     expect(getAdjacentHeroIndex(0, -1, 5)).toBe(4);
     expect(getAdjacentHeroIndex(4, 1, 5)).toBe(0);
+  });
+
+  it("renders the active video slide as muted looping media", () => {
+    const videoSlide: HomeHeroSlide = {
+      ...createSlide(1),
+      mediaType: "video",
+      mediaUrl: "/hero-film.mp4",
+      posterUrl: "/hero-poster.webp"
+    };
+    const html = renderToStaticMarkup(<HomeHeroSlider slides={[videoSlide]} autoplay intervalMs={6000} />);
+
+    expect(html).toContain('class="home-hero-video"');
+    expect(html).toContain('src="/hero-film.mp4"');
+    expect(html).toContain('poster="/hero-poster.webp"');
+    expect(html).toContain("autoPlay");
+    expect(html).toContain("loop");
+    expect(html).toContain("muted");
   });
 });

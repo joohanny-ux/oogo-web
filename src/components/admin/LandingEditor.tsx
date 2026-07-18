@@ -1,6 +1,12 @@
 import React from "react";
-import { LOCALE_LABELS, LOCALES, type Locale } from "@/lib/i18n";
+import { HeroSlidesEditor, type HeroSlideInput } from "@/components/admin/HeroSlidesEditor";
+import { ImageGalleryEditor } from "@/components/admin/ImageGalleryEditor";
+import { LandingBlockDetails } from "@/components/admin/LandingBlockDetails";
+import { LandingEditorToolbar } from "@/components/admin/LandingEditorToolbar";
+import { SocialLinksEditor, type SocialLinkInput, type SocialPlatform } from "@/components/admin/SocialLinksEditor";
+import { type Locale } from "@/lib/i18n";
 import { getLandingEditorPages, landingPageOptions } from "@/lib/admin-content";
+import { getLandingEditorContent } from "@/lib/landing-editor-defaults";
 import { withLocalePrefix } from "@/lib/locale-path";
 import { getProductCatalogHref } from "@/lib/products";
 
@@ -24,8 +30,10 @@ type LandingEditorProps = {
   locale: Locale;
   blocks: LandingBlockRow[];
   assets?: AssetOption[];
+  openBlockKey?: string;
   saveAction: (formData: FormData) => void | Promise<void>;
   publishAction: (formData: FormData) => void | Promise<void>;
+  savePublishAction?: (formData: FormData) => void | Promise<void>;
   supabaseConfigured?: boolean;
 };
 
@@ -44,7 +52,16 @@ type BlockConfig = {
   note: string;
   media?: boolean;
   mediaSharedFromKo?: boolean;
+  heroSlides?: boolean;
+  imageGallery?: {
+    defaults: string[];
+    title: string;
+    help: string;
+    startIndex?: number;
+  };
+  socialLinks?: boolean;
   mediaGuidance?: string;
+  mediaDefaultUrl?: string;
   fields: FieldConfig[];
 };
 
@@ -91,6 +108,7 @@ const homeBlocks: BlockConfig[] = [
     note: "공개 홈 첫 화면의 대표 이미지와 브랜드 문구",
     media: true,
     mediaSharedFromKo: true,
+    heroSlides: true,
     mediaGuidance:
       "Image 2400 x 1500px recommended, JPG/PNG/WebP max 8MB. Video 1920 x 1080 or 1920 x 1200, MP4/WebM max 25MB, muted loop style.",
     fields: [
@@ -127,7 +145,18 @@ const homeBlocks: BlockConfig[] = [
   {
     key: "archive-preview",
     title: "Archive",
-    note: "공개 홈 마지막 갤러리의 제목과 Archive 링크. 이미지는 현재 공개 페이지의 고정 이미지를 사용합니다.",
+    note: "공개 홈 마지막 갤러리의 제목, Archive 링크와 이미지 4개",
+    mediaSharedFromKo: true,
+    imageGallery: {
+      defaults: [
+        "/images/home-archive/OG26001C2_07.png",
+        "/images/home-archive/OG26002C3_08.png",
+        "/images/home-archive/OG26003C4_07.png",
+        "/images/home-archive/OG26014C3_07.png"
+      ],
+      title: "Archive 이미지",
+      help: "공개 페이지 왼쪽부터 표시할 이미지 4개를 설정합니다. KO 이미지는 EN/CN에도 공통으로 적용됩니다."
+    },
     fields: [
       { name: "eyebrow", label: "섹션 제목", placeholder: "Archive" },
       { name: "primaryLabel", label: "Archive 링크 문구", placeholder: "View archive" },
@@ -143,7 +172,9 @@ const pageBlockMap: Record<string, BlockConfig[]> = {
       title: "Header",
       note: "로고, 메인 메뉴, 언어 선택, 우측 버튼",
       media: true,
+      mediaSharedFromKo: true,
       mediaGuidance: "Logo image: transparent PNG/WebP, wide ratio around 3:1, minimum 240px wide.",
+      mediaDefaultUrl: "/images/oogo-logo-white.png",
       fields: [
         { name: "logoLabel", label: "로고 대체 문구", placeholder: "OOGO" },
         { name: "logoHref", label: "로고 클릭 링크", placeholder: "/" },
@@ -174,7 +205,11 @@ const pageBlockMap: Record<string, BlockConfig[]> = {
     {
       key: "story-hero",
       title: "Brand Hero",
-      note: "상단 브랜드 이름과 소개 문구. 이미지는 현재 공개 페이지의 고정 이미지를 사용합니다.",
+      note: "상단 브랜드 이름, 소개 문구와 대표 이미지",
+      media: true,
+      mediaSharedFromKo: true,
+      mediaGuidance: "Recommended 1920 x 1080px brand image, JPG/PNG/WebP max 8MB.",
+      mediaDefaultUrl: "/images/oogo-gallery.png",
       fields: [
         { name: "eyebrow", label: "작은 제목", placeholder: "Brand Story" },
         { name: "heading", label: "브랜드 제목", placeholder: "OOGO" },
@@ -198,7 +233,11 @@ const pageBlockMap: Record<string, BlockConfig[]> = {
     {
       key: "statement",
       title: "Brand Statement",
-      note: "전체 폭으로 강조되는 브랜드 선언",
+      note: "전체 폭 배경 이미지 위에 강조되는 브랜드 선언",
+      media: true,
+      mediaSharedFromKo: true,
+      mediaGuidance: "Recommended 1920 x 900px atmospheric image, JPG/PNG/WebP max 8MB.",
+      mediaDefaultUrl: "/images/oogo-hero.png",
       fields: [
         { name: "eyebrow", label: "작은 제목", placeholder: "Brand Statement" },
         { name: "headline", label: "선언 문장", type: "textarea", wide: true },
@@ -209,42 +248,71 @@ const pageBlockMap: Record<string, BlockConfig[]> = {
       key: "essence",
       title: "Brand Essence",
       note: "QUIET, HUMAN, LIGHT, SHADOW, MEMORY, FRAME 여섯 가지 가치",
+      media: true,
+      mediaSharedFromKo: true,
+      mediaGuidance: "Recommended 1920 x 1100px dark campaign image, JPG/PNG/WebP max 8MB.",
+      mediaDefaultUrl: "/images/brand-experience-03.png",
       fields: [
         { name: "heading", label: "섹션 제목", wide: true },
-        ...["QUIET", "HUMAN", "LIGHT", "SHADOW", "MEMORY", "FRAME"].map((title, index) => ({
-          name: `item${index + 1}Title`,
-          label: `가치 ${index + 1} 제목`,
-          placeholder: title
-        }))
+        ...["QUIET", "HUMAN", "LIGHT", "SHADOW", "MEMORY", "FRAME"].flatMap((title, index) => [
+          {
+            name: `item${index + 1}Title`,
+            label: `가치 ${index + 1} 제목`,
+            placeholder: title
+          },
+          {
+            name: `item${index + 1}Body`,
+            label: `가치 ${index + 1} 설명`,
+            type: "textarea" as const,
+            wide: true
+          }
+        ])
       ]
     },
     {
       key: "philosophy",
       title: "Design Philosophy",
       note: "비례, 균형, 착용감, 선명함과 오래 남는 형태",
-      media: true,
-      mediaGuidance: "Recommended 1600 x 1200px product detail image, JPG/PNG/WebP max 8MB.",
+      mediaSharedFromKo: true,
+      imageGallery: {
+        defaults: [
+          "/images/brand-philosophy-01.png",
+          "/images/brand-philosophy-02.png",
+          "/images/brand-philosophy-03.png",
+          "/images/brand-philosophy-04.png",
+          "/images/brand-philosophy-05.png"
+        ],
+        title: "Design Philosophy 이미지",
+        help: "공개 페이지의 다섯 철학 카드에 표시할 이미지를 순서대로 설정합니다."
+      },
       fields: [
         { name: "heading", label: "섹션 제목", wide: true },
-        ...["Proportion", "Balance", "Comfort", "Clarity", "Timeless Form"].flatMap((title, index) => [
-          { name: `item${index + 1}Title`, label: `철학 ${index + 1} 제목`, placeholder: title },
-          ...(index === 0 ? [] : [{ name: `image${index + 1}Url`, label: `철학 ${index + 1} 이미지 주소`, wide: true }])
-        ])
+        ...["Proportion", "Balance", "Comfort", "Clarity", "Timeless Form"].map((title, index) => ({
+          name: `item${index + 1}Title`,
+          label: `철학 ${index + 1} 제목`,
+          placeholder: title
+        }))
       ]
     },
     {
       key: "experience",
       title: "Brand Experience",
       note: "공간, 제품, 패키지와 착용 이미지를 조합한 갤러리",
-      media: true,
-      mediaGuidance: "Recommended 1600 x 1200px editorial image, JPG/PNG/WebP max 8MB.",
+      mediaSharedFromKo: true,
+      imageGallery: {
+        defaults: [
+          "/images/brand-experience-01.png",
+          "/images/brand-experience-02.png",
+          "/images/brand-experience-03.png",
+          "/images/brand-experience-04.png",
+          "/images/brand-experience-05.png",
+          "/images/brand-experience-06.png"
+        ],
+        title: "Brand Experience 이미지",
+        help: "공개 페이지 갤러리에 표시할 이미지 6개를 순서대로 설정합니다."
+      },
       fields: [
-        { name: "heading", label: "섹션 제목", wide: true },
-        { name: "image2Url", label: "이미지 2 주소", wide: true },
-        { name: "image3Url", label: "이미지 3 주소", wide: true },
-        { name: "image4Url", label: "이미지 4 주소", wide: true },
-        { name: "image5Url", label: "이미지 5 주소", wide: true },
-        { name: "image6Url", label: "이미지 6 주소", wide: true }
+        { name: "heading", label: "섹션 제목", wide: true }
       ]
     },
     {
@@ -288,6 +356,7 @@ const pageBlockMap: Record<string, BlockConfig[]> = {
       title: "Featured Project",
       note: "목록의 대표 프로젝트 이미지와 정보",
       media: true,
+      mediaSharedFromKo: true,
       fields: [
         { name: "year", label: "연도", placeholder: "2026" },
         { name: "heading", label: "프로젝트 제목", placeholder: "Youngbin Edition" },
@@ -311,7 +380,7 @@ const pageBlockMap: Record<string, BlockConfig[]> = {
     {
       key: "detail-template",
       title: "Product Detail Template",
-      note: "모든 상품 상세에 공통으로 표시되는 Buyer 문의 버튼",
+      note: "상품 상세의 Buyer 문의 버튼 문구와 링크",
       fields: [
         { name: "buyerCta", label: "버튼 문구", placeholder: "Buyer inquiry" },
         { name: "buyerHref", label: "버튼 링크", placeholder: "/inquiry" }
@@ -324,6 +393,7 @@ const pageBlockMap: Record<string, BlockConfig[]> = {
       title: "Collaboration Hero",
       note: "첫 화면의 OOGO x JIYOUNGBIN 협업 소개, 대표 이미지와 두 개의 이동 버튼",
       media: true,
+      mediaSharedFromKo: true,
       mediaGuidance: "가로 2400 x 1350px 권장. 제품과 협업 분위기가 함께 보이는 대표 JPG/PNG/WebP, 최대 8MB.",
       fields: [
         { name: "eyebrow", label: "협업 표기", placeholder: "OOGO x JIYOUNGBIN" },
@@ -346,6 +416,7 @@ const pageBlockMap: Record<string, BlockConfig[]> = {
       title: "Limited Edition",
       note: "한정판 프레임, 스페셜 패키지와 캠페인 구성을 설명하는 제품 중심 섹션",
       media: true,
+      mediaSharedFromKo: true,
       mediaGuidance: "프레임과 스페셜 패키지가 함께 보이는 가로 2000 x 1200px 이미지 권장, 최대 8MB.",
       fields: [
         { name: "eyebrow", label: "작은 제목", placeholder: "Limited Edition" },
@@ -358,12 +429,22 @@ const pageBlockMap: Record<string, BlockConfig[]> = {
     {
       key: "edition-gallery",
       title: "Edition Gallery",
-      note: "공개 페이지에 표시되는 갤러리 이미지 2~5를 순서대로 구성",
+      note: "갤러리 섹션 제목과 공개 페이지에 표시되는 이미지 4장",
+      mediaSharedFromKo: true,
+      imageGallery: {
+        defaults: [
+          "/images/projects/youngbin-edition/edition-gallery-01.png",
+          "/images/projects/youngbin-edition/light-hands.jpg",
+          "/images/projects/youngbin-edition/photographer-at-work.jpg",
+          "/images/projects/youngbin-edition/edition-gallery-04.png"
+        ],
+        title: "Edition Gallery 이미지",
+        help: "공개 프로젝트 갤러리에 표시할 이미지 4개를 순서대로 설정합니다. 이미지는 KO 탭에서 관리합니다.",
+        startIndex: 2
+      },
       fields: [
-        { name: "image2Url", label: "갤러리 이미지 2 주소", placeholder: "Files의 이미지 URL", wide: true },
-        { name: "image3Url", label: "갤러리 이미지 3 주소", placeholder: "Files의 이미지 URL", wide: true },
-        { name: "image4Url", label: "갤러리 이미지 4 주소", placeholder: "Files의 이미지 URL", wide: true },
-        { name: "image5Url", label: "갤러리 이미지 5 주소", placeholder: "Files의 이미지 URL", wide: true }
+        { name: "eyebrow", label: "작은 제목", placeholder: "Campaign & Product" },
+        { name: "heading", label: "섹션 제목", placeholder: "Edition Gallery" }
       ]
     },
     {
@@ -371,6 +452,7 @@ const pageBlockMap: Record<string, BlockConfig[]> = {
       title: "Photographer Profile",
       note: "짧은 작가 소개와 주요 이력 3개, 별도 Photo Archive로 연결하는 섹션",
       media: true,
+      mediaSharedFromKo: true,
       mediaGuidance: "지영빈 작가의 인물 또는 작업 사진. 세로 1200 x 1500px 전후 권장, 최대 8MB.",
       fields: [
         { name: "eyebrow", label: "작가 구분", placeholder: "Photographer" },
@@ -463,7 +545,11 @@ const pageBlockMap: Record<string, BlockConfig[]> = {
     {
       key: "brand",
       title: "Brand",
-      note: "Footer 왼쪽의 브랜드 문구",
+      note: "Footer 왼쪽의 로고와 브랜드 문구",
+      media: true,
+      mediaSharedFromKo: true,
+      mediaGuidance: "Transparent white PNG/WebP logo recommended, minimum 240px wide.",
+      mediaDefaultUrl: "/images/oogo-logo-white.png",
       fields: [{ name: "brandDescription", label: "브랜드 문구", type: "textarea", wide: true }]
     },
     {
@@ -482,14 +568,10 @@ const pageBlockMap: Record<string, BlockConfig[]> = {
       key: "contact-legal",
       title: "Contact & Legal",
       note: "Footer 오른쪽 연락처, SNS, 법률 링크와 저작권",
+      socialLinks: true,
       fields: [
         { name: "email", label: "Email", placeholder: "contact@oogolabs.com" },
         { name: "address", label: "주소", placeholder: "Seoul, Korea" },
-        { name: "instagram", label: "Instagram URL", placeholder: "https://www.instagram.com/oogolabs" },
-        { name: "facebook", label: "Facebook URL", placeholder: "https://www.facebook.com/oogolabs" },
-        { name: "tiktok", label: "TikTok URL", placeholder: "https://www.tiktok.com/@oogolabs" },
-        { name: "youtube", label: "YouTube URL" },
-        { name: "pinterest", label: "Pinterest URL" },
         { name: "termsLabel", label: "이용약관 문구", placeholder: "Terms & Conditions" },
         { name: "termsHref", label: "이용약관 링크", placeholder: "/terms-conditions" },
         { name: "privacyLabel", label: "개인정보 문구", placeholder: "Privacy Policy" },
@@ -499,6 +581,13 @@ const pageBlockMap: Record<string, BlockConfig[]> = {
     }
   ]
 };
+
+export function getLandingEditorFieldContract(pageKey: string) {
+  return (pageBlockMap[pageKey] ?? []).map((block) => ({
+    blockKey: block.key,
+    fieldNames: block.fields.map((field) => field.name)
+  }));
+}
 
 function textValue(content: Record<string, unknown>, key: string) {
   const value = content[key];
@@ -517,6 +606,9 @@ function getBlock(blocks: LandingBlockRow[], blockKey: string) {
 function statusLabel(block: LandingBlockRow | null) {
   if (!block) {
     return "새 초안";
+  }
+  if (block.published && JSON.stringify(block.draft_content) !== JSON.stringify(block.published_content)) {
+    return "게시 후 수정됨";
   }
   return block.published ? "게시됨" : "초안 저장됨";
 }
@@ -542,7 +634,79 @@ function previewText(content: Record<string, unknown>, blockConfig: BlockConfig)
 }
 
 function mediaUrl(content: Record<string, unknown>) {
-  return textValue(content, "mediaUrl") || textValue(content, "imageUrl");
+  return textValue(content, "mediaUrl") || textValue(content, "imageUrl") || textValue(content, "image1Url");
+}
+
+function heroSlideInputs(content: Record<string, unknown>): HeroSlideInput[] {
+  const savedSlides = Array.isArray(content.slides) ? content.slides : [];
+  const slides = savedSlides
+    .filter((slide): slide is Record<string, unknown> => typeof slide === "object" && slide !== null && !Array.isArray(slide))
+    .slice(0, 5)
+    .map((slide, index) => ({
+      id: textValue(slide, "id") || `hero-${index + 1}`,
+      mediaType: textValue(slide, "mediaType") === "video" ? ("video" as const) : ("image" as const),
+      mediaUrl: mediaUrl(slide),
+      posterUrl: textValue(slide, "posterUrl"),
+      alt: textValue(slide, "alt"),
+      eyebrow: textValue(slide, "eyebrow"),
+      heading: textValue(slide, "heading"),
+      line: textValue(slide, "line")
+    }))
+    .filter((slide) => slide.mediaUrl);
+
+  if (slides.length > 0) {
+    return slides;
+  }
+
+  const legacyMediaUrl = mediaUrl(content);
+  return [
+    {
+      id: "hero-1",
+      mediaType: textValue(content, "mediaType") === "video" ? ("video" as const) : ("image" as const),
+      mediaUrl: legacyMediaUrl || "/images/oogo-hero.png",
+      posterUrl: textValue(content, "posterUrl"),
+      alt: textValue(content, "alt"),
+      eyebrow: "",
+      heading: "",
+      line: ""
+    }
+  ];
+}
+
+function galleryImageInputs(content: Record<string, unknown>, config: NonNullable<BlockConfig["imageGallery"]>) {
+  const startIndex = config.startIndex ?? 1;
+  return config.defaults.map((fallback, index) => textValue(content, `image${startIndex + index}Url`) || fallback);
+}
+
+const defaultSocialLinks: SocialLinkInput[] = [
+  { id: "social-instagram", platform: "instagram", href: "https://www.instagram.com/oogolabs", label: "Instagram", visible: true },
+  { id: "social-facebook", platform: "facebook", href: "https://www.facebook.com/oogolabs", label: "Facebook", visible: true },
+  { id: "social-tiktok", platform: "tiktok", href: "https://www.tiktok.com/@oogolabs", label: "TikTok", visible: true },
+  { id: "social-youtube", platform: "youtube", href: "https://www.youtube.com/@oogolabs", label: "YouTube", visible: true },
+  { id: "social-pinterest", platform: "pinterest", href: "https://www.pinterest.com/oogolabs", label: "Pinterest", visible: true }
+];
+
+function socialLinkInputs(content: Record<string, unknown>): SocialLinkInput[] {
+  if (Array.isArray(content.socialLinks)) {
+    return content.socialLinks
+      .filter((link): link is Record<string, unknown> => typeof link === "object" && link !== null && !Array.isArray(link))
+      .map((link, index) => {
+        const platform = textValue(link, "platform");
+        return {
+          id: textValue(link, "id") || `social-${index + 1}`,
+          platform: (["instagram", "facebook", "tiktok", "youtube", "pinterest"].includes(platform) ? platform : "instagram") as SocialPlatform,
+          href: textValue(link, "href"),
+          label: textValue(link, "label"),
+          visible: link.visible !== false
+        };
+      })
+      .filter((link) => link.href);
+  }
+
+  return defaultSocialLinks.map((link) => ({
+    ...link,
+    href: textValue(content, link.platform) || link.href
+  }));
 }
 
 function Field({ field, content }: { field: FieldConfig; content: Record<string, unknown> }) {
@@ -592,7 +756,7 @@ function MediaPanel({
   canPersist: boolean;
 }) {
   const mediaType = selectValue(content, "mediaType", "image");
-  const currentMediaUrl = mediaUrl(content);
+  const currentMediaUrl = mediaUrl(content) || block.mediaDefaultUrl || "";
 
   return (
     <aside className="admin-asset-panel landing-media-panel">
@@ -653,9 +817,9 @@ function BlockEditor({
   locale,
   assets,
   saveAction,
-  publishAction,
-  initiallyOpen,
-  canPersist
+  savePublishAction,
+  canPersist,
+  initiallyOpen = false
 }: {
   blockConfig: BlockConfig;
   row: LandingBlockRow | null;
@@ -663,16 +827,16 @@ function BlockEditor({
   locale: Locale;
   assets: AssetOption[];
   saveAction: LandingEditorProps["saveAction"];
-  publishAction: LandingEditorProps["publishAction"];
-  initiallyOpen: boolean;
+  savePublishAction: NonNullable<LandingEditorProps["savePublishAction"]>;
   canPersist: boolean;
+  initiallyOpen?: boolean;
 }) {
-  const content = row?.draft_content ?? {};
-  const currentMediaUrl = mediaUrl(content);
+  const content = getLandingEditorContent(pageKey, blockConfig.key, locale, row?.draft_content);
+  const currentMediaUrl = mediaUrl(content) || blockConfig.mediaDefaultUrl || "";
 
   return (
-    <section className="landing-block-editor">
-      <details open={initiallyOpen}>
+    <section className="landing-block-editor" id={`landing-block-${blockConfig.key}`}>
+      <LandingBlockDetails name={`landing-${pageKey}`} initiallyOpen={initiallyOpen}>
         <summary>
           <div className="landing-section-card-preview">
             {currentMediaUrl ? (
@@ -691,7 +855,7 @@ function BlockEditor({
           </span>
         </summary>
 
-        <form className="admin-form" action={saveAction}>
+        <form className="admin-form" action={saveAction} data-landing-block-form>
           <input type="hidden" name="id" value={row?.id ?? ""} />
           <input type="hidden" name="pageKey" value={pageKey} />
           <input type="hidden" name="locale" value={locale} />
@@ -708,7 +872,27 @@ function BlockEditor({
                 ))}
               </div>
             </div>
-            {blockConfig.media && (!blockConfig.mediaSharedFromKo || locale === "ko") ? (
+            {blockConfig.heroSlides && locale === "ko" ? (
+              <HeroSlidesEditor
+                initialSlides={heroSlideInputs(content)}
+                assets={assets}
+                canPersist={canPersist}
+                initialAutoplay={content.autoplay !== false && content.autoplay !== "false"}
+                initialIntervalMs={Number(content.intervalMs ?? 6000)}
+              />
+            ) : blockConfig.imageGallery && (!blockConfig.mediaSharedFromKo || locale === "ko") ? (
+              <ImageGalleryEditor
+                initialImages={galleryImageInputs(content, blockConfig.imageGallery)}
+                assets={assets}
+                canPersist={canPersist}
+                title={blockConfig.imageGallery.title}
+                help={blockConfig.imageGallery.help}
+                startIndex={blockConfig.imageGallery.startIndex}
+                assetListId={`gallery-assets-${pageKey}-${blockConfig.key}`}
+              />
+            ) : blockConfig.socialLinks ? (
+              <SocialLinksEditor initialLinks={socialLinkInputs(content)} />
+            ) : blockConfig.media && (!blockConfig.mediaSharedFromKo || locale === "ko") ? (
               <MediaPanel content={content} block={blockConfig} assets={assets} canPersist={canPersist} />
             ) : blockConfig.mediaSharedFromKo ? (
               <aside className="admin-asset-panel landing-media-panel">
@@ -724,18 +908,12 @@ function BlockEditor({
             <button type="submit" disabled={!canPersist}>
               {canPersist ? "초안 저장" : "Supabase 연결 후 저장 가능"}
             </button>
+            <button className="admin-secondary-button" type="submit" formAction={savePublishAction} disabled={!canPersist}>
+              {canPersist ? "저장 후 게시" : "Supabase 연결 필요"}
+            </button>
           </div>
         </form>
-
-        {row?.id ? (
-          <form className="landing-publish-form" action={publishAction}>
-            <input type="hidden" name="id" value={row.id} />
-            <button className="admin-secondary-button" type="submit" disabled={!canPersist}>
-              {canPersist ? "게시하기" : "Supabase 연결 필요"}
-            </button>
-          </form>
-        ) : null}
-      </details>
+      </LandingBlockDetails>
     </section>
   );
 }
@@ -745,8 +923,9 @@ export function LandingEditor({
   locale,
   blocks,
   assets = [],
+  openBlockKey,
   saveAction,
-  publishAction,
+  savePublishAction = saveAction,
   supabaseConfigured = true
 }: LandingEditorProps) {
   const editorPages = getLandingEditorPages();
@@ -771,29 +950,14 @@ export function LandingEditor({
           <p>랜딩 페이지 초안 저장, 게시, 미디어 업로드는 Supabase 연결 후 사용할 수 있습니다.</p>
         </div>
       ) : null}
-      <div className="site-editor-toolbar">
-        <nav className="site-editor-tabs" aria-label="Landing page editor sections">
-          {editorPages.map((page) => (
-            <a key={page.key} className={page.key === pageKey ? "site-editor-tab active" : "site-editor-tab"} href={`/admin/landing?page=${page.key}&locale=${locale}`}>
-              <span>{page.surface}</span>
-              <strong>{page.label}</strong>
-              <small>{page.routeLabel}</small>
-            </a>
-          ))}
-        </nav>
-        <div className="site-editor-actions">
-          <div className="admin-locale-tabs">
-            {LOCALES.map((item) => (
-              <a key={item} className={item === locale ? "active" : undefined} href={`/admin/landing?page=${pageKey}&locale=${item}`}>
-                {LOCALE_LABELS[item]}
-              </a>
-            ))}
-          </div>
-          <a className="landing-open-public" href={withLocalePrefix(publicHref(pageKey), locale)} target="_blank" rel="noreferrer">
-            공개 페이지 보기
-          </a>
-        </div>
-      </div>
+      <LandingEditorToolbar
+        pages={editorPages}
+        pageKey={pageKey}
+        locale={locale}
+        publicHref={withLocalePrefix(publicHref(pageKey), locale)}
+        canPersist={canPersist}
+        savePublishAction={savePublishAction}
+      />
 
       <div className="landing-page-summary">
         <div>
@@ -821,7 +985,7 @@ export function LandingEditor({
                     </div>
                   </header>
                   <div className="landing-editor-group-blocks">
-                    {groupBlocks.map((blockConfig, blockIndex) => (
+                    {groupBlocks.map((blockConfig) => (
                       <BlockEditor
                         key={blockConfig.key}
                         blockConfig={blockConfig}
@@ -830,16 +994,16 @@ export function LandingEditor({
                         locale={locale}
                         assets={assets}
                         saveAction={saveAction}
-                        publishAction={publishAction}
-                        initiallyOpen={groupIndex === 0 && blockIndex === 0}
+                        savePublishAction={savePublishAction}
                         canPersist={canPersist}
+                        initiallyOpen={openBlockKey === blockConfig.key}
                       />
                     ))}
                   </div>
                 </section>
               );
             })
-          : pageBlocks.map((blockConfig, index) => (
+          : pageBlocks.map((blockConfig) => (
               <BlockEditor
                 key={blockConfig.key}
                 blockConfig={blockConfig}
@@ -848,9 +1012,9 @@ export function LandingEditor({
                 locale={locale}
                 assets={assets}
                 saveAction={saveAction}
-                publishAction={publishAction}
-                initiallyOpen={index === 0}
+                savePublishAction={savePublishAction}
                 canPersist={canPersist}
+                initiallyOpen={openBlockKey === blockConfig.key}
               />
             ))}
       </div>

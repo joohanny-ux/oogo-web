@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import React, { type CSSProperties } from "react";
 import type { Locale } from "@/lib/i18n";
 import { landingText, type LandingContent } from "@/lib/home-landing";
 import { withLocalePrefix } from "@/lib/locale-path";
@@ -41,14 +41,18 @@ export function ArchiveSection({
         </a>
       </div>
       <div className="archive-grid">
-        {archiveItems.map((item) => (
-          <article className="archive-card" key={item.className}>
-            <div
-              className={`archive-image ${item.className}`}
-              style={{ "--archive-image": `url("${item.imageUrl}")` } as ArchiveStyle}
-            />
-          </article>
-        ))}
+        {archiveItems.map((item, index) => {
+          const imageUrl = landingText(content, `image${index + 1}Url`, item.imageUrl);
+
+          return (
+            <article className="archive-card" key={item.className}>
+              <div
+                className={`archive-image ${item.className}`}
+                style={{ "--archive-image": `url("${imageUrl}")` } as ArchiveStyle}
+              />
+            </article>
+          );
+        })}
       </div>
     </section>
   );

@@ -1,8 +1,8 @@
-import type { CSSProperties } from "react";
+import React, { type CSSProperties } from "react";
 import { SiteFooter } from "@/components/public/SiteFooter";
 import { SiteHeader } from "@/components/public/SiteHeader";
-import { getLandingPageContent, landingMediaUrl, landingText } from "@/lib/home-landing";
-import { getLandingBlocks } from "@/lib/public-content";
+import { landingMediaUrl, landingText } from "@/lib/home-landing";
+import { getLandingPageContentForLocale } from "@/lib/public-content";
 import { getRequestLocale, withLocalePrefix } from "@/lib/public-locale";
 import { landingTextForLocale, pickLocaleCopy, publicCopy } from "@/lib/public-copy";
 
@@ -32,9 +32,12 @@ const experienceImages = [
   "/images/brand-experience-06.png"
 ] as const;
 
+type BrandStatementStyle = CSSProperties & { "--brand-statement-image": string };
+type BrandEssenceStyle = CSSProperties & { "--brand-essence-image": string };
+
 export default async function BrandPage() {
   const locale = await getRequestLocale();
-  const content = getLandingPageContent(await getLandingBlocks(locale), "brand-story");
+  const content = await getLandingPageContentForLocale("brand-story", locale);
   const hero = content["story-hero"];
   const about = content.about;
   const statement = content.statement;
@@ -52,10 +55,14 @@ export default async function BrandPage() {
     ...item,
     title: landingText(philosophy, `item${index + 1}Title`, item.title),
     body: landingTextForLocale(philosophy, `item${index + 1}Body`, locale, brandCopy.philosophyBodies[index]),
-    image: index === 0 ? landingMediaUrl(philosophy, item.image) : landingText(philosophy, `image${index + 1}Url`, item.image)
+    image: landingText(
+      philosophy,
+      `image${index + 1}Url`,
+      index === 0 ? landingMediaUrl(philosophy, item.image) : item.image
+    )
   }));
   const resolvedExperienceImages = experienceImages.map((image, index) =>
-    index === 0 ? landingMediaUrl(experience, image) : landingText(experience, `image${index + 1}Url`, image)
+    landingText(experience, `image${index + 1}Url`, index === 0 ? landingMediaUrl(experience, image) : image)
   );
 
   return (
@@ -71,7 +78,7 @@ export default async function BrandPage() {
           </div>
           <div
             className="brand-page-hero-media"
-              style={{ backgroundImage: 'url("/images/oogo-gallery.png")' } as CSSProperties}
+            style={{ backgroundImage: `url("${landingMediaUrl(hero, "/images/oogo-gallery.png")}")` } as CSSProperties}
             aria-label="OOGO brand image"
           />
         </section>
@@ -98,13 +105,29 @@ export default async function BrandPage() {
           </dl>
         </section>
 
-        <section className="brand-page-statement" aria-label="Brand statement">
+        <section
+          className="brand-page-statement"
+          aria-label="Brand statement"
+          style={
+            {
+              "--brand-statement-image": `url("${landingMediaUrl(statement, "/images/oogo-hero.png")}")`
+            } as BrandStatementStyle
+          }
+        >
           <p className="eyebrow">{landingText(statement, "eyebrow", "Brand Statement")}</p>
           <h2>{landingTextForLocale(statement, "headline", locale, brandCopy.statementHeadline)}</h2>
           <p>{landingTextForLocale(statement, "body", locale, brandCopy.statementBody)}</p>
         </section>
 
-        <section className="brand-page-section brand-page-essence" aria-labelledby="brand-essence-title">
+        <section
+          className="brand-page-section brand-page-essence"
+          aria-labelledby="brand-essence-title"
+          style={
+            {
+              "--brand-essence-image": `url("${landingMediaUrl(essence, "/images/brand-experience-03.png")}")`
+            } as BrandEssenceStyle
+          }
+        >
           <header>
             <div>
               <p className="eyebrow">{pickLocaleCopy(locale, brandCopy.essenceEyebrow)}</p>
@@ -112,7 +135,13 @@ export default async function BrandPage() {
             </div>
           </header>
           <div className="brand-page-essence-grid">
-            {resolvedEssences.map((item) => <article key={item.index}><span>{item.index}</span><h3>{item.title}</h3></article>)}
+            {resolvedEssences.map((item) => (
+              <article key={item.index}>
+                <span>{item.index}</span>
+                <h3>{item.title}</h3>
+                <p>{item.body}</p>
+              </article>
+            ))}
           </div>
         </section>
 
