@@ -4,7 +4,7 @@ Date: 2026-06-30
 
 ## Goal
 
-Build the official OOGO brand homepage for `www.oogolabs.com` as a managed brand site.
+Build the official OOGO brand homepage for `www.oogolaps.com` as a managed brand site.
 
 The public site should establish trust in OOGO as a premium Korean eyewear brand. It should feel quiet, balanced, image-led, and refined. The admin dashboard should let the owner update products, images, landing-page copy, translations, company information, and inquiries without editing code.
 
@@ -70,7 +70,7 @@ Use a Vercel + Supabase + admin dashboard architecture.
 
 Public site:
 
-- Hosted at `www.oogolabs.com`.
+- Hosted at `www.oogolaps.com`.
 - Reads only published content.
 - Uses OOGO brand imagery, landing-page blocks, published products, special edition content, company information, and contact information from Supabase.
 - Must remain fast and visually polished even though content is managed.
@@ -213,7 +213,7 @@ Important constraints:
 
 - Vercel hosts both the public site and admin dashboard.
 - Supabase environment variables are configured in Vercel.
-- `www.oogolabs.com` points to the Vercel deployment.
+- `www.oogolaps.com` points to the Vercel deployment.
 - `/admin` is protected by Supabase Auth.
 
 ## MVP Scope

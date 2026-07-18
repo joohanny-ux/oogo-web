@@ -7,15 +7,15 @@ test("homepage shows OOGO brand story", async ({ page }) => {
   await expect(page.getByText("Frames for light, face, and quiet attitude.").first()).toBeVisible();
   await expect(page.getByRole("link", { name: "Instagram" })).toHaveAttribute(
     "href",
-    "https://www.instagram.com/oogolabs"
+    "https://www.instagram.com/oogolaps"
   );
   await expect(page.getByRole("link", { name: "Facebook" })).toHaveAttribute(
     "href",
-    "https://www.facebook.com/oogolabs"
+    "https://www.facebook.com/oogolaps"
   );
   await expect(page.getByRole("link", { name: "TikTok" })).toHaveAttribute(
     "href",
-    "https://www.tiktok.com/@oogolabs"
+    "https://www.tiktok.com/@oogolaps"
   );
 });
 

@@ -26,8 +26,8 @@ export function InquirySection({
           <span className="inquiry-page-contact-label">
             {landingTextForLocale(channel, "eyebrow", locale, copy.direct)}
           </span>
-          <a href={`mailto:${landingText(channel, "email", "contact@oogolabs.com")}`}>
-            {landingText(channel, "email", "contact@oogolabs.com")}
+          <a href={`mailto:${landingText(channel, "email", "contact@oogolaps.com")}`}>
+            {landingText(channel, "email", "contact@oogolaps.com")}
           </a>
           <span>{landingTextForLocale(channel, "address", locale, copy.address)}</span>
         </div>

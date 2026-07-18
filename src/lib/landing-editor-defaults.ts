@@ -199,7 +199,7 @@ export function getLandingEditorDefaultContent(pageKey: string, blockKey: string
       },
       "direct-channel": {
         eyebrow: localized(locale, publicCopy.inquiry.direct),
-        email: "contact@oogolabs.com",
+        email: "contact@oogolaps.com",
         address: localized(locale, publicCopy.inquiry.address)
       },
       "topic-guide": Object.fromEntries(
@@ -226,7 +226,7 @@ export function getLandingEditorDefaultContent(pageKey: string, blockKey: string
         nav5Href: "/brand"
       },
       "contact-legal": {
-        email: "contact@oogolabs.com",
+        email: "contact@oogolaps.com",
         address: localized(locale, publicCopy.inquiry.address),
         termsLabel: localized(locale, publicCopy.common.terms),
         termsHref: "/terms-conditions",
