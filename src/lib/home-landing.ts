@@ -38,13 +38,13 @@ export function getLandingPageContent(blocks: LandingBlock[], pageKey: string) {
   ) as Record<string, LandingContent>;
 }
 
-export function landingText(content: LandingContent | undefined, key: string, fallback: string) {
+export function landingText(content: LandingContent | null | undefined, key: string, fallback: string) {
   const value = content?.[key];
 
   return typeof value === "string" && value.trim() ? value.trim() : fallback;
 }
 
-export function landingMediaUrl(content: LandingContent | undefined, fallback: string) {
+export function landingMediaUrl(content: LandingContent | null | undefined, fallback: string) {
   return landingText(content, "mediaUrl", landingText(content, "imageUrl", fallback));
 }
 

@@ -24,7 +24,7 @@ export function resolveLocaleText(value: string | undefined, locale: Locale, cop
 }
 
 export function landingTextForLocale(
-  content: Record<string, unknown> | undefined,
+  content: Record<string, unknown> | null | undefined,
   key: string,
   locale: Locale,
   copy: LocaleCopy
