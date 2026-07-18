@@ -4,8 +4,11 @@ import { getLandingEditorContent, getLandingEditorDefaultContent } from "@/lib/l
 
 describe("Landing Editor public text defaults", () => {
   it("provides locale-specific values for every public language", () => {
-    expect(getLandingEditorDefaultContent("home", "hero", "ko").line).toBe("Frames for light, face, and quiet attitude.");
+    expect(getLandingEditorDefaultContent("home", "hero", "ko").line).toBe("빛과 얼굴, 조용한 태도를 위한 프레임.");
     expect(getLandingEditorDefaultContent("home", "hero", "zh").line).toBe("为光、面容与安静态度而设计的镜框。");
+    expect(getLandingEditorDefaultContent("special-edition", "special-hero", "ko").body).toContain("시즌 에디트");
+    expect(getLandingEditorDefaultContent("special-edition", "collaboration-statement", "zh").statementEn).toContain("光线");
+    expect(getLandingEditorDefaultContent("home", "collection-preview", "ko").primaryLabel).toBe("전체 보기");
     expect(getLandingEditorDefaultContent("brand-story", "about", "en").heading).toBe("Eyewear for a refined gaze");
     expect(getLandingEditorDefaultContent("brand-story", "essence", "zh").item6Body).toBe("整理视线的构图");
     expect(getLandingEditorDefaultContent("special-edition", "photographer-profile", "zh").quoteEn).toBe("每一个瞬间都可以成为艺术。");

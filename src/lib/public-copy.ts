@@ -17,6 +17,12 @@ export function resolveLocaleText(value: string | undefined, locale: Locale, cop
     if (locale !== "ko" && containsHangul(trimmed)) {
       return pickLocaleCopy(locale, copy);
     }
+    // CMS에 EN 기본값이 그대로 남아 있으면 해당 로케일 카피로 교체한다.
+    const englishDefault = copy.en?.trim();
+    const localized = copy[locale]?.trim();
+    if (locale !== "en" && englishDefault && trimmed === englishDefault && localized && localized !== englishDefault) {
+      return localized;
+    }
     return trimmed;
   }
 
@@ -42,11 +48,11 @@ export const publicCopy = {
     inquiry: { ko: "Inquiry", en: "Inquiry", zh: "咨询" }
   },
   common: {
-    viewAll: { ko: "View all", en: "View all", zh: "查看全部" },
-    viewArchive: { ko: "View archive", en: "View archive", zh: "查看档案" },
-    viewProject: { ko: "View project", en: "View project", zh: "查看项目" },
-    viewCollection: { ko: "View Collection", en: "View Collection", zh: "查看系列" },
-    businessInquiry: { ko: "Business Inquiry", en: "Business Inquiry", zh: "商务咨询" },
+    viewAll: { ko: "전체 보기", en: "View all", zh: "查看全部" },
+    viewArchive: { ko: "아카이브 보기", en: "View archive", zh: "查看档案" },
+    viewProject: { ko: "프로젝트 보기", en: "View project", zh: "查看项目" },
+    viewCollection: { ko: "컬렉션 보기", en: "View Collection", zh: "查看系列" },
+    businessInquiry: { ko: "비즈니스 문의", en: "Business Inquiry", zh: "商务咨询" },
     buyerRetail: {
       ko: "Buyer / Retail / Collaboration",
       en: "Buyer / Retail / Collaboration",
@@ -65,7 +71,7 @@ export const publicCopy = {
     heroEyebrow: { ko: "OOGO 2026", en: "OOGO 2026", zh: "OOGO 2026" },
     heroHeading: { ko: "OOGO", en: "OOGO", zh: "OOGO" },
     heroLine: {
-      ko: "Frames for light, face, and quiet attitude.",
+      ko: "빛과 얼굴, 조용한 태도를 위한 프레임.",
       en: "Frames for light, face, and quiet attitude.",
       zh: "为光、面容与安静态度而设计的镜框。"
     },
@@ -73,13 +79,18 @@ export const publicCopy = {
     projectsEyebrow: { ko: "Projects", en: "Projects", zh: "项目" },
     projectsHeading: { ko: "Youngbin Edition", en: "Youngbin Edition", zh: "Youngbin 特别版" },
     projectsBody: {
-      ko: "Limited image studies and seasonal edits.",
+      ko: "한정 이미지 스터디와 시즌 에디트.",
       en: "Limited image studies and seasonal edits.",
-      zh: "限定影像研究与季刊编辑。"
+      zh: "限定影像研究与季节性编辑。"
     },
     archiveEyebrow: { ko: "Archive", en: "Archive", zh: "档案" },
+    archivePreviewBody: {
+      ko: "빛과 얼굴, 조용한 태도를 담은 시각 기록.",
+      en: "Visual records of light, face, and quiet attitude.",
+      zh: "光线、面容与安静态度的视觉记录。"
+    },
     footerBrand: {
-      ko: "Frames for light, face, and quiet attitude.",
+      ko: "빛과 얼굴, 조용한 태도를 위한 프레임.",
       en: "Frames for light, face, and quiet attitude.",
       zh: "为光、面容与安静态度而设计的镜框。"
     }
@@ -152,7 +163,7 @@ export const publicCopy = {
       zh: "安静的自信始于态度，而非炫耀。"
     },
     statementBody: {
-      ko: "OOGO frames a way of seeing: clear, balanced, and quietly confident.",
+      ko: "OOGO는 하나의 시선을 제안합니다. 선명하고, 균형 있으며, 조용히 자신감 있는.",
       en: "OOGO frames a way of seeing: clear, balanced, and quietly confident.",
       zh: "OOGO 塑造一种观看方式：清晰、平衡、安静而自信。"
     },
@@ -207,7 +218,7 @@ export const publicCopy = {
     eyebrow: { ko: "Archive", en: "Archive", zh: "档案" },
     heading: { ko: "Archive", en: "Archive", zh: "档案" },
     body: {
-      ko: "Visual records of OOGO frames, light, faces, and campaigns.",
+      ko: "OOGO 프레임과 빛, 얼굴, 캠페인의 시각 기록.",
       en: "Visual records of OOGO frames, light, faces, and campaigns.",
       zh: "OOGO 镜框、光线、面容与活动的视觉记录。"
     },
@@ -220,7 +231,7 @@ export const publicCopy = {
       zh: "摄影：Ji Youngbin"
     },
     youngbinBody: {
-      ko: "Collaboration studies and selected photographic works by Youngbin Ji.",
+      ko: "지영빈과의 협업 스터디와 선정 사진 작품.",
       en: "Collaboration studies and selected photographic works by Youngbin Ji.",
       zh: "与 Ji Youngbin 的合作研究与精选摄影作品。"
     },
@@ -234,39 +245,86 @@ export const publicCopy = {
     eyebrow: { ko: "Projects", en: "Projects", zh: "项目" },
     heading: { ko: "Projects", en: "Projects", zh: "项目" },
     body: {
-      ko: "Seasonal studies / collaborations / image archive",
+      ko: "시즌 스터디 / 협업 / 이미지 아카이브",
       en: "Seasonal studies / collaborations / image archive",
-      zh: "季刊研究 / 合作 / 影像档案"
+      zh: "季节研究 / 合作 / 影像档案"
     },
     next: { ko: "Next", en: "Next", zh: "下一步" },
     openCollab: { ko: "Open collaboration", en: "Open collaboration", zh: "开放合作" },
     openCollabBody: {
-      ko: "Buyer, retail, and campaign inquiries.",
+      ko: "바이어, 리테일, 캠페인 문의.",
       en: "Buyer, retail, and campaign inquiries.",
       zh: "采购、零售与活动咨询。"
     }
   },
   youngbin: {
+    heroBody: {
+      ko: "빛의 방향과 얼굴, 조용한 태도로 완성된 시즌 에디트. 캠페인과 착용컷은 바이어 문의를 통해 공개됩니다.",
+      en: "A seasonal edit shaped by light direction, face, and quiet attitude. Campaign and wearing cuts are released through buyer inquiry.",
+      zh: "由光线方向、面容与安静态度塑造的季节编辑。活动与佩戴图通过采购咨询公开。"
+    },
+    statementHeadline: {
+      ko: "사진과 아이웨어는 빛에서 시작합니다. 둘 다 우리가 무엇을 기억할지 결정합니다.",
+      en: "Photography and eyewear begin with light. Both shape what we choose to remember.",
+      zh: "摄影与眼镜都从光线开始。二者共同塑造我们选择记住的事物。"
+    },
     storyBody: {
       ko: "사진가의 시선과 OOGO의 프레임이 만나 빛과 순간을 기록합니다.",
       en: "A photographer’s gaze meets OOGO frames to record light and moment.",
       zh: "摄影师的视线与 OOGO 镜框相遇，记录光线与瞬间。"
+    },
+    limitedEyebrow: {
+      ko: "Limited Edition",
+      en: "Limited Edition",
+      zh: "限量版"
     },
     limitedBody: {
       ko: "빛을 바라보는 태도와 시선을 기억하는 감각이 만나, OOGO의 세계관을 한정판 프레임과 스페셜 패키지로 확장합니다.",
       en: "A way of looking at light meets a sense that remembers the gaze, expanding OOGO’s world into a limited frame and special package.",
       zh: "面向光线的态度与记住视线的感觉相遇，将 OOGO 的世界观延展为限量镜框与特别包装。"
     },
+    featureTitles: [
+      { ko: "한정 수량", en: "Limited Quantity", zh: "限量" },
+      { ko: "스페셜 패키지", en: "Special Package", zh: "特别包装" },
+      { ko: "캠페인 & 전시", en: "Campaign & Exhibition", zh: "活动与展览" }
+    ] as LocaleCopy[],
     featureBodies: [
       { ko: "한정 수량으로 제작되는 협업 프레임", en: "A collaboration frame produced in limited quantity", zh: "限量制作的合作镜框" },
       { ko: "에디션을 위해 구성한 전용 패키지", en: "A dedicated package composed for the edition", zh: "为特别版构成的专属包装" },
       { ko: "사진과 제품이 이어지는 캠페인 서사", en: "A campaign narrative where photo and product continue", zh: "照片与产品延续的活动叙事" }
     ] as LocaleCopy[],
+    profileEyebrow: {
+      ko: "Photographer",
+      en: "Photographer",
+      zh: "摄影师"
+    },
+    profileRole: {
+      ko: "Photographer · Visual Storyteller",
+      en: "Photographer · Visual Storyteller",
+      zh: "摄影师 · 视觉叙事者"
+    },
     profileBody: {
       ko: "지영빈은 35년 이상 인물, 앨범 재킷, 에디토리얼과 다큐멘터리 사진을 통해 사람과 순간의 태도를 기록해 온 사진가입니다.",
       en: "Ji Youngbin is a photographer who has spent more than 35 years recording people and moments through portrait, album jacket, editorial, and documentary work.",
       zh: "Ji Youngbin 是一位超过 35 年通过人像、专辑封面、编辑与纪录片摄影记录人与瞬间态度的摄影师。"
     },
+    credentials: [
+      {
+        ko: "인물·에디토리얼·다큐멘터리 사진 35년 이상",
+        en: "35+ years across portrait, editorial, and documentary photography",
+        zh: "人像、编辑与纪录片摄影超过 35 年"
+      },
+      {
+        ko: "유네스코 한국위원회 공식 사진가",
+        en: "Official photographer for UNESCO Korea",
+        zh: "联合国教科文组织韩国委员会官方摄影师"
+      },
+      {
+        ko: "뉴욕 타임스스퀘어 다큐멘터리 국제 상영",
+        en: "New York Times Square documentary international screening",
+        zh: "纽约时代广场纪录片国际放映"
+      }
+    ] as LocaleCopy[],
     quote: {
       ko: "모든 순간은 예술이 될 수 있다.",
       en: "Every moment can become art.",
@@ -288,18 +346,18 @@ export const publicCopy = {
       zh: "特别版画廊"
     },
     archiveLabel: {
-      ko: "View Photo Archive",
+      ko: "포토 아카이브 보기",
       en: "View Photo Archive",
       zh: "查看摄影档案"
     },
     buyerInquiry: {
-      ko: "Buyer inquiry",
+      ko: "바이어 문의",
       en: "Buyer inquiry",
       zh: "采购咨询"
     }
   },
   product: {
-    buyerCta: { ko: "Buyer inquiry", en: "Buyer inquiry", zh: "采购咨询" }
+    buyerCta: { ko: "바이어 문의", en: "Buyer inquiry", zh: "采购咨询" }
   },
   inquiry: {
     eyebrow: { ko: "문의 및 지원", en: "Contact & Support", zh: "咨询与支持" },

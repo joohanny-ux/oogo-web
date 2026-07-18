@@ -33,7 +33,16 @@ export default async function YoungbinEditionPage() {
   const profile = content["photographer-profile"];
   const footerCta = content["footer-cta"];
   const limitedFeatures = edition.limited.features.map((feature, index) => ({
-    title: landingText(limited, `feature${index + 1}Title`, feature.title),
+    title: landingTextForLocale(
+      limited,
+      `feature${index + 1}Title`,
+      locale,
+      publicCopy.youngbin.featureTitles[index] ?? {
+        ko: feature.title,
+        en: feature.title,
+        zh: feature.title
+      }
+    ),
     body: landingTextForLocale(
       limited,
       `feature${index + 1}Body`,
@@ -78,11 +87,7 @@ export default async function YoungbinEditionPage() {
               {landingText(hero, "subtitle", `${edition.year} · ${edition.collaborator}`)}
             </p>
             <p className="youngbin-project-lead">
-              {landingTextForLocale(hero, "body", locale, {
-                ko: edition.story,
-                en: edition.story,
-                zh: edition.story
-              })}
+              {landingTextForLocale(hero, "body", locale, publicCopy.youngbin.heroBody)}
             </p>
           </div>
         </section>
@@ -91,13 +96,15 @@ export default async function YoungbinEditionPage() {
           <div className="youngbin-project-story-copy">
             <p className="eyebrow">{pickLocaleCopy(locale, publicCopy.youngbin.collaborationStory)}</p>
             <h2 id="youngbin-story-title">
-              {landingText(statement, "statementEn", edition.statement.statementEn)}
+              {landingTextForLocale(statement, "statementEn", locale, publicCopy.youngbin.statementHeadline)}
             </h2>
             <p className="youngbin-project-story-body">
               {landingTextForLocale(statement, "bodyKo", locale, publicCopy.youngbin.storyBody)}
             </p>
             <div className="youngbin-project-edition-intro">
-              <p className="eyebrow">{landingText(limited, "eyebrow", edition.limited.eyebrow)}</p>
+              <p className="eyebrow">
+                {landingTextForLocale(limited, "eyebrow", locale, publicCopy.youngbin.limitedEyebrow)}
+              </p>
               <h3>{landingText(limited, "heading", edition.limited.heading)}</h3>
               <p className="youngbin-project-edition-meta">
                 {limitedFeatures.map((feature) => feature.title).join(" · ")}
@@ -144,9 +151,13 @@ export default async function YoungbinEditionPage() {
             aria-label={edition.profile.name}
           />
           <div className="youngbin-project-profile-copy">
-            <p className="eyebrow">{landingText(profile, "eyebrow", edition.profile.eyebrow)}</p>
+            <p className="eyebrow">
+              {landingTextForLocale(profile, "eyebrow", locale, publicCopy.youngbin.profileEyebrow)}
+            </p>
             <h2 id="youngbin-profile-title">{landingText(profile, "name", edition.profile.name)}</h2>
-            <p className="youngbin-project-profile-role">{landingText(profile, "role", edition.profile.role)}</p>
+            <p className="youngbin-project-profile-role">
+              {landingTextForLocale(profile, "role", locale, publicCopy.youngbin.profileRole)}
+            </p>
             <blockquote>
               <strong>{quote}</strong>
               {locale === "ko" ? <span>{landingText(profile, "quoteEn", edition.profile.quoteEn)}</span> : null}
@@ -154,7 +165,18 @@ export default async function YoungbinEditionPage() {
             <p>{landingTextForLocale(profile, "body", locale, publicCopy.youngbin.profileBody)}</p>
             <ul>
               {edition.profile.credentials.map((credential, index) => (
-                <li key={credential}>{landingText(profile, `credential${index + 1}`, credential)}</li>
+                <li key={credential}>
+                  {landingTextForLocale(
+                    profile,
+                    `credential${index + 1}`,
+                    locale,
+                    publicCopy.youngbin.credentials[index] ?? {
+                      ko: credential,
+                      en: credential,
+                      zh: credential
+                    }
+                  )}
+                </li>
               ))}
             </ul>
             <div className="youngbin-project-profile-actions">

@@ -4,7 +4,7 @@ test("homepage shows OOGO brand story", async ({ page }) => {
   await page.goto("/");
 
   await expect(page.getByRole("heading", { name: "OOGO", exact: true })).toBeVisible();
-  await expect(page.getByText("Frames for light, face, and quiet attitude.").first()).toBeVisible();
+  await expect(page.getByText("빛과 얼굴, 조용한 태도를 위한 프레임.").first()).toBeVisible();
   await expect(page.getByRole("link", { name: "Instagram" })).toHaveAttribute(
     "href",
     "https://www.instagram.com/oogolaps"
@@ -22,7 +22,7 @@ test("homepage shows OOGO brand story", async ({ page }) => {
 test("homepage links to the featured project", async ({ page }) => {
   await page.goto("/");
 
-  await page.getByRole("link", { name: "View project" }).click();
+  await page.getByRole("link", { name: "프로젝트 보기" }).click();
 
   await expect(page).toHaveURL(/\/projects\/youngbin-edition$/);
   await expect(page.locator("h1", { hasText: "Youngbin Edition" })).toBeVisible();
@@ -46,5 +46,5 @@ test("product detail presents buyer-focused views and actions", async ({ page })
   await expect(page.locator(".product-detail-media-angle")).toBeVisible();
   await expect(page.locator(".product-detail-media-side")).toBeVisible();
   await expect(page.locator(".product-detail-media-wearing")).toBeVisible();
-  await expect(page.getByRole("link", { name: "Buyer inquiry" })).toHaveAttribute("href", "/inquiry");
+  await expect(page.getByRole("link", { name: "바이어 문의" })).toHaveAttribute("href", "/inquiry");
 });

@@ -121,7 +121,7 @@ export function getLandingEditorDefaultContent(pageKey: string, blockKey: string
       "featured-project": {
         year: edition.year,
         heading: edition.title,
-        body: edition.summary,
+        body: localized(locale, publicCopy.home.projectsBody),
         primaryHref: `/projects/${edition.slug}`
       },
       "collaboration-cta": {
@@ -142,33 +142,33 @@ export function getLandingEditorDefaultContent(pageKey: string, blockKey: string
         eyebrow: "OOGO x JI YOUNGBIN",
         heading: edition.title,
         subtitle: `${edition.year} · ${edition.collaborator}`,
-        body: edition.story
+        body: localized(locale, publicCopy.youngbin.heroBody)
       },
       "collaboration-statement": {
-        statementEn: edition.statement.statementEn,
+        statementEn: localized(locale, publicCopy.youngbin.statementHeadline),
         bodyKo: localized(locale, publicCopy.youngbin.storyBody)
       },
       "limited-edition": {
-        eyebrow: edition.limited.eyebrow,
+        eyebrow: localized(locale, publicCopy.youngbin.limitedEyebrow),
         heading: edition.limited.heading,
-        feature1Title: edition.limited.features[0]?.title ?? "",
-        feature2Title: edition.limited.features[1]?.title ?? "",
-        feature3Title: edition.limited.features[2]?.title ?? ""
+        feature1Title: localized(locale, publicCopy.youngbin.featureTitles[0]),
+        feature2Title: localized(locale, publicCopy.youngbin.featureTitles[1]),
+        feature3Title: localized(locale, publicCopy.youngbin.featureTitles[2])
       },
       "edition-gallery": {
         eyebrow: localized(locale, publicCopy.youngbin.campaignProduct),
         heading: localized(locale, publicCopy.youngbin.editionGallery)
       },
       "photographer-profile": {
-        eyebrow: edition.profile.eyebrow,
+        eyebrow: localized(locale, publicCopy.youngbin.profileEyebrow),
         name: edition.profile.name,
-        role: edition.profile.role,
+        role: localized(locale, publicCopy.youngbin.profileRole),
         quoteKo: edition.profile.quoteKo,
         quoteEn: locale === "ko" ? edition.profile.quoteEn : localized(locale, publicCopy.youngbin.quote),
         body: localized(locale, publicCopy.youngbin.profileBody),
-        credential1: edition.profile.credentials[0],
-        credential2: edition.profile.credentials[1],
-        credential3: edition.profile.credentials[2],
+        credential1: localized(locale, publicCopy.youngbin.credentials[0]),
+        credential2: localized(locale, publicCopy.youngbin.credentials[1]),
+        credential3: localized(locale, publicCopy.youngbin.credentials[2]),
         archiveLabel: localized(locale, publicCopy.youngbin.archiveLabel),
         archiveHref: edition.profile.archiveHref
       },

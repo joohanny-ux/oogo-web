@@ -22,7 +22,12 @@ export function SpecialEditionSection({
 
   return (
     <section className="editorial-section projects-section" id="projects">
-      <a className="gallery-image" href={href} aria-label={`${landingText(content, "heading", edition.title)} project`} style={style} />
+      <a
+        className="gallery-image"
+        href={href}
+        aria-label={landingTextForLocale(content, "heading", locale, publicCopy.home.projectsHeading)}
+        style={style}
+      />
       <div className="editorial-copy">
         <p className="eyebrow">{landingTextForLocale(content, "eyebrow", locale, publicCopy.home.projectsEyebrow)}</p>
         <h2>{landingTextForLocale(content, "heading", locale, publicCopy.home.projectsHeading)}</h2>
