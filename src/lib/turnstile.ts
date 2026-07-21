@@ -1,4 +1,5 @@
 // Cloudflare Turnstile 토큰을 siteverify API로 검증한다.
+// 키가 전혀 없으면 검증을 건너뛰고, 둘 중 하나만 있으면 설정 오류로 막는다.
 
 type TurnstileVerifyResponse = {
   success: boolean;
@@ -9,12 +10,8 @@ export type TurnstileVerificationResult =
   | { ok: true; skipped?: boolean }
   | { ok: false; error: string };
 
-function isProduction() {
-  return process.env.NODE_ENV === "production";
-}
-
 export function isTurnstileConfigured() {
-  return Boolean(process.env.TURNSTILE_SECRET_KEY && process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
+  return Boolean(process.env.TURNSTILE_SECRET_KEY?.trim() && process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim());
 }
 
 export async function verifyTurnstileToken(
@@ -24,20 +21,12 @@ export async function verifyTurnstileToken(
   const secret = process.env.TURNSTILE_SECRET_KEY?.trim();
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim();
 
-  if (!secret) {
-    if (isProduction()) {
-      return { ok: false, error: "보안 인증이 설정되지 않았습니다." };
-    }
-
+  if (!secret && !siteKey) {
     return { ok: true, skipped: true };
   }
 
-  if (!siteKey) {
-    if (isProduction()) {
-      return { ok: false, error: "보안 인증 키가 설정되지 않았습니다." };
-    }
-
-    return { ok: true, skipped: true };
+  if (!secret || !siteKey) {
+    return { ok: false, error: "보안 인증 설정이 완료되지 않았습니다." };
   }
 
   if (!token?.trim()) {
