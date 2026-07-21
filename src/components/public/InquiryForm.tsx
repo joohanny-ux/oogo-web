@@ -3,8 +3,9 @@
 import Script from "next/script";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
-import { initialInquirySubmitState, submitInquiry } from "@/app/inquiry/actions";
+import { submitInquiry } from "@/app/inquiry/actions";
 import type { Locale } from "@/lib/i18n";
+import { initialInquirySubmitState } from "@/lib/inquiries";
 import { withLocalePrefix } from "@/lib/locale-path";
 import { pickLocaleCopy, publicCopy } from "@/lib/public-copy";
 

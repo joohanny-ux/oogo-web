@@ -5,6 +5,17 @@ const formInquiryTypes = ["buyer", "retail", "collaboration", "press"] as const;
 
 export type InquiryFormType = (typeof formInquiryTypes)[number];
 
+export type InquirySubmitState = {
+  ok: boolean;
+  message: string;
+};
+
+/** Keep this outside "use server" modules so Next does not treat it as a server reference. */
+export const initialInquirySubmitState: InquirySubmitState = {
+  ok: false,
+  message: ""
+};
+
 type InquiryInput = {
   type: string;
   name: string;
