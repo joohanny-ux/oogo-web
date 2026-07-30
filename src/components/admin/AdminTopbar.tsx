@@ -14,7 +14,7 @@ const pageLabels: Record<string, string> = {
 };
 
 export function AdminTopbar() {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
   const matchedPath = Object.keys(pageLabels)
     .sort((left, right) => right.length - left.length)
     .find((path) => (path === "/admin" ? pathname === path : pathname.startsWith(path)));

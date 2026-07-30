@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useActionState, useState } from "react";
+import { useFormStatus } from "react-dom";
 import type { Locale } from "@/lib/i18n";
 import { LOCALE_LABELS, LOCALES } from "@/lib/i18n";
+import { initialProductSaveState, type ProductSaveState } from "@/lib/admin-product-save";
 import { getProductImageSlots } from "@/lib/product-images";
 import { formatProductLensText } from "@/lib/products";
 
@@ -35,7 +37,7 @@ type ProductFormProps = {
       assets?: { public_url?: string | null } | Array<{ public_url?: string | null }> | null;
     }>;
   } | null;
-  action: (formData: FormData) => void | Promise<void>;
+  action: (prevState: ProductSaveState, formData: FormData) => Promise<ProductSaveState>;
   supabaseConfigured?: boolean;
 };
 
@@ -62,18 +64,41 @@ function imageUrlFor(product: ProductFormProps["product"], role: string) {
   return asset?.public_url ?? "";
 }
 
+function ProductSubmitButton({
+  canPersist,
+  isEditing
+}: {
+  canPersist: boolean;
+  isEditing: boolean;
+}) {
+  const { pending } = useFormStatus();
+
+  return (
+    <button className="admin-primary-button" type="submit" disabled={!canPersist || pending}>
+      {!canPersist ? "Supabase 연결 필요" : pending ? "Saving..." : isEditing ? "Save changes" : "Create product"}
+    </button>
+  );
+}
+
 export function ProductForm({ product, action, supabaseConfigured = true }: ProductFormProps) {
   const [activeLocale, setActiveLocale] = useState<Locale>("ko");
+  const [state, formAction] = useActionState(action, initialProductSaveState);
   const imageSlots = getProductImageSlots();
   const canPersist = supabaseConfigured;
   const isEditing = Boolean(product?.id);
 
   return (
-    <form className="admin-form admin-product-form" action={action}>
+    <form className="admin-form admin-product-form" action={formAction}>
       {!canPersist ? (
         <div className="admin-config-warning" role="status">
           <strong>Supabase connection required</strong>
           <p>상품 저장과 이미지 업로드는 Supabase 연결 후 사용할 수 있습니다.</p>
+        </div>
+      ) : null}
+      {state.message ? (
+        <div className={`admin-config-warning${state.ok ? "" : " is-error"}`} role="status">
+          <strong>{state.ok ? "Saved" : "Save failed"}</strong>
+          <p>{state.message}</p>
         </div>
       ) : null}
       {product?.id ? <input type="hidden" name="id" value={product.id} /> : null}
@@ -239,9 +264,7 @@ export function ProductForm({ product, action, supabaseConfigured = true }: Prod
           <a className="admin-secondary-button" href="/admin/products">
             Cancel
           </a>
-          <button className="admin-primary-button" type="submit" disabled={!canPersist}>
-            {canPersist ? (isEditing ? "Save changes" : "Create product") : "Supabase 연결 필요"}
-          </button>
+          <ProductSubmitButton canPersist={canPersist} isEditing={isEditing} />
         </div>
       </div>
     </form>

@@ -2,10 +2,15 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { ProductForm } from "@/components/admin/ProductForm";
+import { initialProductSaveState } from "@/lib/admin-product-save";
+
+async function noopAction() {
+  return initialProductSaveState;
+}
 
 describe("ProductForm", () => {
   it("renders shared product fields and locale-tabbed detail copy", () => {
-    const html = renderToStaticMarkup(<ProductForm action={() => undefined} />);
+    const html = renderToStaticMarkup(<ProductForm action={noopAction} />);
 
     expect(html).toContain("Shared product");
     expect(html).toContain("OOGO No.");
@@ -32,7 +37,7 @@ describe("ProductForm", () => {
 
   it("uses an edit-specific compact save command", () => {
     const html = renderToStaticMarkup(
-      <ProductForm product={{ id: "product-id", model_code: "OG26001C2" }} action={() => undefined} />
+      <ProductForm product={{ id: "product-id", model_code: "OG26001C2" }} action={noopAction} />
     );
 
     expect(html).toContain("Save changes");
@@ -40,7 +45,7 @@ describe("ProductForm", () => {
   });
 
   it("disables product saving when Supabase is not configured", () => {
-    const html = renderToStaticMarkup(<ProductForm action={() => undefined} supabaseConfigured={false} />);
+    const html = renderToStaticMarkup(<ProductForm action={noopAction} supabaseConfigured={false} />);
 
     expect(html).toContain("Supabase connection required");
     expect(html).toContain("상품 저장과 이미지 업로드는 Supabase 연결 후 사용할 수 있습니다.");
