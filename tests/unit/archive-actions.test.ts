@@ -58,20 +58,21 @@ describe("Archive admin actions", () => {
 
   it("reads Archive API uploads as raw bytes without multipart parsing", () => {
     expect(uploadRouteSource).toContain("request.arrayBuffer()");
+    expect(uploadRouteSource).toContain("optimizeWebImage");
     expect(uploadRouteSource).not.toContain("request.formData()");
   });
 
-  it("accepts web images up to 8MB and rejects other uploads", () => {
+  it("accepts web images up to 12MB and rejects other uploads", () => {
     expect(validateArchiveImage(new File(["image"], "image.png", { type: "image/png" }))).toEqual({ ok: true });
     expect(validateArchiveImage(new File(["text"], "notes.txt", { type: "text/plain" }))).toEqual({
       ok: false,
       message: "JPG, PNG, WebP 이미지만 업로드할 수 있습니다."
     });
 
-    const oversized = new File([new Uint8Array(8 * 1024 * 1024 + 1)], "large.jpg", { type: "image/jpeg" });
+    const oversized = new File([new Uint8Array(12 * 1024 * 1024 + 1)], "large.jpg", { type: "image/jpeg" });
     expect(validateArchiveImage(oversized)).toEqual({
       ok: false,
-      message: "이미지당 최대 용량은 8MB입니다."
+      message: "이미지당 최대 용량은 12MB입니다. 업로드 시 웹용 WebP로 자동 최적화됩니다."
     });
   });
 

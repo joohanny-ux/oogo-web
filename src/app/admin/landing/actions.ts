@@ -10,6 +10,7 @@ import {
   type UploadedHeroMedia
 } from "@/lib/landing-content-fields";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { optimizeWebImage, replaceExtensionWithWebp, webImageInputTypes } from "@/lib/optimize-image";
 
 function isUploadFile(value: FormDataEntryValue | null): value is File {
   return value instanceof File && value.size > 0;
@@ -31,23 +32,40 @@ export async function uploadLandingMediaFile(file: File, pageKey: string, blockK
     };
   }
 
-  const isImage = ["image/jpeg", "image/png", "image/webp"].includes(file.type);
+  const isImage = (webImageInputTypes as readonly string[]).includes(file.type);
   const isVideo = ["video/mp4", "video/webm"].includes(file.type);
-  const maxSize = isVideo ? 25 * 1024 * 1024 : 8 * 1024 * 1024;
+  const maxSize = isVideo ? 25 * 1024 * 1024 : 12 * 1024 * 1024;
 
   if (!isImage && !isVideo) {
     return { ok: false as const, message: "Hero media must be JPG, PNG, WebP, MP4, or WebM." };
   }
 
   if (file.size > maxSize) {
-    return { ok: false as const, message: `Hero ${isVideo ? "video" : "image"} is over ${isVideo ? "25MB" : "8MB"}.` };
+    return { ok: false as const, message: `Hero ${isVideo ? "video" : "image"} is over ${isVideo ? "25MB" : "12MB"}.` };
   }
 
   const supabase = await createSupabaseServerClient();
-  const fileName = safePathPart(file.name || `${blockKey}.${isVideo ? "mp4" : "jpg"}`);
+  let uploadBody: Blob | Buffer = file;
+  let contentType = file.type;
+  let fileName = safePathPart(file.name || `${blockKey}.${isVideo ? "mp4" : "jpg"}`);
+
+  if (isImage) {
+    try {
+      const optimized = await optimizeWebImage(await file.arrayBuffer(), "landing");
+      uploadBody = optimized.buffer;
+      contentType = optimized.contentType;
+      fileName = replaceExtensionWithWebp(fileName);
+    } catch (error) {
+      return {
+        ok: false as const,
+        message: error instanceof Error ? error.message : "Image optimization failed."
+      };
+    }
+  }
+
   const path = `landing/${safePathPart(pageKey)}/${safePathPart(blockKey)}-${Date.now()}-${fileName}`;
-  const { error } = await supabase.storage.from("oogo-assets").upload(path, file, {
-    contentType: file.type,
+  const { error } = await supabase.storage.from("oogo-assets").upload(path, uploadBody, {
+    contentType,
     upsert: false
   });
 

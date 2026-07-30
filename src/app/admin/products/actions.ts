@@ -8,6 +8,7 @@ import {
   type AdminProductInput
 } from "@/lib/admin-content";
 import { getProductImageSlots, parseProductImageInputs, type ProductImageRole } from "@/lib/product-images";
+import { optimizeWebImage, replaceExtensionWithWebp, webImageInputTypes } from "@/lib/optimize-image";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 function readTranslation(formData: FormData, locale: Locale) {
@@ -41,20 +42,26 @@ async function uploadProductImageFile(file: File, role: ProductImageRole, slug: 
     };
   }
 
-  if (file.size > 5 * 1024 * 1024) {
-    return { ok: false as const, message: `${role} image is over 5MB.` };
+  if (!(webImageInputTypes as readonly string[]).includes(file.type)) {
+    return { ok: false as const, message: `${role} image must be JPG, PNG, or WebP.` };
   }
 
-  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-    return { ok: false as const, message: `${role} image must be JPG, PNG, or WebP.` };
+  let optimized;
+  try {
+    optimized = await optimizeWebImage(await file.arrayBuffer(), "product");
+  } catch (error) {
+    return {
+      ok: false as const,
+      message: error instanceof Error ? error.message : `${role} image optimization failed.`
+    };
   }
 
   const supabase = await createSupabaseServerClient();
   const productKey = safePathPart(slug || modelCode || "product");
-  const fileName = safePathPart(file.name || `${role}.jpg`);
+  const fileName = replaceExtensionWithWebp(safePathPart(file.name || `${role}.webp`));
   const path = `products/${productKey}/${role}-${Date.now()}-${fileName}`;
-  const { error } = await supabase.storage.from("oogo-assets").upload(path, file, {
-    contentType: file.type,
+  const { error } = await supabase.storage.from("oogo-assets").upload(path, optimized.buffer, {
+    contentType: optimized.contentType,
     upsert: false
   });
 

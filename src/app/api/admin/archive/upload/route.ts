@@ -7,11 +7,12 @@ import {
   safeArchiveFileName,
   validateArchiveImage
 } from "@/lib/archive-upload";
+import { optimizeWebImage, replaceExtensionWithWebp } from "@/lib/optimize-image";
 
 function readCollection(request: Request): ArchiveCollectionKey | null {
   const value = request.headers.get("x-archive-collection");
   return archiveCollectionKeys.includes(value as ArchiveCollectionKey)
-    ? value as ArchiveCollectionKey
+    ? (value as ArchiveCollectionKey)
     : null;
 }
 
@@ -35,7 +36,7 @@ export async function POST(request: Request) {
 
   const declaredSize = Number(request.headers.get("content-length") ?? 0);
   if (declaredSize > archiveImageMaxBytes) {
-    return Response.json({ message: "이미지당 최대 용량은 8MB입니다." }, { status: 413 });
+    return Response.json({ message: "이미지당 최대 용량은 12MB입니다." }, { status: 413 });
   }
 
   const supabase = await requireAdminSession();
@@ -50,9 +51,10 @@ export async function POST(request: Request) {
       return Response.json({ message: validation.message }, { status: 400 });
     }
 
-    const path = `archive/${collectionKey}/${Date.now()}-${randomUUID()}-${safeArchiveFileName(file.name)}`;
-    const { error: uploadError } = await supabase.storage.from("oogo-assets").upload(path, file, {
-      contentType: file.type,
+    const optimized = await optimizeWebImage(bytes, "archive");
+    const path = `archive/${collectionKey}/${Date.now()}-${randomUUID()}-${replaceExtensionWithWebp(safeArchiveFileName(file.name))}`;
+    const { error: uploadError } = await supabase.storage.from("oogo-assets").upload(path, optimized.buffer, {
+      contentType: optimized.contentType,
       upsert: false
     });
     if (uploadError) throw new Error(uploadError.message);
@@ -82,7 +84,14 @@ export async function POST(request: Request) {
     });
     if (archiveError) throw new Error(archiveError.message);
 
-    return Response.json({ ok: true }, { status: 201 });
+    return Response.json(
+      {
+        ok: true,
+        optimizedBytes: optimized.bytes,
+        sourceBytes: optimized.sourceBytes
+      },
+      { status: 201 }
+    );
   } catch (error) {
     return Response.json(
       { message: error instanceof Error ? error.message : "Archive 이미지를 저장하지 못했습니다." },
