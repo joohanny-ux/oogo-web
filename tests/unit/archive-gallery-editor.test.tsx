@@ -53,7 +53,7 @@ describe("ArchiveGalleryEditor", () => {
     expect(html).toContain('href="/archive/youngbin-edition"');
     expect(html).toContain('name="archiveFiles"');
     expect(html).toContain("multiple");
-    expect(html).toContain("선택한 이미지는 한 장씩 순서대로 저장됩니다.");
+    expect(html).toContain("업로드 시 웹용 WebP로 자동 최적화됩니다.");
     expect(html).toContain("이미지 추가");
     expect(html).toContain("초안 저장");
     expect(html).toContain("게시하기");

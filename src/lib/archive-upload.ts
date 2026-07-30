@@ -1,7 +1,7 @@
 import type { ArchiveCollectionKey } from "@/lib/archive-collections";
 
 const archiveImageTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
-export const archiveImageMaxBytes = 8 * 1024 * 1024;
+export const archiveImageMaxBytes = 12 * 1024 * 1024;
 
 export function formatArchiveFileSize(bytes: number) {
   return `${(bytes / 1024 / 1024).toFixed(1)}MB`;
@@ -51,7 +51,7 @@ export function validateArchiveImage(file: File) {
   }
 
   if (file.size > archiveImageMaxBytes) {
-    return { ok: false as const, message: "이미지당 최대 용량은 8MB입니다." };
+    return { ok: false as const, message: "이미지당 최대 용량은 12MB입니다. 업로드 시 웹용 WebP로 자동 최적화됩니다." };
   }
 
   return { ok: true as const };

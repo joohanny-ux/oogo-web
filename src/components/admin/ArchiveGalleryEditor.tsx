@@ -58,7 +58,7 @@ export function ArchiveGalleryEditor({
     }
 
     const totalBytes = files.reduce((sum, file) => sum + file.size, 0);
-    setSelectionStatus(`${files.length}개 선택 · 총 ${formatArchiveFileSize(totalBytes)} · 파일당 최대 8MB`);
+    setSelectionStatus(`${files.length}개 선택 · 총 ${formatArchiveFileSize(totalBytes)} · 파일당 최대 12MB`);
     setHasInvalidSelection(false);
   }
 
@@ -173,7 +173,7 @@ export function ArchiveGalleryEditor({
       ) : null}
 
       <p className="archive-admin-help">
-        JPG, PNG, WebP · 이미지당 최대 8MB · 여러 파일을 한 번에 선택할 수 있습니다. 선택한 이미지는 한 장씩 순서대로 저장됩니다.
+        JPG, PNG, WebP · 원본 최대 12MB · 업로드 시 웹용 WebP로 자동 최적화됩니다. 여러 파일을 한 번에 선택할 수 있습니다.
       </p>
 
       {items.length > 0 ? (
