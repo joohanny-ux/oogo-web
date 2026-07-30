@@ -303,7 +303,7 @@ export async function saveProduct(input: AdminProductInput) {
   }
 
   const productPayload = {
-    id: productId,
+    ...(productId ? { id: productId } : {}),
     slug: input.slug,
     model_code: input.modelCode,
     size: input.translations.ko.frameSize || null,
@@ -318,7 +318,7 @@ export async function saveProduct(input: AdminProductInput) {
 
   const { data: product, error: productError } = await supabase
     .from("products")
-    .upsert(productPayload)
+    .upsert(productPayload, productId ? { onConflict: "id" } : { onConflict: "slug" })
     .select("id")
     .single();
 
@@ -342,7 +342,9 @@ export async function saveProduct(input: AdminProductInput) {
     };
   });
 
-  const { error: translationError } = await supabase.from("product_translations").upsert(translationRows);
+  const { error: translationError } = await supabase
+    .from("product_translations")
+    .upsert(translationRows, { onConflict: "product_id,locale" });
   if (translationError) {
     return { ok: false, message: translationError.message };
   }

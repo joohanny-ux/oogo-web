@@ -232,8 +232,8 @@ export function mapProductRow(row: ProductRow, locale: Locale): PublicProduct {
   };
 }
 
-export function parseProductLensText(value: string) {
-  const parts = value
+export function parseProductLensText(value: string | null | undefined) {
+  const parts = String(value ?? "")
     .split(/\s*(?:\||\r?\n)\s*/)
     .map((item) => item.trim())
     .filter(Boolean);
@@ -244,8 +244,9 @@ export function parseProductLensText(value: string) {
   };
 }
 
-export function formatProductLensText(material?: string | null, features: string[] = []) {
-  const parts = [material, ...features]
+export function formatProductLensText(material?: string | null, features: string[] | null | undefined = []) {
+  const safeFeatures = Array.isArray(features) ? features : [];
+  const parts = [material, ...safeFeatures]
     .flatMap((item) => (item ? item.split(/\s*(?:\||\r?\n)\s*/) : []))
     .map((item) => item.trim())
     .filter(Boolean);

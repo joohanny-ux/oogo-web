@@ -2263,6 +2263,16 @@ h2 {
   font-size: 0.78rem;
 }
 
+.admin-config-warning.is-error {
+  border-color: #8a3f3f;
+  background: #241414;
+}
+
+.admin-config-warning.is-error strong,
+.admin-config-warning.is-error p {
+  color: #f0c7c7;
+}
+
 .admin-product-map {
   display: grid;
   grid-template-columns: minmax(180px, 0.32fr) 1fr;
