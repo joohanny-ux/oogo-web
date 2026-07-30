@@ -21,4 +21,9 @@ describe("optimizeWebImage", () => {
     expect(replaceExtensionWithWebp("OG26001C2_07.PNG")).toBe("OG26001C2_07.webp");
     expect(replaceExtensionWithWebp("photo")).toBe("photo.webp");
   });
+
+  it("keeps archive lightbox sharper than product thumbs", () => {
+    expect(getWebImagePreset("archive").maxEdge).toBeGreaterThan(getWebImagePreset("product").maxEdge);
+    expect(getWebImagePreset("archive").quality).toBeGreaterThan(getWebImagePreset("product").quality);
+  });
 });

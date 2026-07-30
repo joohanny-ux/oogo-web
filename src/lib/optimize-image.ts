@@ -12,7 +12,8 @@ const presets: Record<
   }
 > = {
   product: { maxEdge: 1800, quality: 78, maxSourceBytes: 12 * 1024 * 1024 },
-  archive: { maxEdge: 2000, quality: 78, maxSourceBytes: 12 * 1024 * 1024 },
+  // Archive lightbox uses the same URL fullscreen, so keep more detail than product thumbs.
+  archive: { maxEdge: 2400, quality: 84, maxSourceBytes: 12 * 1024 * 1024 },
   landing: { maxEdge: 2200, quality: 80, maxSourceBytes: 12 * 1024 * 1024 }
 };
 
