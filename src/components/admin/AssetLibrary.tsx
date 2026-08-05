@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useActionState } from "react";
 import { assetKindOptions, type AssetKind } from "@/lib/asset-kinds";
+import { deleteAllUnusedAssetsAction } from "@/app/admin/files/actions";
+import { initialBulkDeleteUnusedState, type BulkDeleteUnusedState } from "@/lib/files-bulk-delete";
 
 type Asset = {
   id: string;
@@ -37,6 +39,10 @@ export function AssetLibrary({
   const [kind, setKind] = useState<AssetKind | "all">("all");
   const [usage, setUsage] = useState<"all" | "used" | "unused">("all");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [bulkState, bulkAction, bulkPending] = useActionState<BulkDeleteUnusedState, FormData>(
+    deleteAllUnusedAssetsAction,
+    initialBulkDeleteUnusedState
+  );
 
   const filteredAssets = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -100,7 +106,31 @@ export function AssetLibrary({
         <p>
           Showing <strong>{filteredAssets.length}</strong> of {assets.length}
         </p>
+        <form
+          className="asset-bulk-delete"
+          action={bulkAction}
+          onSubmit={(event) => {
+            if (
+              !window.confirm(
+                `Unused ${unusedCount}개를 Storage와 DB에서 삭제합니다.\nUsed(상품·Archive·Landing) 파일은 삭제되지 않습니다.\n되돌릴 수 없습니다. 계속할까요?`
+              )
+            ) {
+              event.preventDefault();
+            }
+          }}
+        >
+          <input type="hidden" name="confirm" value="delete-unused" />
+          <button type="submit" className="admin-secondary-button" disabled={unusedCount === 0 || bulkPending}>
+            {bulkPending ? "삭제 중..." : `Unused 전체 삭제 (${unusedCount})`}
+          </button>
+        </form>
       </div>
+
+      {bulkState.message ? (
+        <p className={bulkState.ok ? "admin-config-warning" : "archive-admin-upload-status"} role="status">
+          {bulkState.message}
+        </p>
+      ) : null}
 
       <div className="asset-grid">
         {filteredAssets.length === 0 ? (

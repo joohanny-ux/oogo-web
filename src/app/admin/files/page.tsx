@@ -28,9 +28,9 @@ export default async function AdminFilesPage() {
         <div className="admin-config-warning" role="status">
           <strong>Unused {unusedCount}개</strong>
           <p>
-            재업로드 후 남은 예전 PNG/JPG가 Unused로 남아 있을 수 있습니다. 경로가 <code>products/</code>,{" "}
-            <code>archive/</code>이고 Unused인 파일은 Storage 정리 후보입니다. Landing Used 표시는 이제 랜딩 콘텐츠
-            URL과 연결됩니다.
+            재업로드 후 남은 예전 PNG/JPG가 Unused로 남아 있을 수 있습니다. 상단{" "}
+            <strong>Unused 전체 삭제</strong>로 한 번에 정리할 수 있습니다. Used(상품·Archive·Landing) 파일은
+            삭제되지 않습니다.
           </p>
         </div>
       ) : null}
