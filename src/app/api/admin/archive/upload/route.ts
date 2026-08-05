@@ -1,13 +1,18 @@
 import { randomUUID } from "node:crypto";
+import { getAdminSupabaseClient } from "@/lib/admin-api-auth";
 import { archiveCollectionKeys, type ArchiveCollectionKey } from "@/lib/archive-collections";
 import { hasSupabaseEnv } from "@/lib/admin-content";
-import { requireAdminSession } from "@/lib/admin-auth";
 import {
   archiveImageMaxBytes,
+  normalizeArchiveImageType,
   safeArchiveFileName,
   validateArchiveImage
 } from "@/lib/archive-upload";
 import { optimizeWebImage, replaceExtensionWithWebp } from "@/lib/optimize-image";
+import { describeStorageUploadError } from "@/lib/product-image-upload";
+
+export const runtime = "nodejs";
+export const maxDuration = 60;
 
 function readCollection(request: Request): ArchiveCollectionKey | null {
   const value = request.headers.get("x-archive-collection");
@@ -39,25 +44,45 @@ export async function POST(request: Request) {
     return Response.json({ message: "이미지당 최대 용량은 12MB입니다." }, { status: 413 });
   }
 
-  const supabase = await requireAdminSession();
+  const supabase = await getAdminSupabaseClient();
+  if (!supabase) {
+    return Response.json({ message: "관리자 로그인이 필요합니다. 다시 로그인한 뒤 시도해 주세요." }, { status: 401 });
+  }
+
+  const fileName = readFileName(request);
 
   try {
     const bytes = await request.arrayBuffer();
-    const file = new File([bytes], readFileName(request), {
-      type: request.headers.get("content-type") ?? "application/octet-stream"
-    });
-    const validation = validateArchiveImage(file);
-    if (!validation.ok) {
-      return Response.json({ message: validation.message }, { status: 400 });
+    if (bytes.byteLength === 0) {
+      return Response.json({ message: `${fileName}: 빈 파일입니다.` }, { status: 400 });
+    }
+    if (bytes.byteLength > archiveImageMaxBytes) {
+      return Response.json({ message: "이미지당 최대 용량은 12MB입니다." }, { status: 413 });
     }
 
-    const optimized = await optimizeWebImage(bytes, "archive");
-    const path = `archive/${collectionKey}/${Date.now()}-${randomUUID()}-${replaceExtensionWithWebp(safeArchiveFileName(file.name))}`;
+    const contentType = normalizeArchiveImageType(request.headers.get("content-type"));
+    const file = new File([bytes], fileName, { type: contentType });
+    const validation = validateArchiveImage(file);
+    if (!validation.ok) {
+      return Response.json({ message: `${fileName}: ${validation.message}` }, { status: 400 });
+    }
+
+    let optimized;
+    try {
+      optimized = await optimizeWebImage(bytes, "archive");
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : "이미지 최적화에 실패했습니다.";
+      return Response.json({ message: `${fileName}: ${detail}` }, { status: 400 });
+    }
+
+    const path = `archive/${collectionKey}/${Date.now()}-${randomUUID()}-${replaceExtensionWithWebp(safeArchiveFileName(fileName))}`;
     const { error: uploadError } = await supabase.storage.from("oogo-assets").upload(path, Buffer.from(optimized.buffer), {
       contentType: optimized.contentType,
       upsert: false
     });
-    if (uploadError) throw new Error(uploadError.message);
+    if (uploadError) {
+      return Response.json({ message: describeStorageUploadError(uploadError.message) }, { status: 500 });
+    }
 
     const { data: publicData } = supabase.storage.from("oogo-assets").getPublicUrl(path);
     const imageUrl = publicData.publicUrl;
@@ -72,7 +97,9 @@ export async function POST(request: Request) {
       })
       .select("id")
       .single();
-    if (assetError) throw new Error(assetError.message);
+    if (assetError) {
+      return Response.json({ message: describeStorageUploadError(assetError.message) }, { status: 500 });
+    }
 
     const { error: archiveError } = await supabase.from("archive_items").insert({
       collection_key: collectionKey,
@@ -82,7 +109,9 @@ export async function POST(request: Request) {
       published: false,
       published_at: null
     });
-    if (archiveError) throw new Error(archiveError.message);
+    if (archiveError) {
+      return Response.json({ message: describeStorageUploadError(archiveError.message) }, { status: 500 });
+    }
 
     return Response.json(
       {
@@ -93,9 +122,7 @@ export async function POST(request: Request) {
       { status: 201 }
     );
   } catch (error) {
-    return Response.json(
-      { message: error instanceof Error ? error.message : "Archive 이미지를 저장하지 못했습니다." },
-      { status: 500 }
-    );
+    const detail = error instanceof Error ? error.message : "Archive 이미지를 저장하지 못했습니다.";
+    return Response.json({ message: `${fileName}: ${describeStorageUploadError(detail)}` }, { status: 500 });
   }
 }

@@ -88,12 +88,18 @@ export function ArchiveGalleryEditor({
 
     try {
       for (const [index, file] of files.entries()) {
-        setUploadStatus(`저장 중 ${index + 1}/${files.length}`);
+        setUploadStatus(`저장 중 ${index + 1}/${files.length}: ${file.name}`);
         const request = buildArchiveUploadRequest(file, collectionKey);
         const response = await fetch(request.url, request.init);
         if (!response.ok) {
           const result = await response.json().catch(() => null) as { message?: string } | null;
-          throw new Error(result?.message ?? `${file.name} 파일을 저장하지 못했습니다.`);
+          const detail = result?.message?.trim();
+          throw new Error(
+            detail ||
+              `${file.name} 파일을 저장하지 못했습니다. (HTTP ${response.status}${
+                response.status === 401 ? " · 다시 로그인해 주세요" : ""
+              })`
+          );
         }
       }
 

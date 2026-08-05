@@ -3,6 +3,13 @@ import type { ArchiveCollectionKey } from "@/lib/archive-collections";
 const archiveImageTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
 export const archiveImageMaxBytes = 12 * 1024 * 1024;
 
+/** Browsers sometimes send image/jpg or omit subtype casing. */
+export function normalizeArchiveImageType(contentType: string | null | undefined) {
+  const raw = (contentType ?? "").split(";")[0]?.trim().toLowerCase() ?? "";
+  if (raw === "image/jpg") return "image/jpeg";
+  return raw;
+}
+
 export function formatArchiveFileSize(bytes: number) {
   return `${(bytes / 1024 / 1024).toFixed(1)}MB`;
 }
@@ -31,12 +38,14 @@ export function buildArchiveUploadForms(files: File[], collectionKey: ArchiveCol
 }
 
 export function buildArchiveUploadRequest(file: File, collectionKey: ArchiveCollectionKey) {
+  const contentType = normalizeArchiveImageType(file.type) || "application/octet-stream";
   return {
     url: "/api/admin/archive/upload",
     init: {
       method: "POST",
+      credentials: "same-origin" as const,
       headers: {
-        "content-type": file.type,
+        "content-type": contentType,
         "x-archive-collection": collectionKey,
         "x-archive-file-name": encodeURIComponent(file.name)
       },
@@ -46,7 +55,8 @@ export function buildArchiveUploadRequest(file: File, collectionKey: ArchiveColl
 }
 
 export function validateArchiveImage(file: File) {
-  if (!archiveImageTypes.has(file.type)) {
+  const type = normalizeArchiveImageType(file.type);
+  if (!archiveImageTypes.has(type)) {
     return { ok: false as const, message: "JPG, PNG, WebP 이미지만 업로드할 수 있습니다." };
   }
 
