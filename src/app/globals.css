@@ -3613,7 +3613,7 @@ h2 {
 
 .asset-toolbar {
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) minmax(160px, 0.26fr) minmax(160px, 0.26fr) auto;
+  grid-template-columns: minmax(220px, 1fr) minmax(140px, 0.22fr) minmax(140px, 0.22fr) auto auto;
   gap: 12px;
   align-items: end;
   border: 1px solid #34302b;
@@ -3647,6 +3647,14 @@ h2 {
 
 .asset-toolbar strong {
   color: #f4f0e8;
+}
+
+.asset-bulk-delete {
+  margin: 0;
+}
+
+.asset-bulk-delete .admin-secondary-button {
+  white-space: nowrap;
 }
 
 .asset-grid {

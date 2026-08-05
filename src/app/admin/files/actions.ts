@@ -2,6 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { hasSupabaseEnv } from "@/lib/admin-content";
+import {
+  assertAssetIsUnused,
+  deleteAssetRecords,
+  listUnusedAssets
+} from "@/lib/delete-unused-assets";
+import type { BulkDeleteUnusedState } from "@/lib/files-bulk-delete";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export async function deleteUnusedAssetAction(formData: FormData) {
@@ -16,41 +22,9 @@ export async function deleteUnusedAssetAction(formData: FormData) {
   }
 
   const supabase = await createSupabaseServerClient();
-
-  const { count: productImageCount, error: productImageError } = await supabase
-    .from("product_images")
-    .select("asset_id", { count: "exact", head: true })
-    .eq("asset_id", id);
-
-  if (productImageError) {
-    throw new Error(productImageError.message);
-  }
-
-  const { count: specialEditionCount, error: specialEditionError } = await supabase
-    .from("special_editions")
-    .select("hero_asset_id", { count: "exact", head: true })
-    .eq("hero_asset_id", id);
-
-  if (specialEditionError) {
-    throw new Error(specialEditionError.message);
-  }
-
-  const { count: archiveItemCount, error: archiveItemError } = await supabase
-    .from("archive_items")
-    .select("asset_id", { count: "exact", head: true })
-    .eq("asset_id", id);
-
-  if (archiveItemError) {
-    throw new Error(archiveItemError.message);
-  }
-
-  if ((productImageCount ?? 0) + (specialEditionCount ?? 0) + (archiveItemCount ?? 0) > 0) {
-    throw new Error("This asset is currently used and cannot be deleted.");
-  }
-
   const { data: asset, error: assetError } = await supabase
     .from("assets")
-    .select("id, bucket, path")
+    .select("id, bucket, path, public_url")
     .eq("id", id)
     .single();
 
@@ -58,19 +32,43 @@ export async function deleteUnusedAssetAction(formData: FormData) {
     throw new Error(assetError.message);
   }
 
-  if (asset.bucket === "oogo-assets") {
-    const { error: storageError } = await supabase.storage.from("oogo-assets").remove([asset.path]);
-
-    if (storageError) {
-      throw new Error(storageError.message);
-    }
-  }
-
-  const { error: deleteError } = await supabase.from("assets").delete().eq("id", id);
-
-  if (deleteError) {
-    throw new Error(deleteError.message);
-  }
-
+  await assertAssetIsUnused(supabase, asset);
+  await deleteAssetRecords(supabase, [asset]);
   revalidatePath("/admin/files");
+}
+
+export async function deleteAllUnusedAssetsAction(
+  _prev: BulkDeleteUnusedState,
+  formData: FormData
+): Promise<BulkDeleteUnusedState> {
+  if (String(formData.get("confirm") ?? "") !== "delete-unused") {
+    return { ok: false, message: "삭제 확인이 필요합니다." };
+  }
+
+  if (!hasSupabaseEnv()) {
+    return {
+      ok: false,
+      message: "Supabase environment variables are not configured. Connect Supabase before deleting files."
+    };
+  }
+
+  try {
+    const supabase = await createSupabaseServerClient();
+    const unused = await listUnusedAssets(supabase);
+    const result = await deleteAssetRecords(supabase, unused);
+    revalidatePath("/admin/files");
+    return {
+      ok: true,
+      deleted: result.deleted,
+      message:
+        result.deleted === 0
+          ? "삭제할 Unused 파일이 없습니다."
+          : `Unused ${result.deleted}개를 삭제했습니다.`
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "Unused 파일을 삭제하지 못했습니다."
+    };
+  }
 }
