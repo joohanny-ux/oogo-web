@@ -1,6 +1,5 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { LOCALES, type Locale } from "@/lib/i18n";
 import {
   hasSupabaseEnv,
@@ -24,7 +23,14 @@ function readTranslation(formData: FormData, locale: Locale) {
 }
 
 function isUploadFile(value: FormDataEntryValue | null): value is File {
-  return typeof File !== "undefined" && value instanceof File && value.size > 0;
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    typeof (value as Blob).arrayBuffer === "function" &&
+    typeof (value as Blob).size === "number" &&
+    (value as Blob).size > 0 &&
+    typeof (value as File).type === "string"
+  );
 }
 
 function safePathPart(value: string) {
@@ -73,9 +79,10 @@ async function uploadProductImageFile(file: File, role: ProductImageRole, slug: 
 
   const supabase = await createSupabaseServerClient();
   const productKey = safePathPart(slug || modelCode || "product");
-  const fileName = replaceExtensionWithWebp(safePathPart(file.name || `${role}.webp`));
+  const originalName = typeof file.name === "string" && file.name ? file.name : `${role}.webp`;
+  const fileName = replaceExtensionWithWebp(safePathPart(originalName));
   const path = `products/${productKey}/${role}-${Date.now()}-${fileName}`;
-  const { error } = await supabase.storage.from("oogo-assets").upload(path, optimized.buffer, {
+  const { error } = await supabase.storage.from("oogo-assets").upload(path, Buffer.from(optimized.buffer), {
     contentType: optimized.contentType,
     upsert: false
   });
@@ -156,10 +163,15 @@ export async function saveProductAction(
     if (!result.ok) {
       return { ok: false, message: result.message };
     }
+
+    // Prefer returning redirectTo so the client can navigate without next/navigation redirect.
+    return {
+      ok: true,
+      message: "상품이 저장되었습니다.",
+      redirectTo: "/admin/products"
+    };
   } catch (error) {
     const message = error instanceof Error ? error.message : "상품 저장 중 오류가 발생했습니다.";
     return { ok: false, message: describeUploadError(message) };
   }
-
-  redirect("/admin/products");
 }

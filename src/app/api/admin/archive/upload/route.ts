@@ -53,7 +53,7 @@ export async function POST(request: Request) {
 
     const optimized = await optimizeWebImage(bytes, "archive");
     const path = `archive/${collectionKey}/${Date.now()}-${randomUUID()}-${replaceExtensionWithWebp(safeArchiveFileName(file.name))}`;
-    const { error: uploadError } = await supabase.storage.from("oogo-assets").upload(path, optimized.buffer, {
+    const { error: uploadError } = await supabase.storage.from("oogo-assets").upload(path, Buffer.from(optimized.buffer), {
       contentType: optimized.contentType,
       upsert: false
     });

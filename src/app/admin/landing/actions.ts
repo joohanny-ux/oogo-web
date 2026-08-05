@@ -52,7 +52,7 @@ export async function uploadLandingMediaFile(file: File, pageKey: string, blockK
   if (isImage) {
     try {
       const optimized = await optimizeWebImage(await file.arrayBuffer(), "landing");
-      uploadBody = optimized.buffer;
+      uploadBody = Buffer.from(optimized.buffer);
       contentType = optimized.contentType;
       fileName = replaceExtensionWithWebp(fileName);
     } catch (error) {
