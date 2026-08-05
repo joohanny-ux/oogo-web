@@ -54,6 +54,14 @@ describe("Archive admin actions", () => {
       "x-archive-collection": "youngbin-edition",
       "x-archive-file-name": encodeURIComponent("영빈 04.jpg")
     });
+    expect(request.init.credentials).toBe("same-origin");
+  });
+
+  it("normalizes image/jpg and keeps Node runtime for sharp uploads", () => {
+    expect(validateArchiveImage(new File(["image"], "photo.jpg", { type: "image/jpg" }))).toEqual({ ok: true });
+    expect(uploadRouteSource).toContain('export const runtime = "nodejs"');
+    expect(uploadRouteSource).toContain("getAdminSupabaseClient");
+    expect(uploadRouteSource).not.toContain("requireAdminSession");
   });
 
   it("reads Archive API uploads as raw bytes without multipart parsing", () => {
