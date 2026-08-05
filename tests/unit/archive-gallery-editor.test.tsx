@@ -53,7 +53,7 @@ describe("ArchiveGalleryEditor", () => {
     expect(html).toContain('href="/archive/youngbin-edition"');
     expect(html).toContain('name="archiveFiles"');
     expect(html).toContain("multiple");
-    expect(html).toContain("업로드 시 웹용 WebP로 자동 최적화됩니다.");
+    expect(html).toContain("4MB를 넘는 파일은 업로드 전 자동 압축됩니다");
     expect(html).toContain("이미지 추가");
     expect(html).toContain("초안 저장");
     expect(html).toContain("게시하기");
@@ -69,6 +69,7 @@ describe("ArchiveGalleryEditor", () => {
     expect(editorSource).not.toContain('formAction={publishAction}');
     expect(editorSource).toContain('onSubmit={handleUpload}');
     expect(editorSource).toContain("buildArchiveUploadRequest");
+    expect(editorSource).toContain("prepareArchiveUploadFile");
     expect(editorSource).toContain("validateArchiveImage");
     expect(editorSource).toContain('onChange={handleFileSelection}');
     expect(editorSource).toContain('aria-live="polite"');

@@ -8,6 +8,7 @@ import {
   formatArchiveFileSize,
   validateArchiveImage
 } from "@/lib/archive-upload";
+import { prepareArchiveUploadFile, shouldShrinkBeforeUpload } from "@/lib/prepare-archive-upload-file";
 
 type ArchiveAction = (formData: FormData) => void | Promise<void>;
 
@@ -88,8 +89,14 @@ export function ArchiveGalleryEditor({
 
     try {
       for (const [index, file] of files.entries()) {
-        setUploadStatus(`저장 중 ${index + 1}/${files.length}: ${file.name}`);
-        const request = buildArchiveUploadRequest(file, collectionKey);
+        if (shouldShrinkBeforeUpload(file.size)) {
+          setUploadStatus(`압축 중 ${index + 1}/${files.length}: ${file.name}`);
+        } else {
+          setUploadStatus(`저장 중 ${index + 1}/${files.length}: ${file.name}`);
+        }
+
+        const prepared = await prepareArchiveUploadFile(file);
+        const request = buildArchiveUploadRequest(prepared, collectionKey);
         const response = await fetch(request.url, request.init);
         if (!response.ok) {
           const result = await response.json().catch(() => null) as { message?: string } | null;
@@ -97,7 +104,11 @@ export function ArchiveGalleryEditor({
           throw new Error(
             detail ||
               `${file.name} 파일을 저장하지 못했습니다. (HTTP ${response.status}${
-                response.status === 401 ? " · 다시 로그인해 주세요" : ""
+                response.status === 401
+                  ? " · 다시 로그인해 주세요"
+                  : response.status === 413
+                    ? " · 파일이 서버 전송 한도(약 4MB)를 초과했습니다"
+                    : ""
               })`
           );
         }
@@ -179,7 +190,7 @@ export function ArchiveGalleryEditor({
       ) : null}
 
       <p className="archive-admin-help">
-        JPG, PNG, WebP · 원본 최대 12MB · 업로드 시 웹용 WebP로 자동 최적화됩니다. 여러 파일을 한 번에 선택할 수 있습니다.
+        JPG, PNG, WebP · 원본 최대 12MB · 4MB를 넘는 파일은 업로드 전 자동 압축됩니다 · 저장 시 WebP로 최적화됩니다. 여러 파일을 한 번에 선택할 수 있습니다.
       </p>
 
       {items.length > 0 ? (
