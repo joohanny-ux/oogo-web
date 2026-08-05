@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useActionState, useState } from "react";
+import React, { useActionState, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
 import type { Locale } from "@/lib/i18n";
 import { LOCALE_LABELS, LOCALES } from "@/lib/i18n";
@@ -86,6 +86,12 @@ export function ProductForm({ product, action, supabaseConfigured = true }: Prod
   const imageSlots = getProductImageSlots();
   const canPersist = supabaseConfigured;
   const isEditing = Boolean(product?.id);
+
+  useEffect(() => {
+    if (state.ok && state.redirectTo) {
+      window.location.assign(state.redirectTo);
+    }
+  }, [state]);
 
   return (
     <form className="admin-form admin-product-form" action={formAction}>
