@@ -6,165 +6,25 @@ import { hasSupabaseEnv, publishLandingBlock, saveLandingBlockDraft } from "@/li
 import {
   readHeroSlidesFields,
   readLandingContentFields,
-  readSocialLinksFields,
-  type UploadedHeroMedia
+  readSocialLinksFields
 } from "@/lib/landing-content-fields";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { optimizeWebImage, replaceExtensionWithWebp, webImageInputTypes } from "@/lib/optimize-image";
-
-function isUploadFile(value: FormDataEntryValue | null): value is File {
-  return value instanceof File && value.size > 0;
-}
-
-function safePathPart(value: string) {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9._-]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
-export async function uploadLandingMediaFile(file: File, pageKey: string, blockKey: string) {
-  if (!hasSupabaseEnv()) {
-    return {
-      ok: false as const,
-      message: "Supabase environment variables are not configured. Connect Supabase before uploading landing media."
-    };
-  }
-
-  const isImage = (webImageInputTypes as readonly string[]).includes(file.type);
-  const isVideo = ["video/mp4", "video/webm"].includes(file.type);
-  const maxSize = isVideo ? 25 * 1024 * 1024 : 12 * 1024 * 1024;
-
-  if (!isImage && !isVideo) {
-    return { ok: false as const, message: "Hero media must be JPG, PNG, WebP, MP4, or WebM." };
-  }
-
-  if (file.size > maxSize) {
-    return { ok: false as const, message: `Hero ${isVideo ? "video" : "image"} is over ${isVideo ? "25MB" : "12MB"}.` };
-  }
-
-  const supabase = await createSupabaseServerClient();
-  let uploadBody: Blob | Buffer = file;
-  let contentType = file.type;
-  let fileName = safePathPart(file.name || `${blockKey}.${isVideo ? "mp4" : "jpg"}`);
-
-  if (isImage) {
-    try {
-      const optimized = await optimizeWebImage(await file.arrayBuffer(), "landing");
-      uploadBody = Buffer.from(optimized.buffer);
-      contentType = optimized.contentType;
-      fileName = replaceExtensionWithWebp(fileName);
-    } catch (error) {
-      return {
-        ok: false as const,
-        message: error instanceof Error ? error.message : "Image optimization failed."
-      };
-    }
-  }
-
-  const path = `landing/${safePathPart(pageKey)}/${safePathPart(blockKey)}-${Date.now()}-${fileName}`;
-  const { error } = await supabase.storage.from("oogo-assets").upload(path, uploadBody, {
-    contentType,
-    upsert: false
-  });
-
-  if (error) {
-    return { ok: false as const, message: error.message };
-  }
-
-  const { data } = supabase.storage.from("oogo-assets").getPublicUrl(path);
-  const publicUrl = data.publicUrl;
-
-  const { data: existingAsset, error: existingAssetError } = await supabase
-    .from("assets")
-    .select("id")
-    .eq("public_url", publicUrl)
-    .maybeSingle();
-
-  if (existingAssetError) {
-    return { ok: false as const, message: existingAssetError.message };
-  }
-
-  if (!existingAsset) {
-    const { error: assetError } = await supabase.from("assets").insert({
-      bucket: "oogo-assets",
-      path,
-      public_url: publicUrl,
-      kind: "brand",
-      alt: `${pageKey} ${blockKey} ${isVideo ? "video" : "image"}`
-    });
-
-    if (assetError) {
-      return { ok: false as const, message: assetError.message };
-    }
-  }
-
-  return {
-    ok: true as const,
-    url: publicUrl,
-    mediaType: isVideo ? ("video" as const) : ("image" as const)
-  };
-}
 
 async function saveLandingBlock(formData: FormData) {
   const pageKey = String(formData.get("pageKey") ?? "home");
   const blockKey = String(formData.get("blockKey") ?? "main");
-  const mediaFile = formData.get("mediaFile");
-  const mediaUpload = isUploadFile(mediaFile) ? await uploadLandingMediaFile(mediaFile, pageKey, blockKey) : null;
-
-  if (mediaUpload && !mediaUpload.ok) {
-    throw new Error(mediaUpload.message);
-  }
-
-  const hasMediaControl = Boolean(mediaUpload) || formData.has("mediaType") || formData.has("mediaUrl");
+  const hasMediaControl = formData.has("mediaType") || formData.has("mediaUrl");
   const media = hasMediaControl
     ? {
-        mediaType: mediaUpload?.mediaType ?? String(formData.get("mediaType") ?? "image"),
-        mediaUrl: mediaUpload?.url ?? String(formData.get("mediaUrl") ?? formData.get("imageUrl") ?? "")
+        mediaType: String(formData.get("mediaType") ?? "image"),
+        mediaUrl: String(formData.get("mediaUrl") ?? formData.get("imageUrl") ?? "")
       }
     : undefined;
   const content = readLandingContentFields(formData, media);
 
   if (pageKey === "home" && blockKey === "hero" && formData.has("slide1MediaType")) {
-    const uploadedSlides: Partial<Record<number, UploadedHeroMedia>> = {};
-
-    for (let number = 1; number <= 5; number += 1) {
-      const slideFile = formData.get(`slide${number}File`);
-      if (!isUploadFile(slideFile)) continue;
-
-      const upload = await uploadLandingMediaFile(slideFile, pageKey, `${blockKey}-slide-${number}`);
-      if (!upload.ok) {
-        throw new Error(upload.message);
-      }
-      uploadedSlides[number] = {
-        mediaType: upload.mediaType,
-        mediaUrl: upload.url
-      };
-    }
-
-    content.slides = readHeroSlidesFields(formData, uploadedSlides);
+    content.slides = readHeroSlidesFields(formData);
     if (!Array.isArray(content.slides) || content.slides.length === 0) {
       delete content.slides;
-    }
-  }
-
-  const hasGalleryControl = Array.from({ length: 6 }, (_, index) => index + 1).some(
-    (number) => formData.has(`image${number}Url`) || formData.has(`image${number}File`)
-  );
-  if (hasGalleryControl) {
-    for (let number = 1; number <= 6; number += 1) {
-      const imageFile = formData.get(`image${number}File`);
-      if (!isUploadFile(imageFile)) continue;
-      if (!["image/jpeg", "image/png", "image/webp"].includes(imageFile.type)) {
-        throw new Error("Archive gallery files must be JPG, PNG, or WebP images.");
-      }
-
-      const upload = await uploadLandingMediaFile(imageFile, pageKey, `${blockKey}-image-${number}`);
-      if (!upload.ok) {
-        throw new Error(upload.message);
-      }
-      content[`image${number}Url`] = upload.url;
     }
   }
 

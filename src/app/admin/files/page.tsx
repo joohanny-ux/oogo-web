@@ -1,4 +1,4 @@
-import { assetKindOptions, listAssets } from "@/lib/assets";
+import { listAssets } from "@/lib/assets";
 import { AssetLibrary } from "@/components/admin/AssetLibrary";
 import { deleteUnusedAssetAction } from "@/app/admin/files/actions";
 import { hasSupabaseEnv } from "@/lib/admin-content";
@@ -8,42 +8,32 @@ export const dynamic = "force-dynamic";
 export default async function AdminFilesPage() {
   const assets = await listAssets();
   const supabaseConfigured = hasSupabaseEnv();
+  const unusedCount = assets.filter((asset) => asset.usage.length === 0).length;
 
   return (
     <main className="admin-page">
       <h1>Files</h1>
-      <p className="admin-page-note">브랜드, 상품, 프로젝트에 사용할 이미지와 파일을 관리합니다.</p>
+      <p className="admin-page-note">
+        Storage에 올라간 파일 목록입니다. 상품·Archive·Landing 업로드는 각 메뉴에서 하고, 이 페이지는{" "}
+        <strong>사용하지 않는 파일 정리</strong>용입니다. Unused 파일은 Supabase Storage 용량만 차지하며, 삭제해도
+        공개 페이지에 연결된 파일은 Used로 표시됩니다.
+      </p>
       {!supabaseConfigured ? (
         <div className="admin-config-warning" role="status">
           <strong>Supabase connection required</strong>
-          <p>파일 업로드와 삭제는 Supabase Storage 연결 후 사용할 수 있습니다.</p>
+          <p>파일 삭제는 Supabase Storage 연결 후 사용할 수 있습니다.</p>
         </div>
       ) : null}
-      <form className="admin-form">
-        <div className="admin-form-grid">
-          <label>
-            File
-            <input name="file" type="file" disabled={!supabaseConfigured} />
-          </label>
-          <label>
-            Kind
-            <select name="kind" defaultValue="brand" disabled={!supabaseConfigured}>
-              {assetKindOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="admin-wide-field">
-            Alt text
-            <input name="alt" disabled={!supabaseConfigured} />
-          </label>
+      {supabaseConfigured && unusedCount > 0 ? (
+        <div className="admin-config-warning" role="status">
+          <strong>Unused {unusedCount}개</strong>
+          <p>
+            재업로드 후 남은 예전 PNG/JPG가 Unused로 남아 있을 수 있습니다. 경로가 <code>products/</code>,{" "}
+            <code>archive/</code>이고 Unused인 파일은 Storage 정리 후보입니다. Landing Used 표시는 이제 랜딩 콘텐츠
+            URL과 연결됩니다.
+          </p>
         </div>
-        <button type="button" disabled={!supabaseConfigured}>
-          {supabaseConfigured ? "Upload file" : "Upload requires Supabase connection"}
-        </button>
-      </form>
+      ) : null}
       <AssetLibrary assets={assets} deleteAction={deleteUnusedAssetAction} />
     </main>
   );

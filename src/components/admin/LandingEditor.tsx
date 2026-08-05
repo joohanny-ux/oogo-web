@@ -1,4 +1,5 @@
 import React from "react";
+import { LandingBlockForm } from "@/components/admin/LandingBlockForm";
 import { HeroSlidesEditor, type HeroSlideInput } from "@/components/admin/HeroSlidesEditor";
 import { ImageGalleryEditor } from "@/components/admin/ImageGalleryEditor";
 import { LandingBlockDetails } from "@/components/admin/LandingBlockDetails";
@@ -855,7 +856,13 @@ function BlockEditor({
           </span>
         </summary>
 
-        <form className="admin-form" action={saveAction} data-landing-block-form>
+        <LandingBlockForm
+          pageKey={pageKey}
+          blockKey={blockConfig.key}
+          canPersist={canPersist}
+          saveAction={saveAction}
+          savePublishAction={savePublishAction}
+        >
           <input type="hidden" name="id" value={row?.id ?? ""} />
           <input type="hidden" name="pageKey" value={pageKey} />
           <input type="hidden" name="locale" value={locale} />
@@ -904,15 +911,7 @@ function BlockEditor({
               </aside>
             ) : null}
           </div>
-          <div className="landing-form-actions">
-            <button type="submit" disabled={!canPersist}>
-              {canPersist ? "초안 저장" : "Supabase 연결 후 저장 가능"}
-            </button>
-            <button className="admin-secondary-button" type="submit" formAction={savePublishAction} disabled={!canPersist}>
-              {canPersist ? "저장 후 게시" : "Supabase 연결 필요"}
-            </button>
-          </div>
-        </form>
+        </LandingBlockForm>
       </LandingBlockDetails>
     </section>
   );
