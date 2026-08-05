@@ -4,6 +4,7 @@ import {
   shouldShrinkBeforeUpload,
   VERCEL_SAFE_UPLOAD_BYTES
 } from "@/lib/prepare-archive-upload-file";
+import { CLIENT_MAX_EDGE } from "@/lib/prepare-client-upload-image";
 
 describe("prepareArchiveUploadFile helpers", () => {
   it("shrinks files above the Vercel-safe upload threshold", () => {
@@ -14,5 +15,7 @@ describe("prepareArchiveUploadFile helpers", () => {
 
   it("keeps the archive client resize edge aligned with the server preset", () => {
     expect(ARCHIVE_CLIENT_MAX_EDGE).toBe(2400);
+    expect(CLIENT_MAX_EDGE.archive).toBe(2400);
+    expect(CLIENT_MAX_EDGE.landing).toBe(2200);
   });
 });

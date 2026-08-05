@@ -2,6 +2,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 export { assetKindOptions, normalizeAssetKind, type AssetKind } from "@/lib/asset-kinds";
 import type { AssetKind } from "@/lib/asset-kinds";
+import { buildLandingUsageLabel, collectLandingContentUrls } from "@/lib/landing-asset-urls";
 
 type AssetRow = {
   id: string;
@@ -39,6 +40,14 @@ type ArchiveUsageRow = {
   published: boolean;
 };
 
+type LandingBlockUsageRow = {
+  page_key: string;
+  block_key: string;
+  draft_content: Record<string, unknown> | null;
+  published_content: Record<string, unknown> | null;
+  published: boolean;
+};
+
 function firstItem<T>(value: T | T[] | null | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
@@ -68,14 +77,16 @@ export async function listAssets() {
   const [
     { data: productImageUsage, error: productImageError },
     { data: specialEditionUsage, error: specialEditionError },
-    { data: archiveUsage, error: archiveUsageError }
+    { data: archiveUsage, error: archiveUsageError },
+    { data: landingBlocks, error: landingBlocksError }
   ] = await Promise.all([
       supabase
         .from("product_images")
         .select("asset_id, role, products(model_code, product_translations(locale, name))")
         .in("asset_id", assetIds),
       supabase.from("special_editions").select("hero_asset_id, slug, collaborator").in("hero_asset_id", assetIds),
-      supabase.from("archive_items").select("asset_id, published").in("asset_id", assetIds)
+      supabase.from("archive_items").select("asset_id, published").in("asset_id", assetIds),
+      supabase.from("landing_blocks").select("page_key, block_key, draft_content, published_content, published")
   ]);
 
   if (productImageError) {
@@ -90,7 +101,12 @@ export async function listAssets() {
     throw new Error(archiveUsageError.message);
   }
 
+  if (landingBlocksError) {
+    throw new Error(landingBlocksError.message);
+  }
+
   const usageByAsset = new Map<string, Array<{ label: string; detail: string }>>();
+  const usageByPublicUrl = new Map<string, Array<{ label: string; detail: string }>>();
 
   for (const usage of (productImageUsage ?? []) as ProductImageUsageRow[]) {
     const product = firstItem(usage.products);
@@ -127,9 +143,31 @@ export async function listAssets() {
     usageByAsset.set(usage.asset_id, existing);
   }
 
+  for (const block of (landingBlocks ?? []) as LandingBlockUsageRow[]) {
+    const draftUrls = collectLandingContentUrls(block.draft_content);
+    for (const url of draftUrls) {
+      const existing = usageByPublicUrl.get(url) ?? [];
+      existing.push({
+        label: buildLandingUsageLabel(block.page_key, block.block_key),
+        detail: "Landing draft"
+      });
+      usageByPublicUrl.set(url, existing);
+    }
+
+    const publishedUrls = collectLandingContentUrls(block.published_content);
+    for (const url of publishedUrls) {
+      const existing = usageByPublicUrl.get(url) ?? [];
+      existing.push({
+        label: buildLandingUsageLabel(block.page_key, block.block_key),
+        detail: block.published ? "Landing published" : "Landing draft"
+      });
+      usageByPublicUrl.set(url, existing);
+    }
+  }
+
   return assets.map((asset) => ({
     ...asset,
-    usage: usageByAsset.get(asset.id) ?? []
+    usage: [...(usageByAsset.get(asset.id) ?? []), ...(usageByPublicUrl.get(asset.public_url) ?? [])]
   }));
 }
 

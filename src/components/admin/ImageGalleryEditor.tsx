@@ -65,7 +65,7 @@ export function ImageGalleryEditor({
               </label>
               <label className="admin-upload-control">
                 <span>파일 업로드</span>
-                <em>JPG/PNG/WebP max 8MB.</em>
+                <em>JPG/PNG/WebP · 4MB 초과 시 자동 압축 · 저장 시 WebP.</em>
                 <input
                   name={`image${number}File`}
                   type="file"
