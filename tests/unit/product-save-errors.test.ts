@@ -13,8 +13,10 @@ describe("product save error handling", () => {
     expect(actions).toContain('"use server"');
     expect(actions).not.toContain("throw new Error");
     expect(actions).not.toContain("redirect(");
+    expect(actions).not.toContain("optimizeWebImage");
     expect(actions).not.toContain("useActionState");
     expect(form).toContain("useActionState");
+    expect(form).toContain("/api/admin/products/upload");
     expect(form).toContain("Save failed");
     expect(form).toContain("window.location.assign");
   });

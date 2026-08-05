@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useActionState, useEffect, useState } from "react";
+import React, { useActionState, useEffect, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
 import type { Locale } from "@/lib/i18n";
 import { LOCALE_LABELS, LOCALES } from "@/lib/i18n";
 import { initialProductSaveState, type ProductSaveState } from "@/lib/admin-product-save";
-import { getProductImageSlots } from "@/lib/product-images";
+import { getProductImageSlots, type ProductImageRole } from "@/lib/product-images";
 import { formatProductLensText } from "@/lib/products";
 
 type TranslationValue = {
@@ -66,16 +66,27 @@ function imageUrlFor(product: ProductFormProps["product"], role: string) {
 
 function ProductSubmitButton({
   canPersist,
-  isEditing
+  isEditing,
+  uploading
 }: {
   canPersist: boolean;
   isEditing: boolean;
+  uploading: boolean;
 }) {
   const { pending } = useFormStatus();
+  const busy = uploading || pending;
 
   return (
-    <button className="admin-primary-button" type="submit" disabled={!canPersist || pending}>
-      {!canPersist ? "Supabase 연결 필요" : pending ? "Saving..." : isEditing ? "Save changes" : "Create product"}
+    <button className="admin-primary-button" type="submit" disabled={!canPersist || busy}>
+      {!canPersist
+        ? "Supabase 연결 필요"
+        : busy
+          ? uploading
+            ? "Uploading images..."
+            : "Saving..."
+          : isEditing
+            ? "Save changes"
+            : "Create product"}
     </button>
   );
 }
@@ -83,9 +94,21 @@ function ProductSubmitButton({
 export function ProductForm({ product, action, supabaseConfigured = true }: ProductFormProps) {
   const [activeLocale, setActiveLocale] = useState<Locale>("ko");
   const [state, formAction] = useActionState(action, initialProductSaveState);
+  const [clientMessage, setClientMessage] = useState("");
+  const [uploading, setUploading] = useState(false);
   const imageSlots = getProductImageSlots();
   const canPersist = supabaseConfigured;
   const isEditing = Boolean(product?.id);
+  const initialImageUrls = useMemo(() => {
+    const values = {} as Record<ProductImageRole, string>;
+    for (const slot of imageSlots) {
+      values[slot.role] = imageUrlFor(product, slot.role);
+    }
+    return values;
+  }, [imageSlots, product]);
+  const [imageUrls, setImageUrls] = useState<Record<ProductImageRole, string>>(initialImageUrls);
+  const statusMessage = clientMessage || state.message;
+  const statusOk = !clientMessage && state.ok;
 
   useEffect(() => {
     if (state.ok && state.redirectTo) {
@@ -93,18 +116,79 @@ export function ProductForm({ product, action, supabaseConfigured = true }: Prod
     }
   }, [state]);
 
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!canPersist || uploading) {
+      return;
+    }
+
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const slug = String(formData.get("slug") ?? "").trim();
+    const modelCode = String(formData.get("modelCode") ?? "").trim();
+    const nextUrls = { ...imageUrls };
+
+    setUploading(true);
+    setClientMessage("");
+
+    try {
+      for (const slot of imageSlots) {
+        const input = form.elements.namedItem(`imageFile.${slot.role}`);
+        if (!(input instanceof HTMLInputElement) || !input.files?.[0]) {
+          continue;
+        }
+
+        const file = input.files[0];
+        const response = await fetch("/api/admin/products/upload", {
+          method: "POST",
+          headers: {
+            "content-type": file.type || "application/octet-stream",
+            "x-product-role": slot.role,
+            "x-product-slug": encodeURIComponent(slug),
+            "x-product-model": encodeURIComponent(modelCode),
+            "x-product-file-name": encodeURIComponent(file.name || `${slot.role}.webp`)
+          },
+          body: file
+        });
+
+        const payload = (await response.json().catch(() => ({}))) as { message?: string; url?: string };
+        if (!response.ok || !payload.url) {
+          setClientMessage(payload.message || `${slot.label} 이미지 업로드에 실패했습니다.`);
+          return;
+        }
+
+        nextUrls[slot.role] = payload.url;
+        input.value = "";
+      }
+
+      setImageUrls(nextUrls);
+
+      const saveData = new FormData(form);
+      for (const slot of imageSlots) {
+        saveData.set(`image.${slot.role}`, nextUrls[slot.role] || "");
+        saveData.delete(`imageFile.${slot.role}`);
+      }
+
+      formAction(saveData);
+    } catch (error) {
+      setClientMessage(error instanceof Error ? error.message : "이미지 업로드 중 오류가 발생했습니다.");
+    } finally {
+      setUploading(false);
+    }
+  }
+
   return (
-    <form className="admin-form admin-product-form" action={formAction}>
+    <form className="admin-form admin-product-form" onSubmit={handleSubmit}>
       {!canPersist ? (
         <div className="admin-config-warning" role="status">
           <strong>Supabase connection required</strong>
           <p>상품 저장과 이미지 업로드는 Supabase 연결 후 사용할 수 있습니다.</p>
         </div>
       ) : null}
-      {state.message ? (
-        <div className={`admin-config-warning${state.ok ? "" : " is-error"}`} role="status">
-          <strong>{state.ok ? "Saved" : "Save failed"}</strong>
-          <p>{state.message}</p>
+      {statusMessage ? (
+        <div className={`admin-config-warning${statusOk ? "" : " is-error"}`} role="status">
+          <strong>{statusOk ? "Saved" : "Save failed"}</strong>
+          <p>{statusMessage}</p>
         </div>
       ) : null}
       {product?.id ? <input type="hidden" name="id" value={product.id} /> : null}
@@ -230,11 +314,11 @@ export function ProductForm({ product, action, supabaseConfigured = true }: Prod
                   <small>{slot.note}</small>
                   <em>{slot.guidance}</em>
                 </div>
-                {imageUrlFor(product, slot.role) ? (
+                {imageUrls[slot.role] ? (
                   <div
                     className="admin-image-preview"
                     aria-label={`${slot.label} current image preview`}
-                    style={{ backgroundImage: `url("${imageUrlFor(product, slot.role)}")` }}
+                    style={{ backgroundImage: `url("${imageUrls[slot.role]}")` }}
                   />
                 ) : (
                   <div className="admin-image-preview admin-image-preview-empty">이미지 없음</div>
@@ -245,10 +329,10 @@ export function ProductForm({ product, action, supabaseConfigured = true }: Prod
                     name={`imageFile.${slot.role}`}
                     type="file"
                     accept="image/png,image/jpeg,image/webp"
-                    disabled={!canPersist}
+                    disabled={!canPersist || uploading}
                   />
                 </label>
-                <input type="hidden" name={`image.${slot.role}`} defaultValue={imageUrlFor(product, slot.role)} />
+                <input type="hidden" name={`image.${slot.role}`} value={imageUrls[slot.role] || ""} readOnly />
               </div>
             ))}
           </div>
@@ -270,7 +354,7 @@ export function ProductForm({ product, action, supabaseConfigured = true }: Prod
           <a className="admin-secondary-button" href="/admin/products">
             Cancel
           </a>
-          <ProductSubmitButton canPersist={canPersist} isEditing={isEditing} />
+          <ProductSubmitButton canPersist={canPersist} isEditing={isEditing} uploading={uploading} />
         </div>
       </div>
     </form>
